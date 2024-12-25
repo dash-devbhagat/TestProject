@@ -17,9 +17,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('login');
-});
+})->name('home');
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
+
+Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('forgot.password');
+Route::post('/forgot-password', [AuthController::class, 'handleForgotPassword'])->name('forgot.password.submit');
 
 Route::middleware('auth')->group(function () {
 
