@@ -18,6 +18,6 @@ class RoleMiddleware
         }
 
         // Redirect if the user does not have the correct role
-        return redirect()->route('dashboard');
+        return redirect()->route('access.denied')->with('error', 'You do not have permission to access this page.');
     }
 }

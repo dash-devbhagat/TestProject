@@ -29,4 +29,10 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    Route::get('/complete-profile', function () {
+        return view('complete-profile');
+    })->name('complete-profile');
+
+    Route::post('/update-profile', [AuthController::class, 'updateProfile'])->name('profile.update');
 });
