@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 
 /*
@@ -26,15 +27,15 @@ Route::post('/forgot-password', [AuthController::class, 'handleForgotPassword'])
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard'); 
-    })->name('admin.dashboard');
-
-    Route::get('/user/dashboard', function () {
-        return view('user.dashboard');
-    })->name('user.dashboard');
+    Route::get('/dashboard', function () {
+        return view('dashboard', ['user' => Auth::user()]);
+    })->name('dashboard');
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/complete-profile', function () {
+        return view('complete-profile');
+    })->name('complete-profile');
+
+    Route::post('/update-profile', [AuthController::class, 'updateProfile'])->name('profile.update');
 });
