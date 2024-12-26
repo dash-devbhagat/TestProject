@@ -23,8 +23,7 @@ class CheckProfileCompletion
             !$user->storename ||
             !$user->location ||
             !$user->latitude ||
-            !$user->longitude ||
-            !$user->logo
+            !$user->longitude
         ) {
             // Redirect to profile completion page
             return redirect()->route('complete-profile');
