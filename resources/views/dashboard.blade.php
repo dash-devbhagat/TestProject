@@ -26,37 +26,43 @@
                         <h3 class="card-title">User Dashboard</h3>
                     @endif
 
+        </div>
+        <div class="card-body">
+         @if (Auth::user()->role === 'admin')
+        <p>Welcome, {{ Auth::user()->name }}!</p>
+    @else
+    <p>Welcome, {{ Auth::user()->name }}!</p>
+    <div>
+       <ul>
+            <li><strong>Name:</strong> {{ Auth::user()->name }}</li>
+            <li><strong>Email:</strong> {{ Auth::user()->email }}</li>
+            <li><strong>Phone:</strong> {{ Auth::user()->phone ?? 'Not provided' }}</li>
+            <li><strong>Store Name:</strong> {{ Auth::user()->storename ?? 'Not provided' }}</li>
+            <li><strong>Location:</strong> {{ Auth::user()->location ?? 'Not provided' }}</li>
+            <li><strong>Latitude:</strong> {{ Auth::user()->latitude ?? 'Not provided' }}</li>
+            <li><strong>Longitude:</strong> {{ Auth::user()->longitude ?? 'Not provided' }}</li>
+          </ul>
+    </div>
+    <div>
+    <form action="{{ route('password.link') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn btn-warning">Change Password</button>
+                </form>
                 </div>
-                <div class="card-body">
-                    @if (Auth::user()->role === 'admin')
-                        <p>Welcome, {{ Auth::user()->name }}!</p>
-                    @else
-                        <p>Welcome, {{ Auth::user()->name }}!</p>
-                        <div>
-                            <ul>
-                                <li><strong>Name:</strong> {{ Auth::user()->name }}</li>
-                                <li><strong>Email:</strong> {{ Auth::user()->email }}</li>
-                                <li><strong>Phone:</strong> {{ Auth::user()->phone ?? 'Not provided' }}</li>
-                                <li><strong>Store Name:</strong> {{ Auth::user()->storename ?? 'Not provided' }}</li>
-                                <li><strong>Location:</strong> {{ Auth::user()->location ?? 'Not provided' }}</li>
-                                <li><strong>Latitude:</strong> {{ Auth::user()->latitude ?? 'Not provided' }}</li>
-                                <li><strong>Longitude:</strong> {{ Auth::user()->longitude ?? 'Not provided' }}</li>
-                            </ul>
-                        </div>
-                    @endif
+    @endif
 
 
-                </div>
-                <!-- /.card-body -->
-                {{-- <div class="card-footer">
-             <form action="{{ route('logout') }}" method="POST">
-        @csrf
-        <button type="submit" class="btn btn-danger">Logout</button>
-    </form>
-        </div> --}}
-                <!-- /.card-footer-->
-            </div>
-            <!-- /.card -->
+        </div>
+        <!-- /.card-body -->
+        <div class="card-footer">
+          <form action="{{ route('logout') }}" method="POST">
+              @csrf
+              <button type="submit" class="btn btn-danger">Logout</button>
+          </form>
+        </div>
+        <!-- /.card-footer-->
+      </div>
+      <!-- /.card -->
 
         </section>
         <!-- /.content -->

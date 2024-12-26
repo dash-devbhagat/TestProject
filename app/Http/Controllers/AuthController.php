@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use App\Mail\SendPasswordChangeMail;  // Correct import
+use Illuminate\Support\Facades\Storage;
+
+
+
 
 class AuthController extends Controller
 {
@@ -41,12 +46,11 @@ class AuthController extends Controller
         //     'email' => 'The provided credentials do not match our records.',
         // ]);
         return redirect()->route('home')->with('error', 'The provided credentials do not match our records.');
-    
     }
 
     public function showForgotPasswordForm()
     {
-        return view('forgot-password'); 
+        return view('forgot-password');
     }
 
     public function handleForgotPassword(Request $request)
@@ -62,21 +66,22 @@ class AuthController extends Controller
             return redirect()->route('home')->with('error', 'Email address not found');
         }
 
-        $randomPassword = Str::random(8); 
+        $randomPassword = Str::random(8);
 
         // Update user's password in the database
         $user->password = Hash::make($randomPassword);
         $user->save();
 
-        Mail::send('emails.password-reset', ['password' => $randomPassword], function($message) use ($user) {
+        Mail::send('emails.password-reset', ['password' => $randomPassword], function ($message) use ($user) {
             $message->to($user->email)
-                    ->subject('Your Password Reset');
+                ->subject('Your Password Reset');
         });
 
         return redirect()->route('home')->with('success', 'New password has been sent to your email');
     }
 
-    public function logout(Request $request){
+    public function logout(Request $request)
+    {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -94,7 +99,7 @@ class AuthController extends Controller
             'location' => 'required',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'logo' => 'required|image|mimes:jpeg,png,jpg|max:2048', // Ensuring the logo is required and is a valid image file
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Ensuring the logo is required and is a valid image file
         ]);
 
         // If validation passes, save the user's profile
@@ -115,6 +120,10 @@ class AuthController extends Controller
                 return back()->withErrors(['logo' => 'The logo must be 100x100 pixels or smaller.']);
             }
 
+            if ($user->logo && Storage::disk('public')->exists($user->logo)) {
+                Storage::disk('public')->delete($user->logo);
+            }
+
             // Store the logo
             $logoPath = $image->store('logos', 'public');
             $user->logo = $logoPath;
@@ -126,5 +135,56 @@ class AuthController extends Controller
 
         // Redirect to the dashboard
         return redirect()->route('dashboard');
+    }
+
+    public function sendChangePasswordLink(Request $request)
+    {
+        $user = Auth::user();
+        $token = Str::random(64);
+
+        // Store the token in the user's table or a dedicated password reset table
+        $user->password_reset_token = $token;
+        $user->save();
+
+        // Dispatch the email
+        Mail::to($user->email)->send(new SendPasswordChangeMail($user, $token));
+
+        // Notify the user
+        return redirect()->route('dashboard')->with('success', 'Password change link has been sent to your email.');
+    }
+    // Step 2.2: Show Change Password Form
+    public function showChangePasswordForm($token)
+    {
+        $user = User::where('password_reset_token', $token)->first();
+
+        if (!$user) {
+            return redirect()->route('home')->with('error', 'Invalid or expired token.');
+        }
+
+        return view('auth.change-password', compact('token'));
+    }
+
+    // Step 2.3: Handle Change Password
+    public function handleChangePassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'password' => 'required|confirmed|min:8',
+        ]);
+
+        $user = User::where('password_reset_token', $request->token)->first();
+
+        if (!$user) {
+            return redirect()->route('home')->with('error', 'Invalid or expired token.');
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->password_reset_token = null; // Clear the token
+        $user->save();
+
+        // Notify the user via email
+        Mail::to($user->email)->send(new \App\Mail\PasswordChangedMail($user));
+
+        return redirect()->route('home')->with('success', 'Your password has been changed successfully. Please log in.');
     }
 }
