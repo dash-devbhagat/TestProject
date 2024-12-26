@@ -54,12 +54,12 @@
 
         </div>
         <!-- /.card-body -->
-        <div class="card-footer">
+        {{-- <div class="card-footer">
           <form action="{{ route('logout') }}" method="POST">
               @csrf
               <button type="submit" class="btn btn-danger">Logout</button>
           </form>
-        </div>
+        </div> --}}
         <!-- /.card-footer-->
       </div>
       <!-- /.card -->

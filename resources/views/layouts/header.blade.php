@@ -48,9 +48,6 @@
                       <p>
                           Email: {{ Auth::user()->email }}
                       </p>
-                      <p>
-                          Phone: {{ Auth::user()->phone }}
-                      </p>
                   </li>
                   <li class="user-footer">
                     <form action="{{ route('logout') }}" method="POST">

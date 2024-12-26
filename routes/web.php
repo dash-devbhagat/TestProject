@@ -46,7 +46,7 @@ Route::middleware('auth')->group(function () {
             return redirect()->route('dashboard');
         }
 
-        return view('complete-profile');
+        return view('user.complete-profile');
     })->name('complete-profile');
     
     Route::post('/update-profile', [AuthController::class, 'updateProfile'])->name('profile.update');

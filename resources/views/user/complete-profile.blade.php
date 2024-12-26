@@ -80,12 +80,6 @@
             <button type="submit" class="btn btn-primary">Save</button>
           </form>
         </div>
-        <div class="card-footer">
-          <form action="{{ route('logout') }}" method="POST">
-              @csrf
-              <button type="submit" class="btn btn-danger">Logout</button>
-          </form>
-        </div>
         
       </div>
     </section>
