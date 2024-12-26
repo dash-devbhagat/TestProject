@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -33,9 +34,15 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+    // for admin
+    // Route::get('/manage-users',[UserController::class,'index'])->name('manage.users');
+    Route::resource('user', UserController::class);
+    
+    // for users
     Route::get('/complete-profile', function () {
-        return view('complete-profile');
+        return view('user.complete-profile');
     })->name('complete-profile');
-
+    
     Route::post('/update-profile', [AuthController::class, 'updateProfile'])->name('profile.update');
+
 });
