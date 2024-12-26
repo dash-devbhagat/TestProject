@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Mail\SendPasswordChangeMail;  // Correct import
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+
 
 
 
@@ -137,54 +139,23 @@ class AuthController extends Controller
         return redirect()->route('dashboard');
     }
 
-    public function sendChangePasswordLink(Request $request)
+    public function showChangePasswordForm()
     {
-        $user = Auth::user();
-        $token = Str::random(64);
-
-        // Store the token in the user's table or a dedicated password reset table
-        $user->password_reset_token = $token;
-        $user->save();
-
-        // Dispatch the email
-        Mail::to($user->email)->send(new SendPasswordChangeMail($user, $token));
-
-        // Notify the user
-        return redirect()->route('dashboard')->with('success', 'Password change link has been sent to your email.');
-    }
-    // Step 2.2: Show Change Password Form
-    public function showChangePasswordForm($token)
-    {
-        $user = User::where('password_reset_token', $token)->first();
-
-        if (!$user) {
-            return redirect()->route('home')->with('error', 'Invalid or expired token.');
-        }
-
-        return view('auth.change-password', compact('token'));
+        return view('change-password');
     }
 
-    // Step 2.3: Handle Change Password
-    public function handleChangePassword(Request $request)
+    public function changePassword(Request $request)
     {
         $request->validate([
-            'token' => 'required',
-            'password' => 'required|confirmed|min:8',
+            'current_password' => ['required', 'current_password'],
+            'new_password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $user = User::where('password_reset_token', $request->token)->first();
-
-        if (!$user) {
-            return redirect()->route('home')->with('error', 'Invalid or expired token.');
-        }
-
-        $user->password = Hash::make($request->password);
-        $user->password_reset_token = null; // Clear the token
+        // Update user's password
+        $user = Auth::user();
+        $user->password = Hash::make($request->new_password);
         $user->save();
 
-        // Notify the user via email
-        Mail::to($user->email)->send(new \App\Mail\PasswordChangedMail($user));
-
-        return redirect()->route('home')->with('success', 'Your password has been changed successfully. Please log in.');
+        return redirect()->route('dashboard')->with('success', 'Password changed successfully.');
     }
 }

@@ -38,7 +38,7 @@ Route::middleware('auth')->group(function () {
     // for admin
     // Route::get('/manage-users',[UserController::class,'index'])->name('manage.users');
     Route::resource('user', UserController::class);
-    
+
     // for users
     Route::get('/complete-profile', function () {
         // Redirect to dashboard if profile is complete
@@ -48,12 +48,11 @@ Route::middleware('auth')->group(function () {
 
         return view('user.complete-profile');
     })->name('complete-profile');
-    
+
     Route::post('/update-profile', [AuthController::class, 'updateProfile'])->name('profile.update');
 
-    Route::post('/change-password-link', [AuthController::class, 'sendChangePasswordLink'])->name('password.link');
-    Route::get('/change-password/{token}', [AuthController::class, 'showChangePasswordForm'])->name('password.change.form');
-    Route::post('/change-password', [AuthController::class, 'handleChangePassword'])->name('password.change');
+    Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('change.password');
+    Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password.submit');
 });
 Route::fallback(function () {
     return redirect()->route('home')->with('error', 'Page not found or unauthorized access.');

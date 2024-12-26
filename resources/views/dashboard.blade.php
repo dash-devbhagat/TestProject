@@ -9,6 +9,24 @@
                 <div class="row mb-2">
                     <div class="col-sm-6">
                         <h1>Dashboard</h1>
+                        @if (session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <script>
+        // Auto-close alert after 2 seconds
+        setTimeout(function () {
+            let alert = document.querySelector('.alert');
+            if (alert) {
+                alert.classList.remove('show'); // Close the alert
+                alert.addEventListener('transitionend', () => alert.remove()); // Remove from DOM
+            }
+        }, 2000); // 2 seconds
+    </script>
+@endif
+
                     </div>
                 </div>
             </div><!-- /.container-fluid -->
@@ -44,10 +62,6 @@
           </ul>
     </div>
     <div>
-    <form action="{{ route('password.link') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="btn btn-warning">Change Password</button>
-                </form>
                 </div>
     @endif
 
