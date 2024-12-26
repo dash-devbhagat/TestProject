@@ -1,27 +1,4 @@
     <div class="sidebar">
-        <!-- Sidebar user panel (optional) -->
-        {{-- <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-            <div class="image">
-                <img src="adminlte/dist/img/{{ Auth::user()->logo }}" class="img-circle elevation-2" alt="User Image"> --}}
-                {{-- @if (Auth::check())
-        @if (Auth::user()->role === 'admin')
-          <!-- Admin logo -->
-          <img src="{{ Auth::user()->logo ? asset('storage/' . Auth::user()->logo) : asset('adminlte/dist/img/admin-default.jpg') }}" class="img-circle elevation-2" alt="Admin Logo">
-        @else
-          <!-- User logo -->
-          <img src="{{ Auth::user()->logo ? asset('storage/' . Auth::user()->logo) : asset('adminlte/dist/img/user2-160x160.jpg') }}" class="img-circle elevation-2" alt="User Logo">
-        @endif
-      @else
-        <!-- Default image for guest -->
-        <img src="{{ asset('adminlte/dist/img/user2-160x160.jpg') }}" class="img-circle elevation-2" alt="Guest Image">
-      @endif --}}
-            {{-- </div>
-            <div class="info">
-                <a href="#" class="d-block">{{ Auth::user()->name }}</a>
-            </div>
-        </div> --}}
-
-
         <!-- Sidebar Menu -->
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"

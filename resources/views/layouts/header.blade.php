@@ -38,14 +38,13 @@
           <li class="nav-item dropdown user-menu">
               <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
                   <img src="adminlte/dist/img/{{ Auth::user()->logo }}" class="user-image img-circle elevation-2"
-                      alt="User Image">
+                      alt="User Image" onerror="this.onerror=null; this.src='adminlte/dist/img/user.png';">
                   <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
               </a>
               <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                   <!-- User image -->
                   <li class="user-header bg-primary">
-                      <img src="adminlte/dist/img/{{ Auth::user()->logo }}" class="img-circle elevation-2" alt="User Image">
-
+                      <img src="adminlte/dist/img/{{ Auth::user()->logo }}" class="img-circle elevation-2" alt="User Image" onerror="this.onerror=null; this.src='adminlte/dist/img/user.png';">
                       <p>
                           Email: {{ Auth::user()->email }}
                       </p>
