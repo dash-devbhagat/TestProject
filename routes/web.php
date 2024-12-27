@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\UserController;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+
 
 
 /*
@@ -24,8 +26,11 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login');
 });
 
-Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('forgot.password');
-Route::post('/forgot-password', [AuthController::class, 'handleForgotPassword'])->name('forgot.password.submit');
+Route::get('/forgot-password', [PasswordResetController::class, 'showForgotPasswordForm'])->name('forgot.password');
+Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('sendResetLink');
+Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetPasswordForm'])->name('password.reset');
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.update');
+
 
 Route::middleware('auth')->group(function () {
 
@@ -36,7 +41,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // for admin
-    // Route::get('/manage-users',[UserController::class,'index'])->name('manage.users');
     Route::resource('user', UserController::class);
 
     // for users
