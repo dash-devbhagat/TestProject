@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\ChangePasswordController;
 
 
 /*
@@ -49,10 +50,11 @@ Route::middleware('auth')->group(function () {
         return view('user.complete-profile');
     })->name('complete-profile');
 
-    Route::post('/update-profile', [AuthController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/update-profile', [UserController::class, 'updateProfile'])->name('profile.update');
 
-    Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('change.password');
-    Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password.submit');
+
+    Route::get('/change-password', [ChangePasswordController::class, 'showChangePasswordForm'])->name('change.password');
+    Route::post('/change-password', [ChangePasswordController::class, 'changePassword'])->name('change.password.submit');
 });
 Route::fallback(function () {
     return redirect()->route('home')->with('error', 'Page not found or unauthorized access.');
