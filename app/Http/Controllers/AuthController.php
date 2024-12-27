@@ -32,6 +32,11 @@ class AuthController extends Controller
 
             // Check if profile is complete
             $user = Auth::user();
+
+            if ($user->role === 'admin') { // Adjust based on your role attribute
+                return redirect()->route('dashboard');
+            }
+
             if ($user->phone && $user->storename && $user->location && $user->latitude && $user->longitude && $user->logo) {
                 // Set profile completion flag
                 $user->isProfile = true;

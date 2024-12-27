@@ -17,6 +17,10 @@ class CheckProfileCompletion
     {
         $user = Auth::user();
 
+        if ($user->role === 'admin') { // Adjust this based on your implementation of roles
+            return $next($request);
+        }
+
         // Check if any required fields are missing
         if (
             !$user->phone ||
