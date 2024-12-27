@@ -47,7 +47,7 @@
                 <div class="d-flex justify-content-between mt-3">
                     <p class="mb-1">
                         {{-- <a href="{{ route('login-page') }}">Back to Login</a> --}}
-                        <a href="{{ route('home') }}">Back to Login</a>
+                        <a href="{{ route('login.page') }}">Back to Login</a>
                     </p>
                 </div>
             </div>

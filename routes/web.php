@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Auth;
 Route::middleware('guest')->group(function () {
     Route::get('/', function () {
         return view('login');
-    })->name('home');
+    })->name('login.page');
     Route::post('/login', [AuthController::class, 'login'])->name('login');
 });
 
@@ -55,5 +55,5 @@ Route::middleware('auth')->group(function () {
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password.submit');
 });
 Route::fallback(function () {
-    return redirect()->route('home')->with('error', 'Page not found or unauthorized access.');
+    return redirect()->route('login.page')->with('error', 'Page not found or unauthorized access.');
 });

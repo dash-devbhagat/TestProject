@@ -52,7 +52,7 @@ class AuthController extends Controller
         // return back()->withErrors([
         //     'email' => 'The provided credentials do not match our records.',
         // ]);
-        return redirect()->route('home')->with('error', 'The provided credentials do not match our records.');
+        return redirect()->route('login.page')->with('error', 'The provided credentials do not match our records.');
     }
 
     public function showForgotPasswordForm()
@@ -69,8 +69,8 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
-            // return redirect()->route('home')->withErrors(['email' => 'Email address not found']);
-            return redirect()->route('home')->with('error', 'Email address not found');
+            // return redirect()->route('login.page')->withErrors(['email' => 'Email address not found']);
+            return redirect()->route('login.page')->with('error', 'Email address not found');
         }
 
         $randomPassword = Str::random(8);
@@ -84,7 +84,7 @@ class AuthController extends Controller
                 ->subject('Your Password Reset');
         });
 
-        return redirect()->route('home')->with('success', 'New password has been sent to your email');
+        return redirect()->route('login.page')->with('success', 'New password has been sent to your email');
     }
 
     public function logout(Request $request)
