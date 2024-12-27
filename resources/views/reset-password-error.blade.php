@@ -22,6 +22,11 @@
                 <h1 class="text-danger">Error!</h1>
                 <p>The reset password token has expired. Please try again to receive a new token.</p>
             </div>
+                            <div class="d-flex justify-content-between mt-3">
+                    <p class="mb-1">
+                        <a href="{{ route('login.page') }}">Back to Login</a>
+                    </p>
+                </div>
         </div>
     </div>
 
