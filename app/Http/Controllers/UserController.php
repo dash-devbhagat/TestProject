@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\UserActivatedMail;
 use App\Mail\WelcomeUserMail;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
@@ -16,7 +18,7 @@ class UserController extends Controller
     public function index()
     {
 
-        $users = User::where('role', 'User')->where('isdelete', 0)->get();
+        $users = User::where('role', 'User')->where('isdelete', 0)->orderBy('id', 'desc')->get();
         // return $users;
 
         return view('admin.manage_users', compact('users'));
@@ -38,19 +40,48 @@ class UserController extends Controller
         // dd($request->all());
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'required|email',
             'password' => 'required|string|min:8',
         ]);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),
-        ]);
 
-        Mail::to($user->email)->queue(new WelcomeUserMail($user, $validated['password']));
+        // $user = User::create([
+        //     'name' => $validated['name'],
+        //     'email' => $validated['email'],
+        //     'password' => bcrypt($validated['password']),
+        // ]);
 
-        session()->flash('success', 'User Created Successfully.');
+        // Mail::to($user->email)->queue(new WelcomeUserMail($user, $validated['password']));
+
+        // session()->flash('success', 'User Created Successfully.');
+
+        // Check if the email exists and is marked as deleted
+        $user = User::where('email', $validated['email'])->where('isDelete', 1)->first();
+
+        if ($user) {
+            // Update the existing user's record
+            $user->update([
+                'name' => $validated['name'],
+                'password' => bcrypt($validated['password']),
+                'isDelete' => 0, // Restore the user
+            ]);
+
+            // Optional: Send a welcome email if needed
+            Mail::to($user->email)->queue(new WelcomeUserMail($user, $validated['password']));
+
+            session()->flash('success', 'User Restored and Updated Successfully.');
+        } else {
+
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => bcrypt($validated['password']),
+            ]);
+
+            Mail::to($user->email)->queue(new WelcomeUserMail($user, $validated['password']));
+
+            session()->flash('success', 'User Created Successfully.');
+        }
 
         return response()->json(['success' => true]);
     }
@@ -152,4 +183,25 @@ class UserController extends Controller
         // Redirect to the dashboard
         return redirect()->route('dashboard');
     }
+
+    public function toggleStatus($id)
+    {
+        $user = User::findOrFail($id);
+        
+        // Toggle the user's active status
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        // Send an email if the user is activated
+        if ($user->is_active) {
+            Mail::to($user->email)->queue(new UserActivatedMail($user));
+        }
+
+        return response()->json([
+            'success' => true,
+            'status' => $user->is_active ? 'activated' : 'deactivated',
+            'message' => $user->is_active ? 'User activated successfully.' : 'User deactivated successfully.'
+        ]);
+    }
+
 }

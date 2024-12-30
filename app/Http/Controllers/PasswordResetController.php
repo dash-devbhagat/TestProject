@@ -44,7 +44,7 @@ class PasswordResetController extends Controller
          $url = url(route('password.reset', ['token' => $token, 'email' => $email], false));
 
          // Send the custom email
-         Mail::to($email)->send(new ResetPasswordMail($url));
+         Mail::to($email)->queue(new ResetPasswordMail($url));
 
          return back()->with('success', 'Password reset email sent!');
  

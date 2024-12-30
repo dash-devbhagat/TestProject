@@ -53,7 +53,8 @@
                                 <th>Sr</th>
                                 <th>Name</th>
                                 <th>Email</th>
-                                <th>IsProfile</th>
+                                <th>Profile Status</th>
+                                <th>Active Status</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -66,20 +67,35 @@
                                     <td>{{ $i }}</td>
                                     <td>{{ $user->name }}</td>
                                     <td>{{ $user->email }}</td>
-                                    <td>{{ $user->isProfile }}</td>
+                                    <td>
+                                        @if ($user->isProfile)
+                                            True
+                                        @else
+                                            False
+                                        @endif
+                                    </td>
+                                    {{-- <td class="text-center">
+                                        <!-- Toggle Button for Active/Inactive -->
+                                        <button class="btn btn-sm {{ $user->is_active ? 'btn-danger' : 'btn-success' }}"
+                                            id="toggleStatusBtn{{ $user->id }}" data-id="{{ $user->id }}">
+                                            {{ $user->is_active ? 'Deactive' : 'Active' }}
+                                        </button>
+                                    </td> --}}
                                     <td class="text-center">
-                                        <!-- Edit Icon -->
-                                        {{-- <a href="{{ route('user.update', $user->id) }}" class="text-primary"
-                                            data-bs-toggle="tooltip" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </a> --}}
+                                        <!-- Active/Inactive Toggle Icon -->
+                                        <a href="javascript:void(0);" id="toggleStatusBtn{{ $user->id }}"
+                                            data-id="{{ $user->id }}" class="text-center" data-toggle="tooltip"
+                                            title="{{ $user->is_active ? 'Deactivate' : 'Activate' }}">
+                                            <i
+                                                class="fas {{ $user->is_active ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-2x"></i>
+                                        </a>
+                                    </td>
+                                    <td class="text-center">
                                         <!-- Edit Icon -->
                                         <a href="#javascript" class="text-primary" data-toggle="modal"
                                             data-target="#exampleModal">
                                             <i class="fa fa-edit editUserBtn" data-id="{{ $user->id }}"></i>
                                         </a>
-
-
                                         <!-- Delete Icon -->
                                         <form action="{{ route('user.destroy', $user->id) }}" method="POST"
                                             style="display:inline;"
@@ -100,6 +116,7 @@
                         </tbody>
                     </table>
                 </div>
+
                 <!-- /.card-body -->
             </div>
 
@@ -223,9 +240,10 @@
                         // Handle validation errors
                         let errors = xhr.responseJSON.errors;
                         if (errors) {
-                            if (errors.name) alert("Error: " + errors.name);
-                            if (errors.email) alert("Error: " + errors.email);
-                            if (errors.password) alert("Error: " + errors.password);
+                            // if (errors.name) alert("Error: " + errors.name);
+                            // if (errors.email) alert("Error: " + errors.email);
+                            // if (errors.password) alert("Error: " + errors.password);
+                            console.log("error occured in name or email or password. remove above comment and know what is wrong.");
                         } else {
                             alert("An error occurred. Please try again.");
                         }
@@ -233,7 +251,7 @@
                 });
             });
 
-            // On Edit Icon Click
+            // On Edit Icon Click Modal Open
             $('.editUserBtn').on('click', function() {
                 // Fetch the user ID from data-id attribute
                 const userId = $(this).data('id');
@@ -271,7 +289,7 @@
                 };
 
                 $.ajax({
-                    url: '/user/' + formData.id, 
+                    url: '/user/' + formData.id,
                     type: "PUT",
                     data: formData,
                     success: function(response) {
@@ -290,6 +308,29 @@
                     }
                 });
             });
+
+            // Toggle Status
+            $(document).on('click', '[id^="toggleStatusBtn"]', function() {
+                var userId = $(this).data('id');
+
+                $.ajax({
+                    url: '/user/' + userId +
+                        '/toggle-status', // Use the route for toggling user status
+                    method: 'POST',
+                    data: {
+                        _token: $('input[name="_token"]').val(), // CSRF token
+                    },
+                    success: function(response) {
+                        // Optionally, display a success message
+                        // alert(response.message);
+                        location.reload();
+                    },
+                    error: function() {
+                        alert('An error occurred while toggling user status.');
+                    }
+                });
+            });
+
 
 
 

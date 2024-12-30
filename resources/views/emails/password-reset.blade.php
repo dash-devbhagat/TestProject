@@ -5,10 +5,10 @@
     <title>TestProject</title>
     <style>
         .button {
-            background-color: red;
+            background-color: yellow;
             border: none;
             color: white;
-            padding: 15px 32px;
+            padding: 10px 22px;
             text-align: center;
             text-decoration: none;
             display: inline-block;
