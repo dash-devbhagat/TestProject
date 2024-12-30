@@ -6,9 +6,10 @@ use App\Mail\UserActivatedMail;
 use App\Mail\WelcomeUserMail;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+
 
 class UserController extends Controller
 {
@@ -138,7 +139,7 @@ class UserController extends Controller
         return redirect()->route('user.index')->with('success', 'User Deleted Successfully.');
     }
 
-    public function updateProfile(Request $request)
+    public function completeprofile(Request $request)
     {
         // Validate the profile fields
         $request->validate([
@@ -184,6 +185,7 @@ class UserController extends Controller
         return redirect()->route('dashboard');
     }
 
+
     public function toggleStatus($id)
     {
         $user = User::findOrFail($id);
@@ -204,4 +206,61 @@ class UserController extends Controller
         ]);
     }
 
+    public function editProfile()
+    {
+        $user = Auth::user(); // Get the currently authenticated user
+        return view('user.edit-profile', compact('user'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        // Validate the profile fields
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . Auth::id(),
+            'phone' => 'required|string|max:15',
+            'storename' => 'required|string|max:255',
+            'location' => 'required|string|max:255',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $user = $request->user(); // Retrieve the authenticated user
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->phone = $request->phone;
+        $user->storename = $request->storename;
+        $user->location = $request->location;
+        $user->latitude = $request->latitude;
+        $user->longitude = $request->longitude;
+
+        // Handle logo upload (if exists)
+        if ($request->hasFile('logo')) {
+            $image = $request->file('logo');
+            $imageSize = getimagesize($image);
+
+            if ($imageSize[0] > 100 || $imageSize[1] > 100) {
+                return back()->withErrors(['logo' => 'The logo must be 100x100 pixels or smaller.']);
+            }
+
+            if ($user->logo && Storage::disk('public')->exists($user->logo)) {
+                Storage::disk('public')->delete($user->logo);
+            }
+
+            // Store the logo
+            $logoPath = $image->store('logos', 'public');
+            $user->logo = $logoPath;
+        }
+
+        // Mark the profile as complete
+        $user->save();
+
+        // Redirect to the dashboard
+        return redirect()->route('dashboard');
+    }
+
 }
+    
+
+

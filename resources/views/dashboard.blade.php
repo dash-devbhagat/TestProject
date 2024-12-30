@@ -64,6 +64,9 @@
           </ul>
     </div>
     <div>
+<a href="{{ route('user.edit-profile') }}" class="btn btn-primary">Update Profile</a>
+        </div>
+    <div>
                 </div>
     @endif
 
