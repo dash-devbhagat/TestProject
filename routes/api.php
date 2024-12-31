@@ -13,3 +13,4 @@ Route::middleware('auth:sanctum')->post('mobile/signout', [MobileUserController:
 Route::get('verify/{token}', [MobileUserController::class, 'verifyEmail'])->name('api.verifyEmail');
 Route::middleware(['auth:sanctum', MobUserCheckProfile::class])->get('mobile/profile', [MobileUserProfileController::class, 'show']);
 Route::middleware('auth:sanctum')->post('mobile/completeprofile', [MobileUserProfileController::class, 'completeprofile']);
+Route::middleware('auth:sanctum')->post('mobile/updateprofile', [MobileUserProfileController::class, 'updateProfile']);
