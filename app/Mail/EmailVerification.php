@@ -22,7 +22,7 @@ class EmailVerification extends Mailable
     {
         return $this->view('emails.verify')
             ->with([
-                'verificationUrl' => url("/verify-email/{$this->user->email_verification_token}")
+                'verificationUrl' => route('api.verifyEmail', ['token' => $this->user->email_verification_token])
             ]);
     }
 }
