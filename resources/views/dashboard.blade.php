@@ -43,7 +43,7 @@
                     @if (Auth::user()->role === 'admin')
                         <h3 class="card-title">Admin Dashboard</h3>
                     @else
-                        <h3 class="card-title">User Dashboard</h3>
+                        <h3 class="card-title">Staff Dashboard</h3>
                     @endif
 
                 </div>
