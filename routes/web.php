@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BonusController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
@@ -41,6 +42,7 @@ Route::middleware(['auth','check.active'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // for admin
+    Route::resource('bonus', BonusController::class);
     Route::resource('user', UserController::class);
     Route::post('/user/{id}/toggle-status', [UserController::class, 'toggleStatus']);
     

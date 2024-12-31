@@ -20,7 +20,7 @@
                   <a href="{{ route('user.index') }}" class="nav-link">
                     <i class="nav-icon fas fa-users"></i>
                       <p>
-                          User Managemant
+                          Staff Managemant
                       </p>
                   </a>
               </li>
@@ -28,7 +28,7 @@
 
                 @if(Auth::user()->role === 'admin')
                 <li class="nav-item">
-                  <a href="{{ route('user.index') }}" class="nav-link">
+                  <a href="{{ route('bonus.index') }}" class="nav-link">
                     <i class="nav-icon fas fa-coins"></i>
                       <p>
                           Bonus Managemant

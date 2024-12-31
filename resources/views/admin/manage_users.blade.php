@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'User Management')
+@section('title', 'Staff Management')
 
 @section('content')
     <div class="content-wrapper">
@@ -9,7 +9,7 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1>Manage Users</h1>
+                        <h1>Manage Staff</h1>
                     </div>
                     <!-- Add User Button on the right side -->
                     <div class="col-sm-6 text-right">
@@ -17,7 +17,7 @@
                             Add User
                         </button> --}}
                         <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addUserModal">Add
-                            User</button>
+                            Staff</button>
                     </div>
                 </div>
             </div><!-- /.container-fluid -->
@@ -74,13 +74,6 @@
                                             False
                                         @endif
                                     </td>
-                                    {{-- <td class="text-center">
-                                        <!-- Toggle Button for Active/Inactive -->
-                                        <button class="btn btn-sm {{ $user->is_active ? 'btn-danger' : 'btn-success' }}"
-                                            id="toggleStatusBtn{{ $user->id }}" data-id="{{ $user->id }}">
-                                            {{ $user->is_active ? 'Deactive' : 'Active' }}
-                                        </button>
-                                    </td> --}}
                                     <td class="text-center">
                                         <!-- Active/Inactive Toggle Icon -->
                                         <a href="javascript:void(0);" id="toggleStatusBtn{{ $user->id }}"
@@ -91,15 +84,20 @@
                                         </a>
                                     </td>
                                     <td class="text-center">
+                                        <!-- View Icon -->
+                                        <a href="{{ route('user.show', $user->id) }}" class="text-secondary"
+                                            data-bs-toggle="tooltip" title="View">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
                                         <!-- Edit Icon -->
                                         <a href="#javascript" class="text-primary" data-toggle="modal"
-                                            data-target="#exampleModal">
+                                            data-target="#exampleModal" data-bs-toggle="tooltip" title="Edit">
                                             <i class="fa fa-edit editUserBtn" data-id="{{ $user->id }}"></i>
                                         </a>
                                         <!-- Delete Icon -->
                                         <form action="{{ route('user.destroy', $user->id) }}" method="POST"
                                             style="display:inline;"
-                                            onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                            onsubmit="return confirm('Are you sure you want to delete this member?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-link text-danger p-0 m-0"
@@ -131,7 +129,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addUserModalLabel">Add New User</h5>
+                    <h5 class="modal-title" id="addUserModalLabel">Add New Staff Member</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -170,7 +168,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                    <h5 class="modal-title" id="editUserModalLabel">Edit Staff</h5>
                     <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -243,7 +241,9 @@
                             // if (errors.name) alert("Error: " + errors.name);
                             // if (errors.email) alert("Error: " + errors.email);
                             // if (errors.password) alert("Error: " + errors.password);
-                            console.log("error occured in name or email or password. remove above comment and know what is wrong.");
+                            console.log(
+                                "error occured in name or email or password. remove above comment and know what is wrong."
+                            );
                         } else {
                             alert("An error occurred. Please try again.");
                         }

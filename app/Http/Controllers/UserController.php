@@ -30,7 +30,7 @@ class UserController extends Controller
      */
     // public function create()
     // {
-    //     return view('admin.create_user');
+    //     return view('admin.view_user');
     // }
 
     /**
@@ -70,7 +70,7 @@ class UserController extends Controller
             // Optional: Send a welcome email if needed
             Mail::to($user->email)->queue(new WelcomeUserMail($user, $validated['password']));
 
-            session()->flash('success', 'User Restored and Updated Successfully.');
+            session()->flash('success', 'Staff Restored and Updated Successfully.');
         } else {
 
             $user = User::create([
@@ -81,7 +81,7 @@ class UserController extends Controller
 
             Mail::to($user->email)->queue(new WelcomeUserMail($user, $validated['password']));
 
-            session()->flash('success', 'User Created Successfully.');
+            session()->flash('success', 'Staff Created Successfully.');
         }
 
         return response()->json(['success' => true]);
@@ -90,10 +90,10 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    // public function show(User $user)
-    // {
-    //     return view('admin.show_user', compact('user'));
-    // }
+    public function show(User $user)
+    {
+        return view('admin.view_user', compact('user'));
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -120,7 +120,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $user->update($validated);
 
-        session()->flash('success', 'User Updated Successfully.');
+        session()->flash('success', 'Staff Updated Successfully.');
 
         return response()->json(['success' => true, 'user' => $user]);
     }
@@ -136,7 +136,7 @@ class UserController extends Controller
         $user->isdelete = true;
         $user->save();
 
-        return redirect()->route('user.index')->with('success', 'User Deleted Successfully.');
+        return redirect()->route('user.index')->with('success', 'Staff Deleted Successfully.');
     }
 
     public function completeprofile(Request $request)
@@ -202,7 +202,7 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'status' => $user->is_active ? 'activated' : 'deactivated',
-            'message' => $user->is_active ? 'User activated successfully.' : 'User deactivated successfully.'
+            'message' => $user->is_active ? 'Staff activated successfully.' : 'Staff deactivated successfully.'
         ]);
     }
 

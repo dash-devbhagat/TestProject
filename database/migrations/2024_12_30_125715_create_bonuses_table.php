@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('bonuses', function (Blueprint $table) {
             $table->id();
-            $table->enum('type', ['signup', 'referral']);
+            $table->string('type');
             $table->decimal('amount', 10, 2);
             $table->timestamps();
         });
