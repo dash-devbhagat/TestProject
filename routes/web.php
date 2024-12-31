@@ -32,7 +32,7 @@ Route::get('/reset-password/{token}', [PasswordResetController::class, 'showRese
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.update');
 
 
-Route::middleware(['auth','check.active'])->group(function () {
+Route::middleware(['auth', 'check.active'])->group(function () {
 
     Route::get('/dashboard', function () {
         return view('dashboard', ['user' => Auth::user()]);
@@ -43,7 +43,7 @@ Route::middleware(['auth','check.active'])->group(function () {
     // for admin
     Route::resource('user', UserController::class);
     Route::post('/user/{id}/toggle-status', [UserController::class, 'toggleStatus']);
-    
+
 
     // for users
     Route::get('/complete-profile', function () {

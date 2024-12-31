@@ -1,89 +1,147 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
-use App\Models\MobileUser;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
+use App\Models\MobileUser;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use App\Mail\EmailVerification;
+
 
 class MobileUserController extends Controller
 {
-    // User Signup API
+    // Signup API
     public function signup(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Validate the incoming request
+        $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:mobile_users,email',
+            'email' => 'required|string|email|max:255|unique:mobile_users',
             'password' => 'required|string|min:8|confirmed',
+            'referral_code' => 'nullable|string|max:10',  // Optional referral code
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        // Check if the referral code is provided
+        if ($request->referral_code) {
+            // Validate if the referral code exists in the database
+            $referrer = MobileUser::where('referral_code', $request->referral_code)->first();
+
+            if (!$referrer) {
+                return response()->json([
+                    'message' => 'The referral code is invalid or does not exist.'
+                ], 400);
+            }
         }
 
+        // Create a new user
         $user = MobileUser::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'auth_token' => Str::random(60), // Create random auth token
+            'email_verification_token' => Str::random(60), // Generate a unique token for email verification
+            'referred_by' => $referrer->id ?? null,  // Set the referring user's ID if referral code is valid
         ]);
 
+        // Send email verification link
+        Mail::to($user->email)->send(new EmailVerification($user));
+
         return response()->json([
-            'message' => 'User registered successfully!',
-            'data' => $user,
+            'message' => 'User registered successfully. Please check your email to verify your account.'
         ], 201);
     }
 
-    // User Signin API
+
+
+    // Signin API
     public function signin(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+        $request->validate([
+            'email' => 'required|string|email',
             'password' => 'required|string|min:8',
             'fcm_token' => 'required|string',
             'device_type' => 'required|in:android,ios',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
         $user = MobileUser::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            throw ValidationException::withMessages([
+                'email' => ['The provided credentials are incorrect.'],
+            ]);
         }
 
-        // Update user with FCM token and device type
+        // Check if the email is verified
+        if (!$user->email_verified_at) {
+            return response()->json([
+                'message' => 'Your email is not verified. Please verify your email before signing in.'
+            ], 400);
+        }
+
+        $authToken = $user->createToken('auth_token')->plainTextToken;
+
         $user->update([
+            'auth_token' => $authToken,
             'fcm_token' => $request->fcm_token,
             'device_type' => $request->device_type,
-            'auth_token' => Str::random(60), // New Auth Token
         ]);
 
         return response()->json([
-            'message' => 'User signed in successfully!',
-            'auth_token' => $user->auth_token,
-            'user' => $user,
-        ]);
+            'access_token' => $authToken,
+            'token_type' => 'Bearer',
+        ], 200);
     }
 
-    // User Signout API
+
+    // Signout API
     public function signout(Request $request)
     {
-        $user = MobileUser::where('auth_token', $request->auth_token)->first();
+        $user = $request->user();
 
-        if (!$user) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        if ($user) {
+            $user->tokens()->delete();
+            $user->update(['auth_token' => null]);
         }
 
-        // Set auth_token to null
-        $user->update(['auth_token' => null]);
+        return response()->json(['message' => 'Logged out successfully'], 200);
+    }
 
+    public function verifyEmail($token)
+    {
+        // Find the user by the verification token
+        $user = MobileUser::where('email_verification_token', $token)->first();
+
+        if (!$user) {
+            // If no user is found or the token is invalid
+            return response()->json([
+                'message' => 'The verification link is invalid or has expired. Please try requesting a new verification email.'
+            ], 400);
+        }
+
+        // Check if the user's email is already verified
+        if ($user->email_verified_at) {
+            return response()->json([
+                'message' => 'Your email has already been verified. You can now log in.'
+            ], 200);
+        }
+
+        // Verify the user's email by setting the email_verified_at field
+        $user->email_verified_at = now();
+        $user->email_verification_token = null; // Clear the token after successful verification
+
+        // Generate a unique referral code for the user
+        $user->referral_code = Str::random(10);  // Adjust length as needed, 10 chars here
+
+        $user->save();
+
+        // Return a success response with the referral code
         return response()->json([
-            'message' => 'User signed out successfully!',
-        ]);
+            'message' => 'Congratulations! Your email has been verified successfully.',
+            'referral_code' => $user->referral_code,
+            'user' => $user
+        ], 200);
     }
 }
