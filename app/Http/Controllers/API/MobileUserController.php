@@ -10,6 +10,8 @@ use App\Models\MobileUser;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Mail\EmailVerification;
+use App\Models\Bonus;
+use App\Models\Payment;
 
 
 class MobileUserController extends Controller
@@ -131,7 +133,6 @@ class MobileUserController extends Controller
         $user = MobileUser::where('email_verification_token', $token)->first();
 
         if (!$user) {
-            // If no user is found or the token is invalid
             return response()->json([
                 'message' => 'The verification link is invalid or has expired. Please try requesting a new verification email.'
             ], 400);
@@ -149,15 +150,43 @@ class MobileUserController extends Controller
         $user->email_verification_token = null; // Clear the token after successful verification
 
         // Generate a unique referral code for the user
-        $user->referral_code = Str::random(10);  // Adjust length as needed, 10 chars here
-
+        $user->referral_code = Str::random(10); // Adjust length as needed, 10 chars here
         $user->save();
 
-        // Return a success response with the referral code
+        // Assign signup bonus
+        $signupBonus = Bonus::where('type', 'signup')->first();
+
+        if ($signupBonus) {
+            // Create a payment record for the signup bonus
+            Payment::create([
+                'user_id' => $user->id,
+                'bonus_id' => $signupBonus->id,
+                'amount' => $signupBonus->amount,
+                'payment_status' => 'completed',
+                'parent_id' => $user->referred_by,
+            ]);
+        }
+
+        if ($user->referred_by) {
+            $referralBonus = Bonus::where('type', 'referral')->first();
+
+            if ($referralBonus) {
+                // Create a payment record for the referrer
+                Payment::create([
+                    'user_id' => $user->referred_by, // The referring user's ID
+                    'bonus_id' => $referralBonus->id,
+                    'amount' => $referralBonus->amount,
+                    'payment_status' => 'completed',
+                    'child_id' => $user->id, // Reference the referred user's ID
+                ]);
+            }
+        }
+
         return response()->json([
             'message' => 'Congratulations! Your email has been verified successfully.',
             'referral_code' => $user->referral_code,
-            'user' => $user
+            'user' => $user,
+            'bonus' => $signupBonus ? $signupBonus->amount : 0
         ], 200);
     }
 
