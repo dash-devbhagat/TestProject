@@ -25,6 +25,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('mobile/completeprofile', [MobileUserProfileController::class, 'completeprofile']);
 });
 
+Route::middleware(['auth:sanctum'])->post('mobile/change-password', [MobileUserController::class, 'changePassword']);
+
 // Route::post('mobile/signup', [MobileUserController::class, 'signup']);
 // Route::post('mobile/signin', [MobileUserController::class, 'signin']);
 

@@ -160,4 +160,34 @@ class MobileUserController extends Controller
             'user' => $user
         ], 200);
     }
+
+    // Add this method to the MobileUserController
+
+    public function changePassword(Request $request)
+    {
+        // Validate the incoming request
+        $request->validate([
+            'current_password' => 'required|string|min:8',
+            'new_password' => 'required|string|min:8|confirmed', // Confirmed ensures that the new password and new_password_confirmation match
+        ]);
+
+        // Retrieve the authenticated user
+        $user = $request->user();
+
+        // Check if the current password is correct
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'The current password is incorrect.'
+            ], 400);
+        }
+
+        // Update the password
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        // Return a success response
+        return response()->json([
+            'message' => 'Password changed successfully.'
+        ], 200);
+    }
 }
