@@ -74,34 +74,42 @@ class MobileUserController extends Controller
             ]);
         }
 
-        // Check if the email is verified
+        // Check if email is verified
         if (!$user->email_verified_at) {
             return response()->json([
-                'message' => 'Your email is not verified. Please verify your email before signing in.'
+                'message' => 'Your email is not verified. Please verify your email before signing in.',
             ], 400);
         }
 
-        // Check if profile is complete
-        if (!$user->is_profile_complete) {
-            return response()->json([
-                'message' => 'Your profile is incomplete. Please complete your profile.',
-                'profile_complete' => false,
-            ], 400);
+        // Check if profile is complete (based on phone, gender, and birthdate)
+        if (empty($user->phone) || empty($user->gender) || empty($user->birthdate)) {
+            $user->is_profile_complete = false;
+            $user->save();
+            $message = 'Your profile is incomplete. Please complete your profile.';
+        } else {
+            $user->is_profile_complete = true;
+            $user->save();
+            $message = 'Logged in successfully.';
         }
 
+        // Generate authentication token
         $authToken = $user->createToken('auth_token')->plainTextToken;
 
+        // Update user with the authentication token, fcm token, and device type
         $user->update([
             'auth_token' => $authToken,
             'fcm_token' => $request->fcm_token,
             'device_type' => $request->device_type,
         ]);
 
+        // Return response with appropriate message and profile completeness status
         return response()->json([
+            'message' => $message,
             'access_token' => $authToken,
             'token_type' => 'Bearer',
         ], 200);
     }
+
 
 
     // Signout API

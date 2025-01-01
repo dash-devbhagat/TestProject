@@ -14,20 +14,35 @@ class MobUserCheckProfile
     {
         $user = $request->user();  // Get the authenticated user
 
-        // Check if the profile is incomplete
-        if (!$user->phone || !$user->gender || !$user->birthdate) {
-            return response()->json([
-                'message' => 'Please complete your profile to proceed.',
-                'profile_complete' => false,
-            ], 400);
+        // Check if any of the required fields are missing
+        $requiredFields = ['phone', 'gender', 'birthdate'];
+        $isProfileComplete = true;
+
+        foreach ($requiredFields as $field) {
+            if (empty($user->{$field})) {
+                $isProfileComplete = false;
+                break;
+            }
         }
 
-        // Mark the profile as complete if all fields are filled
-        if ($user->phone && $user->gender && $user->birthdate && !$user->is_profile_complete) {
-            $user->is_profile_complete = true;
+        // Update the profile completion status if it has changed
+        if ($user->is_profile_complete !== $isProfileComplete) {
+            $user->is_profile_complete = $isProfileComplete;
             $user->save();
         }
 
+        // If the profile is incomplete, restrict access to certain routes
+        if (!$isProfileComplete) {
+            $allowedRoutes = ['mobile/signout', 'mobile/completeprofile'];
+
+            if (!in_array($request->route()->uri(), $allowedRoutes)) {
+                return response()->json([
+                    'message' => 'Your profile is incomplete. Please complete your profile to access this resource.',
+                ], 403);
+            }
+        }
+
+        // Proceed to the next middleware or request handler
         return $next($request);
     }
 }
