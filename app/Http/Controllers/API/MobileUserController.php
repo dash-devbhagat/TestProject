@@ -81,6 +81,14 @@ class MobileUserController extends Controller
             ], 400);
         }
 
+        // Check if profile is complete
+        if (!$user->is_profile_complete) {
+            return response()->json([
+                'message' => 'Your profile is incomplete. Please complete your profile.',
+                'profile_complete' => false,
+            ], 400);
+        }
+
         $authToken = $user->createToken('auth_token')->plainTextToken;
 
         $user->update([

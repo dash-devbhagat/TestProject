@@ -68,5 +68,6 @@ class Kernel extends HttpKernel
         'role' => \App\Http\Middleware\RoleMiddleware::class,
         'profile.complete' => \App\Http\Middleware\CheckProfileCompletion::class,
         'check.active' => \App\Http\Middleware\CheckIfActive::class,
+        'mob.check.profile' => \App\Http\Middleware\API\MobUserCheckProfile::class,
     ];
 }
