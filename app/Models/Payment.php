@@ -15,7 +15,6 @@ class Payment extends Model
     {
         return $this->belongsTo(MobileUser::class);
     }
-
     public function bonus()
     {
         return $this->belongsTo(Bonus::class);

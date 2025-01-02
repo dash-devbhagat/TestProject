@@ -29,21 +29,27 @@
                         <!-- Left side: Personal Details -->
                         <div class="col-md-6">
                             <h3 class="text-primary">Personal Details</h3>
-                            <p><strong>Name:</strong> {{ $user->name  }}</p>
+                            <p><strong>Name:</strong> {{ $user->name }}</p>
                             <p><strong>Email:</strong> {{ $user->email }}</p>
                             <p><strong>Phone:</strong> {{ $user->phone ?? 'Not Completed' }}</p>
                             <p><strong>Referrel Code:</strong> {{ $user->referral_code ?? 'Not Completed' }}</p>
                             <p><strong>Gender:</strong> {{ $user->gender ?? 'Not Completed' }}</p>
                             <p><strong>Birthdate:</strong> {{ $user->birthdate ?? 'Not Completed' }}</p>
+                            @foreach ($user->payments as $payment)
+                            {{-- @if($payment->payment_status == 'completed') --}}
+                                <p><strong>Bonus Amount:</strong> ${{ $payment->amount }}</p>
+                            {{-- @endif --}}
+                            @endforeach
+
                         </div>
 
                         <!-- Right side: Bonus Details -->
-                        <div class="col-md-6">
+                        {{-- <div class="col-md-6">
                             <h3 class="text-primary">Bonus Details</h3>
                             <p><strong>Bonus Amount:</strong> $1500.00</p>
                             <p><strong>Bonus Type:</strong> Year-End Bonus</p>
                             <p><strong>Bonus Status:</strong> Approved</p>
-                        </div>
+                        </div> --}}
                     </div>
 
 
@@ -54,8 +60,8 @@
             </div>
             <!-- /.card -->
 
-             <!-- Go Back Icon and Title -->
-             <a href="{{ url()->previous() }}" class="btn btn-secondary text-light">
+            <!-- Go Back Icon and Title -->
+            <a href="{{ url()->previous() }}" class="btn btn-secondary text-light">
                 <i class="fas fa-arrow-left"></i> Back
             </a>
 
