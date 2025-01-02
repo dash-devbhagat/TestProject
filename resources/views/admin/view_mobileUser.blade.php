@@ -35,15 +35,16 @@
                             <p><strong>Referrel Code:</strong> {{ $user->referral_code ?? 'Not Completed' }}</p>
                             <p><strong>Gender:</strong> {{ $user->gender ?? 'Not Completed' }}</p>
                             <p><strong>Birthdate:</strong> {{ $user->birthdate ?? 'Not Completed' }}</p>
+                            <p><strong>Bonus Amount:</strong>$1500.00</p>
                         </div>
 
                         <!-- Right side: Bonus Details -->
-                        <div class="col-md-6">
+                        {{-- <div class="col-md-6">
                             <h3 class="text-primary">Bonus Details</h3>
                             <p><strong>Bonus Amount:</strong> $1500.00</p>
                             <p><strong>Bonus Type:</strong> Year-End Bonus</p>
                             <p><strong>Bonus Status:</strong> Approved</p>
-                        </div>
+                        </div> --}}
                     </div>
 
 
