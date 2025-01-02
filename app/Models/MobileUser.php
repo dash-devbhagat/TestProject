@@ -36,4 +36,9 @@ class MobileUser extends Authenticatable
     {
         return $this->hasMany(Payment::class, 'user_id', 'id');
     }
+
+    public function bonus()
+    {
+        return $this->hasMany(Bonus::class, 'id', 'bonus_id');
+    }
 }

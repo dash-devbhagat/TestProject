@@ -13,27 +13,27 @@ use Illuminate\Support\Str;
 
 class MobileUserController extends Controller
 {
-   public function index(){
+    public function index()
+    {
         $mobileUsers = MobileUser::all();
         // return $mobileUsers;
 
         return view('admin.manage_mobileUser', compact('mobileUsers'));
-    
-   }
+    }
 
-   public function show(string $id)
-   {
+    public function show(string $id)
+    {
         // $user = MobileUser::where('id',$id)->first();
-        $user = MobileUser::with('payments')->find($id);
+        $user = MobileUser::with('payments.bonus')->find($id);
         // return $user;
         return view('admin.view_mobileUser', compact('user'));
-   }
+    }
 
-   public function toggleStatus($id)
+    public function toggleStatus($id)
     {
         // dd($id);
         $user = MobileUser::findOrFail($id);
-        
+
         // Toggle the user's active status
         $user->is_active = !$user->is_active;
         $user->save();
