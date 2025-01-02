@@ -68,19 +68,23 @@
                         });
                         @endphp
 
-                        <p><strong>Total Bonus Amount:</strong> ${{ number_format($bonusTotals->sum(), 2) }}</p>
-
-                        <h4 class="mt-3">Individual Bonuses:</h4>
                         @foreach ($bonusTotals as $bonusId => $totalAmount)
                         @php
                         // Get the bonus name from the payment's bonus relationship
                         $bonus = $user->payments->firstWhere('bonus_id', $bonusId)->bonus;
                         @endphp
                         <p>
-                            <strong>Bonus Name:</strong> {{ $bonus ? $bonus->type : 'Unknown' }} -
-                            <strong>Amount:</strong> ${{ number_format($totalAmount, 2) }}
+                            @if ($bonus && $bonus->type == 'signup')
+                            <strong>Signup Bonus</strong> - ${{ number_format($totalAmount, 2) }}
+                            @elseif ($bonus && $bonus->type == 'referral')
+                            <strong>Total Referral Bonus</strong> - ${{ number_format($totalAmount, 2) }}
+                            @else
+                            <strong>{{ $bonus ? $bonus->type : 'Unknown' }} Bonus</strong> - ${{
+                            number_format($totalAmount, 2) }}
+                            @endif
                         </p>
                         @endforeach
+                        <p><strong>Total Bonus Amount:</strong> ${{ number_format($bonusTotals->sum(), 2) }}</p>
                     </div>
 
 
