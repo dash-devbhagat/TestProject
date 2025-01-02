@@ -15,8 +15,9 @@
             @if (Auth::user()->role === 'admin')
                 <!-- User Management Link -->
                 <li class="nav-item">
-                    <a href="{{ route('mobileUser.index') }}" class="nav-link {{ request()->routeIs('mobileUser.index') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-user-cog"></i> 
+                    <a href="{{ route('mobileUser.index') }}"
+                        class="nav-link {{ request()->routeIs('mobileUser.index') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-user-cog"></i>
                         <p>
                             User Management
                         </p>
@@ -27,7 +28,8 @@
             @if (Auth::user()->role === 'admin')
                 <!-- Staff Management Link -->
                 <li class="nav-item">
-                    <a href="{{ route('user.index') }}" class="nav-link {{ request()->routeIs('user.index') ? 'active' : '' }}">
+                    <a href="{{ route('user.index') }}"
+                        class="nav-link {{ request()->routeIs('user.index') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-user-tie"></i>
                         <p>
                             Staff Management
@@ -39,10 +41,24 @@
             @if (Auth::user()->role === 'admin')
                 <!-- Bonus Management Link -->
                 <li class="nav-item">
-                    <a href="{{ route('bonus.index') }}" class="nav-link {{ request()->routeIs('bonus.index') ? 'active' : '' }}">
+                    <a href="{{ route('bonus.index') }}"
+                        class="nav-link {{ request()->routeIs('bonus.index') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-coins"></i>
                         <p>
                             Bonus Management
+                        </p>
+                    </a>
+                </li>
+            @endif
+
+            @if (Auth::user()->role === 'admin')
+                <!-- Bonus Management Link -->
+                <li class="nav-item">
+                    <a href="{{ route('ph.index') }}"
+                        class="nav-link {{ request()->routeIs('ph.index') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-wallet"></i>
+                        <p>
+                            Payment History
                         </p>
                     </a>
                 </li>

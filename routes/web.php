@@ -5,6 +5,7 @@ use App\Http\Controllers\BonusController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\MobileUserController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\PaymentHistoryController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -45,11 +46,15 @@ Route::middleware(['auth', 'check.active'])->group(function () {
 
     // for admin
     Route::resource('bonus', BonusController::class);
+
     Route::resource('user', UserController::class);
     Route::post('/user/{id}/toggle-status', [UserController::class, 'toggleStatus']);
+
     Route::get('mobileUser',[MobileUserController::class, 'index'])->name('mobileUser.index');
     Route::get('mobileUser/{id}',[MobileUserController::class, 'show'])->name('mobileUser.show');
     Route::post('/mobileUser/{id}/toggle-status', [MobileUserController::class, 'toggleStatus']);
+
+    Route::get('/payment-history', [PaymentHistoryController::class, 'index'])->name('ph.index');
     
 
     // for users

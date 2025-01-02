@@ -1,0 +1,18 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Payment;
+use Illuminate\Http\Request;
+
+class PaymentHistoryController extends Controller
+{
+    public function index(){
+        $payments = Payment::with(['user', 'bonus','paymentParent','paymentChild'])
+        ->orderBy('created_at', 'desc')
+        ->get();
+        // return $payments;
+
+        return view('admin.payment_history', compact('payments'));
+    }
+}

@@ -19,4 +19,14 @@ class Payment extends Model
     {
         return $this->belongsTo(Bonus::class);
     }
+
+    public function paymentParent()
+    {
+        return $this->belongsTo(MobileUser::class, 'parent_id');
+    }
+    public function paymentChild()
+    {
+        return $this->belongsTo(MobileUser::class, 'child_id');
+    }
+
 }
