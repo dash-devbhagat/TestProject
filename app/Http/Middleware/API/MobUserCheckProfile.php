@@ -37,8 +37,12 @@ class MobUserCheckProfile
 
             if (!in_array($request->route()->uri(), $allowedRoutes)) {
                 return response()->json([
-                    'message' => 'Your profile is incomplete. Please complete your profile to access this resource.',
-                ], 403);
+                    'meta' => [
+                        'success' => false,
+                        'message' => 'Your profile is incomplete. Please complete your profile to access this resource.',
+                    ],
+                    'data' => json_decode('{}'),
+                ], 200); // 200 Forbidden status
             }
         }
 

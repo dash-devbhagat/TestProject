@@ -24,9 +24,13 @@ class MobileUserProfileController extends Controller
 
         // If user is not authenticated, return an error response
         if (!$user) {
-            return Response::json([
-                'message' => 'User not found or unauthenticated.'
-            ], 401);
+            return response()->json([
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => 'User not found or unauthenticated.',
+                ],
+            ], 200); // 200 Unauthorized status
         }
 
         // Prepare the response data
@@ -40,11 +44,15 @@ class MobileUserProfileController extends Controller
         ];
 
         // Return a successful response with user profile data
-        return Response::json([
-            'message' => 'User profile retrieved successfully.',
-            'data'    => $profileData,
-        ], 200);
+        return response()->json([
+            'data' => $profileData,
+            'meta' => [
+                'success' => true,
+                'message' => 'User profile retrieved successfully.',
+            ],
+        ], 200); // 200 OK status
     }
+
 
     public function completeprofile(Request $request)
     {
@@ -55,12 +63,15 @@ class MobileUserProfileController extends Controller
             'birthdate' => 'required|date',  // Ensure the birthdate is a valid date
         ]);
 
-        // If validation fails, return a 422 error with the validation messages
+        // If validation fails, return the first validation error
         if ($validator->fails()) {
             return response()->json([
-                'message' => 'Validation errors',
-                'errors' => $validator->errors()
-            ], 422);
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => $validator->errors()->first(), // Show only the first error message
+                ],
+            ], 200); // 200 OK status
         }
 
         // Retrieve the authenticated user
@@ -77,29 +88,47 @@ class MobileUserProfileController extends Controller
 
         // Return a successful response
         return response()->json([
-            'message' => 'Profile updated successfully.',
             'data' => [
+                'name' => $user->name,
+                'email' => $user->email,
                 'phone' => $user->phone,
                 'gender' => $user->gender,
                 'birthdate' => $user->birthdate,
+                'referral_code' => $user->referral_code,
                 'is_profile_complete' => $user->is_profile_complete
-            ]
-        ], 200);
+            ],
+            'meta' => [
+                'success' => true,
+                'message' => 'Profile updated successfully.',
+            ],
+        ], 200); // 200 OK status
     }
 
     public function updateProfile(Request $request)
     {
         // Validate the profile fields
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:mobile_users,email,' . $request->user()->id,
             'phone' => 'required|string|max:15',
-            'gender' => 'required|in:male,female,other',  // Can expand gender options if needed
+            'gender' => 'required|in:male,female,other',
             'birthdate' => 'required|date',
-            'profilepic' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Ensure the profile picture is a valid image
+            'profilepic' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $user = $request->user(); // Retrieve the authenticated user
+        // If validation fails, return a single validation error message
+        if ($validator->fails()) {
+            return response()->json([
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => $validator->errors()->first(), // Show only the first error message
+                ],
+            ], 200); // 200 Unprocessable Entity status
+        }
+
+        // Retrieve the authenticated user
+        $user = $request->user();
 
         // Update the user's profile data
         $user->name = $request->name;
@@ -113,8 +142,15 @@ class MobileUserProfileController extends Controller
             $image = $request->file('profilepic');
             $imageSize = getimagesize($image);
 
-            if ($imageSize[0] > 500 || $imageSize[1] > 500) {  // Set the maximum dimensions for the image
-                return response()->json(['message' => 'The profile picture must be 500x500 pixels or smaller.'], 400);
+            // Validate the image dimensions
+            if ($imageSize[0] > 500 || $imageSize[1] > 500) {
+                return response()->json([
+                    'meta' => [
+                        'success' => false,
+                        'message' => 'The profile picture must be 500x500 pixels or smaller.',
+                    ],
+                    'data' => json_decode('{}'),
+                ], 200); // 200 Unprocessable Entity status
             }
 
             // If the user already has a profile picture, delete the old one
@@ -132,7 +168,10 @@ class MobileUserProfileController extends Controller
 
         // Return a successful response with the updated profile data
         return response()->json([
-            'message' => 'Profile updated successfully.',
+            'meta' => [
+                'success' => true,
+                'message' => 'Profile updated successfully.',
+            ],
             'data' => [
                 'name' => $user->name,
                 'email' => $user->email,
@@ -140,7 +179,7 @@ class MobileUserProfileController extends Controller
                 'gender' => $user->gender,
                 'birthdate' => $user->birthdate,
                 'profilepic' => $user->profilepic,
-            ]
-        ], 200);
+            ],
+        ], 200); // 200 OK status
     }
 }

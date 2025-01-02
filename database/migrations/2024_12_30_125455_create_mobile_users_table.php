@@ -26,7 +26,7 @@ return new class extends Migration
             $table->boolean('is_profile_complete')->default(0);
             $table->string('auth_token')->nullable();
             $table->string('fcm_token')->nullable();
-            $table->enum('device_type', ['android', 'ios'])->nullable();
+            $table->string('device_type')->nullable();
             $table->string('referral_code')->nullable();
             $table->unsignedBigInteger('referred_by')->nullable();
             $table->timestamps();

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\MobileUser;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use App\Mail\EmailVerification;
 use App\Models\Bonus;
@@ -20,12 +21,22 @@ class MobileUserController extends Controller
     public function signup(Request $request)
     {
         // Validate the incoming request
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:mobile_users',
             'password' => 'required|string|min:8|confirmed',
             'referral_code' => 'nullable|string|max:10',  // Optional referral code
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => $validator->getMessageBag()->first(),
+                ],
+            ], 200);
+        }
 
         // Check if the referral code is provided
         if ($request->referral_code) {
@@ -34,8 +45,12 @@ class MobileUserController extends Controller
 
             if (!$referrer) {
                 return response()->json([
-                    'message' => 'The referral code is invalid or does not exist.'
-                ], 400);
+                    'data' => json_decode('{}'),
+                    'meta' => [
+                        'success' => false,
+                        'message' => 'The referral code is invalid or does not exist.',
+                    ],
+                ], 200);
             }
         }
 
@@ -52,72 +67,114 @@ class MobileUserController extends Controller
         Mail::to($user->email)->send(new EmailVerification($user));
 
         return response()->json([
-            'message' => 'User registered successfully. Please check your email to verify your account.'
-        ], 201);
+            'data' => json_decode('{}'),
+            'meta' => [
+                'success' => true,
+                'message' => 'User registered successfully. Please check your email to verify your account.',
+            ],
+        ], 200);
     }
+
 
 
 
     // Signin API
     public function signin(Request $request)
     {
-        $request->validate([
+        // Validate the incoming request
+        $validator = Validator::make($request->all(), [
             'email' => 'required|string|email',
             'password' => 'required|string|min:8',
             'fcm_token' => 'required|string',
-            'device_type' => 'required|in:android,ios',
+            'device_type' => 'required|string|max:1',
         ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => $validator->getMessageBag()->first(),
+                ],
+            ], 200);
+        }
+
+        // Check if the user exists
         $user = MobileUser::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
+            return response()->json([
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => 'The provided credentials are incorrect.',
+                ],
+            ], 200);
         }
 
         // Check if the user's account is active
         if (!$user->is_active) {
             return response()->json([
-                'message' => 'Your account is disabled. Please contact your admin.',
-            ], 403); // 403 Forbidden status
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => 'Your account is disabled. Please contact your admin.',
+                ],
+            ], 200); // 200 Forbidden status
         }
 
         // Check if email is verified
         if (!$user->email_verified_at) {
             return response()->json([
-                'message' => 'Your email is not verified. Please verify your email before signing in.',
-            ], 400);
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => 'Your email is not verified. Please verify your email before signing in.',
+                ],
+            ], 200); // 200 Bad Request status
         }
 
         // Check if profile is complete (based on phone, gender, and birthdate)
         if (empty($user->phone) || empty($user->gender) || empty($user->birthdate)) {
             $user->is_profile_complete = false;
             $user->save();
-            $message = 'Your profile is incomplete. Please complete your profile.';
+
+            return response()->json([
+                'meta' => [
+                    'success' => false,
+                    'message' => 'Your profile is incomplete. Please complete your profile.'
+                ],
+                'data' => json_decode('{}'),
+            ], 200); // 200 Bad Request status
         } else {
+            // Profile is complete, so now generate the authentication token
             $user->is_profile_complete = true;
             $user->save();
-            $message = 'Logged in successfully.';
+
+            $authToken = $user->createToken('auth_token')->plainTextToken;
+
+            // Update user with the authentication token, fcm token, and device type
+            $user->update([
+                'auth_token' => $authToken,
+                'fcm_token' => $request->fcm_token,
+                'device_type' => $request->device_type,
+            ]);
+
+            // Return response with token and message
+            return response()->json([
+                'data' => [
+                    'access_token' => $authToken,
+                    'token_type' => 'Bearer',
+                ],
+                'meta' => [
+                    'success' => true,
+                    'message' => 'Logged in successfully.',
+                ],
+            ], 200); // 200 OK status
         }
-
-        // Generate authentication token
-        $authToken = $user->createToken('auth_token')->plainTextToken;
-
-        // Update user with the authentication token, fcm token, and device type
-        $user->update([
-            'auth_token' => $authToken,
-            'fcm_token' => $request->fcm_token,
-            'device_type' => $request->device_type,
-        ]);
-
-        // Return response with appropriate message and profile completeness status
-        return response()->json([
-            'message' => $message,
-            'access_token' => $authToken,
-            'token_type' => 'Bearer',
-        ], 200);
     }
+
+
 
 
 
@@ -126,13 +183,30 @@ class MobileUserController extends Controller
     {
         $user = $request->user();
 
-        if ($user) {
-            $user->tokens()->delete();
-            $user->update(['auth_token' => null]);
+        if (!$user) {
+            return response()->json([
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => 'No authenticated user found.',
+                ],
+            ], 200); // 200 Bad Request status
         }
 
-        return response()->json(['message' => 'Logged out successfully'], 200);
+        // Log the user out by deleting their tokens and setting auth_token to null
+        $user->tokens()->delete();
+        $user->update(['auth_token' => null]);
+
+        // Return success response
+        return response()->json([
+            'data' => json_decode('{}'),
+            'meta' => [
+                'success' => true,
+                'message' => 'Logged out successfully',
+            ],
+        ], 200); // 200 OK status
     }
+
 
     public function verifyEmail($token)
     {
@@ -141,15 +215,23 @@ class MobileUserController extends Controller
 
         if (!$user) {
             return response()->json([
-                'message' => 'The verification link is invalid or has expired. Please try requesting a new verification email.'
-            ], 400);
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => 'The verification link is invalid or has expired. Please try requesting a new verification email.',
+                ],
+            ], 200); // 200 Bad Request status
         }
 
         // Check if the user's email is already verified
         if ($user->email_verified_at) {
             return response()->json([
-                'message' => 'Your email has already been verified. You can now log in.'
-            ], 200);
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => true,
+                    'message' => 'Your email has already been verified. You can now log in.',
+                ],
+            ], 200); // 200 OK status
         }
 
         // Verify the user's email by setting the email_verified_at field
@@ -174,6 +256,7 @@ class MobileUserController extends Controller
             ]);
         }
 
+        // Handle referral bonus if the user was referred
         if ($user->referred_by) {
             $referralBonus = Bonus::where('type', 'referral')->first();
 
@@ -190,31 +273,68 @@ class MobileUserController extends Controller
         }
 
         return response()->json([
-            'message' => 'Congratulations! Your email has been verified successfully.',
-            'referral_code' => $user->referral_code,
-            'user' => $user,
-            'bonus' => $signupBonus ? $signupBonus->amount : 0
-        ], 200);
+            'data' => json_decode('{}'),
+            'meta' => [
+                'success' => true,
+                'message' => 'Congratulations! Your email has been verified successfully.',
+            ],
+        ], 200); // 200 OK status
     }
+
 
     // Add this method to the MobileUserController
 
     public function changePassword(Request $request)
     {
         // Validate the incoming request
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'current_password' => 'required|string|min:8',
             'new_password' => 'required|string|min:8|confirmed', // Confirmed ensures that the new password and new_password_confirmation match
         ]);
+
+        // If validation fails, return errors in the expected format
+        if ($validator->fails()) {
+            return response()->json(
+                [
+                    'data' => json_decode('{}'),
+                    'meta' => [
+                        'success' => false,
+                        'message' => $validator->errors()->first(), // Show only the first error message
+                    ],
+                ],
+                200
+            );
+        }
 
         // Retrieve the authenticated user
         $user = $request->user();
 
         // Check if the current password is correct
         if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json([
-                'message' => 'The current password is incorrect.'
-            ], 400);
+            return response()->json(
+                [
+                    'data' => json_decode('{}'),
+                    'meta' => [
+                        'success' => false,
+                        'message' => 'The current password is incorrect.',
+                    ],
+                ],
+                200
+            );
+        }
+
+        // Check if the new password is the same as the current password
+        if ($request->current_password === $request->new_password) {
+            return response()->json(
+                [
+                    'data' => json_decode('{}'),
+                    'meta' => [
+                        'success' => false,
+                        'message' => 'The new password cannot be the same as the current password.',
+                    ],
+                ],
+                200
+            );
         }
 
         // Update the password
@@ -222,8 +342,15 @@ class MobileUserController extends Controller
         $user->save();
 
         // Return a success response
-        return response()->json([
-            'message' => 'Password changed successfully.'
-        ], 200);
+        return response()->json(
+            [
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => true,
+                    'message' => 'Password changed successfully.',
+                ],
+            ],
+            200
+        );
     }
 }
