@@ -15,7 +15,7 @@ class BonusController extends Controller
         $bonuses = Bonus::all();
         // return $bonus;
 
-        return view('admin.manage_bonus', compact('bonuses'));
+        return view('admin.bonus.manage_bonus', compact('bonuses'));
     }
 
     /**

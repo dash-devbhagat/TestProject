@@ -73,9 +73,9 @@
                                     <td>{{ $user->referral_code }}</td>
                                     <td>
                                         @if ($user->is_profile_complete)
-                                            True
+                                            <p class="text-success">Completed</p>
                                         @else
-                                            False
+                                            <p class="text-danger">Incomplete</p>
                                         @endif
                                     </td>
                                     <td class="text-center">

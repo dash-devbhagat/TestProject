@@ -71,7 +71,7 @@
                 <!-- /.card-header -->
 
                 <div class="card-body">
-                    <table id="usersTable" class="table table-bordered table-hover">
+                    <table id="bonusTable" class="table table-bordered table-hover">
                         <thead>
                             <tr>
                                 <th>Sr</th>

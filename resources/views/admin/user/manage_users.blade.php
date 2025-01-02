@@ -69,9 +69,9 @@
                                     <td>{{ $user->email }}</td>
                                     <td>
                                         @if ($user->isProfile)
-                                            True
+                                            <p class="text-success">Completed</p>
                                         @else
-                                            False
+                                        <p class="text-danger">Incomplete</p>
                                         @endif
                                     </td>
                                     <td class="text-center">
