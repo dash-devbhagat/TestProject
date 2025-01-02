@@ -21,6 +21,13 @@ class MobileUserController extends Controller
     
    }
 
+   public function show(string $id)
+   {
+        $user = MobileUser::where('id',$id)->first();
+        // return $user;
+        return view('admin.view_mobileUser', compact('user'));
+   }
+
    public function toggleStatus($id)
     {
         // dd($id);

@@ -55,7 +55,7 @@
                                 <th>Referral Code</th>
                                 <th>Profile Status</th>
                                 <th>Active Status</th>
-                                {{-- <th>Action</th> --}}
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -87,13 +87,13 @@
                                                 class="fas {{ $user->is_active ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-2x"></i>
                                         </a>
                                     </td>
-                                    {{-- <td class="text-center">
+                                    <td class="text-center">
                                         <!-- View Icon -->
-                                        <a href="{{ route('user.show', $user->id) }}" class="text-secondary"
+                                        <a href="{{ route('mobileUser.show', $user->id) }}" class="text-secondary"
                                             data-bs-toggle="tooltip" title="View">
                                             <i class="fa fa-eye"></i>
                                         </a>
-                                        <!-- Edit Icon -->
+                                        {{-- <!-- Edit Icon -->
                                         <a href="#javascript" class="text-primary" data-toggle="modal"
                                             data-target="#exampleModal" data-bs-toggle="tooltip" title="Edit">
                                             <i class="fa fa-edit editUserBtn" data-id="{{ $user->id }}"></i>
@@ -108,8 +108,8 @@
                                                 data-bs-toggle="tooltip" title="Delete">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
-                                        </form>
-                                    </td> --}}
+                                        </form> --}}
+                                    </td>
                                 </tr>
                                 @php
                                     $i++;

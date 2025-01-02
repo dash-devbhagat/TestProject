@@ -48,6 +48,7 @@ Route::middleware(['auth', 'check.active'])->group(function () {
     Route::resource('user', UserController::class);
     Route::post('/user/{id}/toggle-status', [UserController::class, 'toggleStatus']);
     Route::get('mobileUser',[MobileUserController::class, 'index'])->name('mobileUser.index');
+    Route::get('mobileUser/{id}',[MobileUserController::class, 'show'])->name('mobileUser.show');
     Route::post('/mobileUser/{id}/toggle-status', [MobileUserController::class, 'toggleStatus']);
     
 
