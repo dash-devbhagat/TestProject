@@ -9,5 +9,5 @@ class Bonus extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['type', 'amount'];
+    protected $guarded = [];
 }

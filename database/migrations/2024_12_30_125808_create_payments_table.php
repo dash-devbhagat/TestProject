@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('bonus_id');
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->decimal('amount', 10, 2);
-            $table->enum('payment_status', ['pending', 'completed']);
+            $table->enum('payment_status', ['pending', 'completed'])->default('pending');
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('mobile_users')->onDelete('cascade');
