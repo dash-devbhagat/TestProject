@@ -31,4 +31,9 @@ class MobileUser extends Authenticatable
     protected $hidden = [
         'password',
     ];
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'user_id', 'id');
+    }
 }
