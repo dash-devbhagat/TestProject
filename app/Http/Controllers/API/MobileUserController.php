@@ -76,6 +76,13 @@ class MobileUserController extends Controller
             ]);
         }
 
+        // Check if the user's account is active
+        if (!$user->is_active) {
+            return response()->json([
+                'message' => 'Your account is disabled. Please contact your admin.',
+            ], 403); // 403 Forbidden status
+        }
+
         // Check if email is verified
         if (!$user->email_verified_at) {
             return response()->json([
