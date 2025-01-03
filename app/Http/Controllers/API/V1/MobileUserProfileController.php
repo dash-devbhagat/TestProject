@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\API\V1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -133,10 +133,6 @@ class MobileUserProfileController extends Controller
         $user->save();
 
         return response()->json([
-            'meta' => [
-                'success' => true,
-                'message' => 'Profile updated successfully.',
-            ],
             'data' => [
                 'name' => $user->name,
                 'email' => $user->email,
@@ -144,6 +140,10 @@ class MobileUserProfileController extends Controller
                 'gender' => $user->gender,
                 'birthdate' => $user->birthdate,
             ],
+            'meta' => [
+                'success' => true,
+                'message' => 'Profile updated successfully.',
+            ]
         ], 200);
     }
 
@@ -174,11 +174,13 @@ class MobileUserProfileController extends Controller
             // Validate the image dimensions
             if ($imageSize[0] > 500 || $imageSize[1] > 500) {
                 return response()->json([
+
+                    'data' => json_decode('{}'),
                     'meta' => [
                         'success' => false,
                         'message' => 'The profile picture must be 500x500 pixels or smaller.',
-                    ],
-                    'data' => json_decode('{}'),
+                    ]
+
                 ], 200);
             }
 
@@ -194,13 +196,14 @@ class MobileUserProfileController extends Controller
         }
 
         return response()->json([
-            'meta' => [
-                'success' => true,
-                'message' => 'Profile picture updated successfully.',
-            ],
+
             'data' => [
                 'profilepic' => $user->profilepic,
             ],
+            'meta' => [
+                'success' => true,
+                'message' => 'Profile picture updated successfully.',
+            ]
         ], 200); // 200 OK status
     }
 }

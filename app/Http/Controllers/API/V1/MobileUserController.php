@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\API\V1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -134,24 +134,29 @@ class MobileUserController extends Controller
             ], 200); // 200 Bad Request status
         }
 
+        $authToken = $user->createToken('auth_token')->plainTextToken;
+
         // Check if profile is complete (based on phone, gender, and birthdate)
         if (empty($user->phone) || empty($user->gender) || empty($user->birthdate)) {
             $user->is_profile_complete = false;
             $user->save();
 
             return response()->json([
+                'data' => [
+                    'access_token' => $authToken,
+                    'token_type' => 'Bearer',
+                ],
                 'meta' => [
                     'success' => false,
                     'message' => 'Your profile is incomplete. Please complete your profile.'
                 ],
-                'data' => json_decode('{}'),
             ], 200); // 200 Bad Request status
         } else {
             // Profile is complete, so now generate the authentication token
             $user->is_profile_complete = true;
             $user->save();
 
-            $authToken = $user->createToken('auth_token')->plainTextToken;
+
 
             // Update user with the authentication token, fcm token, and device type
             $user->update([
