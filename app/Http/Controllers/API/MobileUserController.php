@@ -239,7 +239,7 @@ class MobileUserController extends Controller
         $user->email_verification_token = null; // Clear the token after successful verification
 
         // Generate a unique referral code for the user
-        $user->referral_code = Str::random(10); // Adjust length as needed, 10 chars here
+        $user->referral_code = Str::random(8); // Adjust length as needed, 8 chars here
         $user->save();
 
         // Assign signup bonus
