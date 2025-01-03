@@ -19,6 +19,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::middleware([MobUserCheckProfile::class])->group(function () {
         Route::get('mobile/profile', [MobileUserProfileController::class, 'show']);
         Route::post('mobile/updateprofile', [MobileUserProfileController::class, 'updateProfile']);
+        Route::post('mobile/update-profile-pic', [MobileUserProfileController::class, 'updateProfilePic']);
     });
 
     // Profile completion is allowed without full profile check
