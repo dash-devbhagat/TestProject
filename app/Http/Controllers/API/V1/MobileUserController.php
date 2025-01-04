@@ -221,39 +221,32 @@ class MobileUserController extends Controller
         $user = MobileUser::where('email_verification_token', $token)->first();
 
         if (!$user) {
-            return response()->json([
-                'data' => json_decode('{}'),
-                'meta' => [
-                    'success' => false,
-                    'message' => 'The verification link is invalid or has expired. Please try requesting a new verification email.',
-                ],
-            ], 200); // 200 Bad Request status
+            return view('emails.verification-result', [
+                'success' => false,
+                'message' => 'The verification link is invalid or has expired. Please try requesting a new verification email.',
+            ]);
         }
 
         // Check if the user's email is already verified
         if ($user->email_verified_at) {
-            return response()->json([
-                'data' => json_decode('{}'),
-                'meta' => [
-                    'success' => true,
-                    'message' => 'Your email has already been verified. You can now log in.',
-                ],
-            ], 200); // 200 OK status
+            return view('emails.verification-result', [
+                'success' => true,
+                'message' => 'Your email has already been verified. You can now log in.',
+            ]);
         }
 
-        // Verify the user's email by setting the email_verified_at field
+        // Verify the user's email
         $user->email_verified_at = now();
-        $user->email_verification_token = null; // Clear the token after successful verification
+        $user->email_verification_token = null;
 
         // Generate a unique referral code for the user
-        $user->referral_code = Str::random(8); // Adjust length as needed, 8 chars here
+        $user->referral_code = Str::random(8); // Adjust length as needed
         $user->save();
 
         // Assign signup bonus
         $signupBonus = Bonus::where('type', 'signup')->first();
 
         if ($signupBonus) {
-            // Create a payment record for the signup bonus
             Payment::create([
                 'user_id' => $user->id,
                 'bonus_id' => $signupBonus->id,
@@ -268,25 +261,22 @@ class MobileUserController extends Controller
             $referralBonus = Bonus::where('type', 'referral')->first();
 
             if ($referralBonus) {
-                // Create a payment record for the referrer
                 Payment::create([
-                    'user_id' => $user->referred_by, // The referring user's ID
+                    'user_id' => $user->referred_by,
                     'bonus_id' => $referralBonus->id,
                     'amount' => $referralBonus->amount,
                     'payment_status' => 'completed',
-                    'child_id' => $user->id, // Reference the referred user's ID
+                    'child_id' => $user->id,
                 ]);
             }
         }
 
-        return response()->json([
-            'data' => json_decode('{}'),
-            'meta' => [
-                'success' => true,
-                'message' => 'Congratulations! Your email has been verified successfully.',
-            ],
-        ], 200); // 200 OK status
+        return view('emails.verification-result', [
+            'success' => true,
+            'message' => 'Congratulations! Your email has been verified successfully.',
+        ]);
     }
+
 
 
     // Add this method to the MobileUserController
@@ -361,3 +351,79 @@ class MobileUserController extends Controller
         );
     }
 }
+
+
+
+
+    // public function verifyEmail($token)
+    // {
+    //     // Find the user by the verification token
+    //     $user = MobileUser::where('email_verification_token', $token)->first();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'data' => json_decode('{}'),
+    //             'meta' => [
+    //                 'success' => false,
+    //                 'message' => 'The verification link is invalid or has expired. Please try requesting a new verification email.',
+    //             ],
+    //         ], 200); // 200 Bad Request status
+    //     }
+
+    //     // Check if the user's email is already verified
+    //     if ($user->email_verified_at) {
+    //         return response()->json([
+    //             'data' => json_decode('{}'),
+    //             'meta' => [
+    //                 'success' => true,
+    //                 'message' => 'Your email has already been verified. You can now log in.',
+    //             ],
+    //         ], 200); // 200 OK status
+    //     }
+
+    //     // Verify the user's email by setting the email_verified_at field
+    //     $user->email_verified_at = now();
+    //     $user->email_verification_token = null; // Clear the token after successful verification
+
+    //     // Generate a unique referral code for the user
+    //     $user->referral_code = Str::random(8); // Adjust length as needed, 8 chars here
+    //     $user->save();
+
+    //     // Assign signup bonus
+    //     $signupBonus = Bonus::where('type', 'signup')->first();
+
+    //     if ($signupBonus) {
+    //         // Create a payment record for the signup bonus
+    //         Payment::create([
+    //             'user_id' => $user->id,
+    //             'bonus_id' => $signupBonus->id,
+    //             'amount' => $signupBonus->amount,
+    //             'payment_status' => 'completed',
+    //             'parent_id' => $user->referred_by,
+    //         ]);
+    //     }
+
+    //     // Handle referral bonus if the user was referred
+    //     if ($user->referred_by) {
+    //         $referralBonus = Bonus::where('type', 'referral')->first();
+
+    //         if ($referralBonus) {
+    //             // Create a payment record for the referrer
+    //             Payment::create([
+    //                 'user_id' => $user->referred_by, // The referring user's ID
+    //                 'bonus_id' => $referralBonus->id,
+    //                 'amount' => $referralBonus->amount,
+    //                 'payment_status' => 'completed',
+    //                 'child_id' => $user->id, // Reference the referred user's ID
+    //             ]);
+    //         }
+    //     }
+
+    //     return response()->json([
+    //         'data' => json_decode('{}'),
+    //         'meta' => [
+    //             'success' => true,
+    //             'message' => 'Congratulations! Your email has been verified successfully.',
+    //         ],
+    //     ], 200); // 200 OK status
+    // }
