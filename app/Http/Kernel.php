@@ -69,5 +69,6 @@ class Kernel extends HttpKernel
         'profile.complete' => \App\Http\Middleware\CheckProfileCompletion::class,
         'check.active' => \App\Http\Middleware\CheckIfActive::class,
         'mob.check.profile' => \App\Http\Middleware\API\MobUserCheckProfile::class,
+        'custom.auth' => \App\Http\Middleware\API\CustomAuth::class,
     ];
 }

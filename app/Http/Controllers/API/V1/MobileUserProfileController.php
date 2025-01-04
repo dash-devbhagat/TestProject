@@ -22,17 +22,6 @@ class MobileUserProfileController extends Controller
         // Retrieve the authenticated user
         $user = $request->user();
 
-        // If user is not authenticated, return an error response
-        if (!$user) {
-            return response()->json([
-                'data' => json_decode('{}'),
-                'meta' => [
-                    'success' => false,
-                    'message' => 'User not found or unauthenticated.',
-                ],
-            ], 200); // 200 Unauthorized status
-        }
-
         // Prepare the response data
         $profileData = [
             'name' => $user->name,

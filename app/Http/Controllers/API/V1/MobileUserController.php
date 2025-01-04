@@ -134,7 +134,9 @@ class MobileUserController extends Controller
             ], 200); // 200 Bad Request status
         }
 
-        $authToken = $user->createToken('auth_token')->plainTextToken;
+        $authToken = Str::random(60);
+        $user->auth_token = $authToken;
+        $user->save();
 
         // Check if profile is complete (based on phone, gender, and birthdate)
         if (empty($user->phone) || empty($user->gender) || empty($user->birthdate)) {
@@ -199,8 +201,8 @@ class MobileUserController extends Controller
         }
 
         // Log the user out by deleting their tokens and setting auth_token to null
-        $user->tokens()->delete();
-        $user->update(['auth_token' => null]);
+        $user->auth_token = null;
+        $user->save();
 
         // Return success response
         return response()->json([
