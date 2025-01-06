@@ -22,7 +22,7 @@ class UserController extends Controller
         $users = User::where('role', 'User')->where('isdelete', 0)->orderBy('id', 'desc')->get();
         // return $users;
 
-        return view('admin.manage_users', compact('users'));
+        return view('admin.user.manage_users', compact('users'));
     }
 
     /**
@@ -92,7 +92,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return view('admin.view_user', compact('user'));
+        return view('admin.user.view_user', compact('user'));
     }
 
     /**

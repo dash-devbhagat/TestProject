@@ -18,7 +18,7 @@ class MobileUserController extends Controller
         $mobileUsers = MobileUser::all();
         // return $mobileUsers;
 
-        return view('admin.manage_mobileUser', compact('mobileUsers'));
+        return view('admin.mobile_user.manage_mobileUser', compact('mobileUsers'));
     }
 
     public function show(string $id)
@@ -26,7 +26,7 @@ class MobileUserController extends Controller
         // $user = MobileUser::where('id',$id)->first();
         $user = MobileUser::with('payments.bonus')->find($id);
         // return $user;
-        return view('admin.view_mobileUser', compact('user'));
+        return view('admin.mobile_user.view_mobileUser', compact('user'));
     }
 
     public function toggleStatus($id)

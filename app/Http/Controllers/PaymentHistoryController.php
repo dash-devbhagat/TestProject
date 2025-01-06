@@ -13,6 +13,6 @@ class PaymentHistoryController extends Controller
         ->get();
         // return $payments;
 
-        return view('admin.payment_history', compact('payments'));
+        return view('admin.payment_history.payment_history', compact('payments'));
     }
 }
