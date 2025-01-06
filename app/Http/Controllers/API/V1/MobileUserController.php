@@ -136,7 +136,7 @@ class MobileUserController extends Controller
 
         $authToken = Str::random(60);
         $user->auth_token = $authToken;
-        $user->auth_token_expires_at = now()->addMinutes(3); // Set expiration time
+        $user->auth_token_expires_at = now()->addMinutes(1200); // Set expiration time
         $user->save();
 
         // Check if profile is complete (based on phone, gender, and birthdate)
