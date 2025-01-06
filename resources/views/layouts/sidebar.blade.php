@@ -50,11 +50,23 @@
 
             @if (Auth::user()->role === 'admin')
                 <li class="nav-item">
-                    <a href="{{ route('bonus.index') }}"
-                        class="nav-link {{ request()->routeIs('bonus.index') ? 'active' : '' }}">
+                    <a href="{{ route('category.index') }}"
+                        class="nav-link {{ request()->routeIs('category.index') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-clipboard"></i>
                         <p>
                             Category Management
+                        </p>
+                    </a>
+                </li>
+            @endif
+
+            @if (Auth::user()->role === 'admin')
+                <li class="nav-item">
+                    <a href="{{ route('product.index') }}"
+                        class="nav-link {{ request()->routeIs('product.index') ? 'active' : '' }}">
+                         <i class="nav-icon fas fa-box"></i>
+                        <p>
+                            Product Management
                         </p>
                     </a>
                 </li>

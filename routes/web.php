@@ -2,10 +2,13 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BonusController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\MobileUserController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentHistoryController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SubCategoryController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -38,15 +41,17 @@ Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']
 
 Route::middleware(['auth', 'check.active'])->group(function () {
 
+    // for both
     Route::get('/dashboard', function () {
         return view('dashboard', ['user' => Auth::user()]);
     })->middleware('profile.complete')->name('dashboard');
 
+    Route::get('/change-password', [ChangePasswordController::class, 'showChangePasswordForm'])->name('change.password');
+    Route::post('/change-password', [ChangePasswordController::class, 'changePassword'])->name('change.password.submit');
+
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // for admin
-    Route::resource('bonus', BonusController::class);
-
     Route::resource('user', UserController::class);
     Route::post('/user/{id}/toggle-status', [UserController::class, 'toggleStatus']);
 
@@ -54,10 +59,22 @@ Route::middleware(['auth', 'check.active'])->group(function () {
     Route::get('mobileUser/{id}',[MobileUserController::class, 'show'])->name('mobileUser.show');
     Route::post('/mobileUser/{id}/toggle-status', [MobileUserController::class, 'toggleStatus']);
 
+    Route::resource('bonus', BonusController::class);
+    Route::post('/bonus`/{id}/toggle-status', [BonusController::class, 'toggleStatus']);
+
+    Route::resource('category', CategoryController::class);
+    Route::post('/category/{id}/toggle-status', [CategoryController::class, 'toggleStatus']);
+
+    Route::resource('sub-category', SubCategoryController::class);
+    Route::post('/sub-category/{id}/toggle-status', [SubCategoryController::class, 'toggleStatus']);
+
+    Route::resource('product',ProductController::class);
+    Route::post('/product/{id}/toggle-status', [ProductController::class, 'toggleStatus']);
+
     Route::get('/payment-history', [PaymentHistoryController::class, 'index'])->name('ph.index');
     
 
-    // for users
+    // for staff
     Route::get('/complete-profile', function () {
         // Redirect to dashboard if profile is complete
         if (Auth::user()->phone && Auth::user()->storename && Auth::user()->location && Auth::user()->latitude && Auth::user()->longitude && Auth::user()->logo) {
@@ -69,12 +86,10 @@ Route::middleware(['auth', 'check.active'])->group(function () {
 
     Route::post('/update-profile', [UserController::class, 'completeprofile'])->name('profile.update');
 
-
-    Route::get('/change-password', [ChangePasswordController::class, 'showChangePasswordForm'])->name('change.password');
-    Route::post('/change-password', [ChangePasswordController::class, 'changePassword'])->name('change.password.submit');
-
     Route::get('/edit-profile', [UserController::class, 'editProfile'])->name('user.edit-profile');
     Route::post('/update-profile', [UserController::class, 'updateProfile'])->name('user.update-profile');
+
+    
 });
 Route::fallback(function () {
     return redirect()->route('login.page')->with('error', 'Page not found or unauthorized access.');

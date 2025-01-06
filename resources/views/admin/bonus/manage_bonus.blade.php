@@ -41,14 +41,20 @@
                             <!-- Column 1: Bonus Type -->
                             <div class="col-sm-6">
                                 <label for="bonusType" class="col-form-label">Bonus Type</label>
-                                <input type="text" class="form-control" id="bonusType" name="type"
+                                <input type="text" class="form-control @error('type') is-invalid @enderror" id="bonusType" name="type"
                                     placeholder="Enter Bonus Type">
+                                    @error('type')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                             <!-- Column 2: Bonus Amount -->
                             <div class="col-sm-6">
                                 <label for="bonusAmount" class="col-form-label">Bonus Amount</label>
-                                <input type="number" class="form-control" id="bonusAmount" name="amount"
+                                <input type="number" class="form-control @error('amount') is-invalid @enderror" id="bonusAmount" name="amount"
                                     placeholder="Enter Bonus Amount" step="0.01">
+                                    @error('amount')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                     </div>
