@@ -16,6 +16,7 @@ class MobileUser extends Authenticatable
         'fcm_token',
         'device_type',
         'auth_token',
+        'auth_token_expires_at',
         'email_verified_at',
         'email_verification_token',
         'referral_code',

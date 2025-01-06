@@ -42,6 +42,18 @@ class CustomAuth
             ], 401);
         }
 
+        if ($user->auth_token_expires_at && now()->greaterThan($user->auth_token_expires_at)) {
+            return response()->json([
+
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => 'Token has expired.',
+                ],
+
+            ], 403);
+        }
+
         // Set the authenticated user
         Auth::setUser($user);
 
