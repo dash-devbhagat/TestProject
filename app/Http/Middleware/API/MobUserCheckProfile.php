@@ -7,14 +7,11 @@ use Illuminate\Http\Request;
 
 class MobUserCheckProfile
 {
-    /**
-     * Handle an incoming request.
-     */
     public function handle(Request $request, Closure $next)
     {
-        $user = $request->user();  // Get the authenticated user
+        $user = $request->user();
 
-        // Check if any of the required fields are missing
+        // Required fields to consider the profile complete
         $requiredFields = ['phone', 'gender', 'birthdate'];
         $isProfileComplete = true;
 
@@ -25,24 +22,29 @@ class MobUserCheckProfile
             }
         }
 
-        // Update the profile completion status if it has changed
+        // Update profile completion status if needed
         if ($user->is_profile_complete !== $isProfileComplete) {
             $user->is_profile_complete = $isProfileComplete;
             $user->save();
         }
 
-        // If the profile is incomplete, restrict access to certain routes
+        // Restrict access to certain routes for incomplete profiles
         if (!$isProfileComplete) {
             $allowedRoutes = ['mobile/signout', 'mobile/completeprofile'];
 
             if (!in_array($request->route()->uri(), $allowedRoutes)) {
                 return response()->json([
-                    'message' => 'Your profile is incomplete. Please complete your profile to access this resource.',
-                ], 403);
+
+                    'data' => json_decode('{}'),
+                    'meta' => [
+                        'success' => false,
+                        'message' => 'Your profile is incomplete. Please complete your profile to access this resource.',
+                    ],
+
+                ], 200);
             }
         }
 
-        // Proceed to the next middleware or request handler
         return $next($request);
     }
 }
