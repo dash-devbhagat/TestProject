@@ -86,7 +86,9 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        
+        $product = Product::with('productVarients')->findOrFail($id);
+        // return $product;
+        return view('admin.product.view_product', compact('product'));
     }
 
     /**

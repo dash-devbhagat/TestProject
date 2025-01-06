@@ -42,7 +42,7 @@
                     @csrf
                     <div class="card-body">
                         <div class="form-group row">
-                        
+
                             <div class="col-sm-6">
                                 <label for="category_name">Category Name</label>
                                 <input type="text" class="form-control @error('category_name') is-invalid @enderror"
@@ -51,13 +51,13 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                       
+
                             <div class="col-sm-6">
                                 <label for="category_image">Category Image</label>
                                 <input type="file" class="form-control" id="category_image" name="category_image"
                                     accept="image/*">
                             </div>
-                            
+
                         </div>
                     </div>
                     <!-- /.card-body -->
@@ -98,7 +98,15 @@
                                 <tr>
                                     <td>{{ $i }}</td>
                                     <td>{{ $category->name }}</td>
-                                    <td>{{ $category->image ?? 'N/A' }}</td>
+                                    {{-- <td>{{ $category->image ?? 'N/A' }}</td> --}}
+                                    <td class="text-center">
+                                        @if ($category->image)
+                                            <img src="{{ asset('storage/' . $category->image) }}" alt="Category Image"
+                                                width="80" height="50">
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
                                     <td class="text-center">
                                         <!-- Active/Inactive Toggle Icon -->
                                         <a href="javascript:void(0);" id="toggleStatusBtn{{ $category->id }}"
@@ -161,7 +169,8 @@
                         <input type="hidden" id="editCategoryId" name="id">
                         <div class="form-group">
                             <label for="editCategoryName">Category Name</label>
-                            <input type="text" class="form-control" id="editCategoryName" name="category_name" required>
+                            <input type="text" class="form-control" id="editCategoryName" name="category_name"
+                                required>
                         </div>
                         <div class="form-group">
                             <label for="editCategoryImage">Category Image</label>

@@ -98,7 +98,15 @@
                                     {{-- <td>{{ $i }}</td> --}}
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $product->name }}</td>
-                                    <td>{{ $product->image ?? 'N/A' }}</td>
+                                    {{-- <td>{{ $product->image ?? 'N/A' }}</td> --}}
+                                    <td class="text-center">
+                                        @if ($product->image)
+                                            <img src="{{ asset('storage/' . $product->image) }}" alt="Category Image"
+                                                width="80" height="50">
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
                                     <td class="text-center">
                                         <!-- Active/Inactive Toggle Icon -->
                                         <a href="javascript:void(0);" id="toggleStatusBtn{{ $product->id }}"
@@ -188,14 +196,18 @@
                                 <div id="editProductVariantContainer"></div> <!-- Variants will be added dynamically -->
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Update</button>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Update</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            {{-- <button type="button" id="updateProductBtn" class="btn btn-primary">Save changes</button> --}}
+                        </div>
 
                     </form>
                 </div>
-                <div class="modal-footer">
+                {{-- <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    {{-- <button type="button" id="updateProductBtn" class="btn btn-primary">Save changes</button> --}}
-                </div>
+                    <button type="button" id="updateProductBtn" class="btn btn-primary">Save changes</button>
+                </div> --}}
             </div>
         </div>
     </div>
@@ -215,34 +227,79 @@
 
 
             // Add & Remove Unit and Price Field
+            // let fieldCount = 0;
+
+            // $('#addFieldsBtn').click(function() {
+            //     // console.log('Button clicked');
+            //     fieldCount++;
+            //     let newFields = `
+        //             <div class="form-group row mt-3" id="field_${fieldCount}">
+        //                 <div class="col-sm-5">
+        //                     <label for="unit_${fieldCount}">Unit</label>
+        //                     <input type="text" class="form-control" name="unit[]" id="unit_${fieldCount}" placeholder="Enter Unit">
+        //                 </div>
+        //                 <div class="col-sm-5">
+        //                     <label for="price_${fieldCount}">Price</label>
+        //                     <input type="text" class="form-control" name="price[]" id="price_${fieldCount}" placeholder="Enter Price">
+        //                 </div>
+        //                 <div class="col-sm-2 text-center" style="margin-left: -80px;margin-top: 30px;">
+        //                     <button type="button" class="btn btn-danger rounded-circle remove-btn">
+        //                         <i class="fa fa-trash"></i>
+        //                     </button>
+        //                 </div>
+        //             </div>
+        //         `;
+            //     $('#extra-fields-container').append(newFields);
+            // });
+
+            // $(document).on('click', '.remove-btn', function() {
+            //     $(this).closest('.form-group').remove();
+            // });
+
             let fieldCount = 0;
 
             $('#addFieldsBtn').click(function() {
-                // console.log('Button clicked');
+                // Disable the button after the first click
+                $(this).prop('disabled', true);
+
                 fieldCount++;
                 let newFields = `
-                        <div class="form-group row mt-3" id="field_${fieldCount}">
-                            <div class="col-sm-5">
-                                <label for="unit_${fieldCount}">Unit</label>
-                                <input type="text" class="form-control" name="unit[]" id="unit_${fieldCount}" placeholder="Enter Unit">
-                            </div>
-                            <div class="col-sm-5">
-                                <label for="price_${fieldCount}">Price</label>
-                                <input type="text" class="form-control" name="price[]" id="price_${fieldCount}" placeholder="Enter Price">
-                            </div>
-                            <div class="col-sm-2 text-center" style="margin-left: -80px;margin-top: 30px;">
-                                <button type="button" class="btn btn-danger rounded-circle remove-btn">
-                                    <i class="fa fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    `;
+        <div class="form-group row mt-3" id="field_${fieldCount}">
+            <div class="col-sm-5">
+                <label for="unit_${fieldCount}">Unit</label>
+                <input type="text" class="form-control" name="unit[]" id="unit_${fieldCount}" placeholder="Enter Unit">
+            </div>
+            <div class="col-sm-5">
+                <label for="price_${fieldCount}">Price</label>
+                <input type="text" class="form-control" name="price[]" id="price_${fieldCount}" placeholder="Enter Price">
+            </div>
+            <div class="col-sm-2 text-center" style="margin-left: -80px;margin-top: 30px;">
+                <button type="button" class="btn btn-danger rounded-circle remove-btn">
+                    <i class="fa fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
                 $('#extra-fields-container').append(newFields);
+
+                // Enable the button only if both fields are filled
+                $('#unit_' + fieldCount + ', #price_' + fieldCount).on('input', function() {
+                    const unitValue = $('#unit_' + fieldCount).val();
+                    const priceValue = $('#price_' + fieldCount).val();
+                    if (unitValue && priceValue) {
+                        $('#addFieldsBtn').prop('disabled', false); // Enable the button
+                    }
+                });
             });
 
             $(document).on('click', '.remove-btn', function() {
                 $(this).closest('.form-group').remove();
+                // Re-enable the button if no fields are left
+                if ($('#extra-fields-container .form-group').length === 0) {
+                    $('#addFieldsBtn').prop('disabled', false);
+                }
             });
+
 
 
             // Add Product
@@ -370,88 +427,45 @@
                 });
             });
 
-
-
-
             // Update Product
             // $('#updateProductBtn').on('click', function() {
-
-            //     //const formData = new FormData(this); // This captures all form data including files
-            //     const form = $('#editProductForm')[0]; // Ensure this points to the correct form element
-            //     console.log(form);
+            //     // Ensure the form element exists
+            //     const form = $('#editProductForm')[0];
             //     if (!form) {
             //         console.error('Form element not found.');
             //         return;
             //     }
-            //     // console.log()
+
             //     // Create a FormData object from the form
             //     const formData = new FormData(form);
 
+            //     // Log the formData for debugging
+            //     for (let [key, value] of formData.entries()) {
+            //         console.log(`${key}: ${value}`); // Logs key-value pairs
+            //     }
+
+            //     // Send AJAX request
             //     $.ajax({
-            //         url: form.action,
-            //         type: "PUT",
+            //         url: form.action.replace(':data-id', $('#editProductId')
+            //     .val()), // Replace placeholder with actual ID
+            //         type: "POST", // Use POST to send the data and rely on _method for PUT
             //         data: formData,
-            //         processData: false,
-            //         contentType: false,
+            //         processData: false, // Prevent jQuery from processing the data
+            //         contentType: false, // Prevent jQuery from setting the content type
+            //         headers: {
+            //             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr(
+            //                 'content') // Include CSRF token
+            //         },
             //         success: function(response) {
-            //             // Handle success (e.g., reload the page or show success message)
-            //             location.reload(); // For example, reload the page after updating
+            //             console.log('Product updated successfully:', response);
+            //             // location.reload(); // Reload page or handle success
             //         },
             //         error: function(xhr, status, error) {
-            //             console.error('Error updating product:', error);
+            //             console.error('Error updating product:', xhr.responseText || error);
             //         }
             //     });
+
             // });
-
-            $('#updateProductBtn').on('click', function() {
-                // Ensure the form element exists
-                const form = $('#editProductForm')[0];
-                if (!form) {
-                    console.error('Form element not found.');
-                    return;
-                }
-
-                // Create a FormData object from the form
-                const formData = new FormData(form);
-
-                // Log the formData for debugging
-                for (let [key, value] of formData.entries()) {
-                    console.log(`${key}: ${value}`); // Logs key-value pairs
-                }
-
-                // Send AJAX request
-                $.ajax({
-                    url: form.action.replace(':data-id', $('#editProductId')
-                .val()), // Replace placeholder with actual ID
-                    type: "POST", // Use POST to send the data and rely on _method for PUT
-                    data: formData,
-                    processData: false, // Prevent jQuery from processing the data
-                    contentType: false, // Prevent jQuery from setting the content type
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr(
-                            'content') // Include CSRF token
-                    },
-                    success: function(response) {
-                        console.log('Product updated successfully:', response);
-                        // location.reload(); // Reload page or handle success
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error updating product:', xhr.responseText || error);
-                    }
-                });
-
-            });
-
-
-
-
-
-
-
-
-
-
-
 
 
 

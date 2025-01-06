@@ -115,7 +115,15 @@
                                     <td>{{ $i }}</td>
                                     <td>{{ $subcategory->name }}</td>
                                     <td>{{ $subcategory->category->name ?? 'N/A' }}</td>
-                                    <td>{{ $subcategory->image ?? 'N/A' }}</td>
+                                    {{-- <td>{{ $subcategory->image ?? 'N/A' }}</td> --}}
+                                    <td class="text-center">
+                                        @if ($subcategory->image)
+                                            <img src="{{ asset('storage/' . $subcategory->image) }}" alt="Category Image"
+                                                width="80" height="50">
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
                                     <td class="text-center">
                                         <!-- Active/Inactive Toggle Icon -->
                                         <a href="javascript:void(0);" id="toggleStatusBtn{{ $subcategory->id }}"
@@ -272,8 +280,8 @@
             });
 
 
-              // Toggle Status
-              $(document).on('click', '[id^="toggleStatusBtn"]', function() {
+            // Toggle Status
+            $(document).on('click', '[id^="toggleStatusBtn"]', function() {
                 var subcategoryId = $(this).data('id');
 
                 $.ajax({
