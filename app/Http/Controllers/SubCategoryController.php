@@ -117,10 +117,17 @@ class SubCategoryController extends Controller
         $subcategory->is_active = !$subcategory->is_active;
         $subcategory->save();
 
+
         return response()->json([
             'success' => true,
             'status' => $subcategory->is_active ? 'activated' : 'deactivated',
             'message' => $subcategory->is_active ? 'Sub-Category activated successfully.' : 'Sub-Category deactivated successfully.'
         ]);
+    }
+
+    public function fetchSubCategory($id){
+        // return SubCategory::where('category_id', $id)->get();
+        $subCategories = SubCategory::where('category_id', $id)->where('is_active', 1)->get();
+        return $subCategories;
     }
 }

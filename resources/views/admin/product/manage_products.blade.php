@@ -36,6 +36,34 @@
 
                 <form method="POST" enctype="multipart/form-data" class="mt-4">
                     @csrf
+
+                    <div class="form-group row">
+                        <div class="col-sm-5">
+                            <label for="category_id">Category</label>
+                            <select class="form-control @error('category_id') is-invalid @enderror" name="category_id"
+                                id="category_id" required>
+                                <option value="" disabled selected>Select Category</option>
+                                @foreach ($categories as $category)
+                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('category_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-sm-5">
+                            <label for="sub_category_id">Subcategory</label>
+                            <select class="form-control @error('sub_category_id') is-invalid @enderror"
+                                name="sub_category_id" id="sub_category_id" disabled>
+                                <option value="" disabled selected>Select Subcategory</option>
+                            </select>
+                            @error('sub_category_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
                     <div class="form-group row">
                         <div class="col-sm-5">
                             <label for="product_name">Product Name</label>
@@ -53,6 +81,14 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        <div class="col-sm-10">
+                            <label for="product_details">Product Details</label>
+                            <input type="text" class="form-control @error('product_details') is-invalid @enderror"
+                                name="product_details" id="product_details" placeholder="Enter Product Details" required>
+                            @error('product_details')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                         <div class="col-sm-2 text-end" style="margin-left: -170px; margin-top: 30px">
                             <button type="button" id="addFieldsBtn" class="btn btn-secondary rounded-circle">
                                 <i class="fa fa-plus"></i>
@@ -62,7 +98,7 @@
                     <div class="form-group row">
                         <div id="extra-fields-container"></div>
                     </div>
-                    <div class="card-footer d-flex justify-content-end mt-4">
+                    <div class="card-footer d-flex">
                         <button type="button" id="saveProductBtn" class="btn btn-primary">Save</button>
                     </div>
                 </form>
@@ -84,6 +120,9 @@
                             <tr>
                                 <th>Sr</th>
                                 <th>Product Name</th>
+                                <th>Product Category</th>
+                                <th>Product SubCategory</th>
+                                <th>Product Details</th>
                                 <th>Product Image</th>
                                 <th>Active Status</th>
                                 <th>Action</th>
@@ -98,7 +137,18 @@
                                     {{-- <td>{{ $i }}</td> --}}
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $product->name }}</td>
-                                    <td>{{ $product->image ?? 'N/A' }}</td>
+                                    <td>{{ $product->category->name ?? 'N/A' }}</td>
+                                    <td>{{ $product->subCategory->name ?? 'N/A' }}</td>
+                                    <td>{{ $product->details ?? 'No Details Available' }}</td>
+                                    {{-- <td>{{ $product->image ?? 'N/A' }}</td> --}}
+                                    <td class="text-center">
+                                        @if ($product->image)
+                                            <img src="{{ asset('storage/' . $product->image) }}" alt="Category Image"
+                                                width="80" height="50">
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
                                     <td class="text-center">
                                         <!-- Active/Inactive Toggle Icon -->
                                         <a href="javascript:void(0);" id="toggleStatusBtn{{ $product->id }}"
@@ -115,9 +165,13 @@
                                             <i class="fa fa-eye"></i>
                                         </a>
                                         <!-- Edit Icon -->
-                                        <a href="#javascript" class="text-primary" data-toggle="modal"
+                                        {{-- <a href="#javascript" class="text-primary" data-toggle="modal"
                                             data-target="#editProductModal" data-bs-toggle="tooltip" title="Edit">
                                             <i class="fa fa-edit editProductBtn" data-id="{{ $product->id }}"></i>
+                                        </a> --}}
+                                        <a href="{{ route('product.edit', $product->id) }}" class="text-primary"
+                                            data-bs-toggle="tooltip" title="Edit">
+                                            <i class="fa fa-edit"></i>
                                         </a>
                                         <!-- Delete Icon -->
                                         <form action="{{ route('product.destroy', $product->id) }}" method="POST"
@@ -148,59 +202,6 @@
     </div>
 
 
-    <!-- Edit Product Modal -->
-    <div class="modal fade" id="editProductModal" tabindex="-1" role="dialog" aria-labelledby="editProductModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="editProductForm" method="POST" action="{{ route('product.update', ':data-id') }}"
-                        enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
-                        <input type="hidden" id="editProductId" name="id">
-
-                        <div class="form-group row">
-                            <div class="col-sm-10">
-                                <label for="editProductName">Product Name</label>
-                                <input type="text" class="form-control" id="editProductName" name="name" required>
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <div class="col-sm-10">
-                                <label for="editProductImage">Product Image</label>
-                                <input type="file" class="form-control" id="editProductImage" name="product_image">
-                                <div id="imagePreview"></div> <!-- Image preview section -->
-                            </div>
-                        </div>
-
-                        <!-- Product Variant Section -->
-                        <div class="form-group row">
-                            <div class="col-sm-10">
-                                <label>Product Variants</label>
-                                <div id="editProductVariantContainer"></div> <!-- Variants will be added dynamically -->
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Update</button>
-
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    {{-- <button type="button" id="updateProductBtn" class="btn btn-primary">Save changes</button> --}}
-                </div>
-            </div>
-        </div>
-    </div>
-
-
 @endsection
 
 @section('scripts')
@@ -221,22 +222,22 @@
                 // console.log('Button clicked');
                 fieldCount++;
                 let newFields = `
-                        <div class="form-group row mt-3" id="field_${fieldCount}">
-                            <div class="col-sm-5">
-                                <label for="unit_${fieldCount}">Unit</label>
-                                <input type="text" class="form-control" name="unit[]" id="unit_${fieldCount}" placeholder="Enter Unit">
-                            </div>
-                            <div class="col-sm-5">
-                                <label for="price_${fieldCount}">Price</label>
-                                <input type="text" class="form-control" name="price[]" id="price_${fieldCount}" placeholder="Enter Price">
-                            </div>
-                            <div class="col-sm-2 text-center" style="margin-left: -80px;margin-top: 30px;">
-                                <button type="button" class="btn btn-danger rounded-circle remove-btn">
-                                    <i class="fa fa-trash"></i>
-                                </button>
-                            </div>
+                    <div class="form-group row mt-3" id="field_${fieldCount}">
+                        <div class="col-sm-5">
+                            <label for="unit_${fieldCount}">Unit</label>
+                            <input type="text" class="form-control" name="unit[]" id="unit_${fieldCount}" placeholder="Enter Unit">
                         </div>
-                    `;
+                        <div class="col-sm-5">
+                            <label for="price_${fieldCount}">Price</label>
+                            <input type="text" class="form-control" name="price[]" id="price_${fieldCount}" placeholder="Enter Price">
+                        </div>
+                        <div class="col-sm-2 text-center" style="margin-left: -80px;margin-top: 30px;">
+                            <button type="button" class="btn btn-danger rounded-circle remove-btn">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
                 $('#extra-fields-container').append(newFields);
             });
 
@@ -248,7 +249,10 @@
             // Add Product
             $('#saveProductBtn').click(function() {
                 let formData = {
+                    category_id: $('#category_id').val(),
+                    sub_category_id: $('#sub_category_id').val() ? $('#sub_category_id').val() : null,
                     product_name: $('#product_name').val(),
+                    product_details: $('#product_details').val(),
                     _token: $('input[name="_token"]').val(),
                     product_image: $('#product_image')[0].files[0], // File input
                     productvarient: [] // Array for variants
@@ -267,7 +271,10 @@
                 });
 
                 let ajaxData = new FormData();
+                ajaxData.append('category_id', formData.category_id);
+                ajaxData.append('sub_category_id', formData.sub_category_id);
                 ajaxData.append('product_name', formData.product_name);
+                ajaxData.append('product_details', formData.product_details);
                 ajaxData.append('_token', formData._token);
                 ajaxData.append('product_image', formData.product_image);
 
@@ -317,150 +324,46 @@
             });
 
 
+            // JavaScript to load subcategories dynamically and reset dropdown
+            $('#category_id').change(function() {
+                const categoryId = $(this).val();
+                const subCategoryDropdown = $('#sub_category_id');
 
+                // Reset and disable subcategory dropdown
+                subCategoryDropdown.prop('disabled', true).html(
+                    '<option value="" disabled selected>Loading...</option>'
+                );
 
-
-            // Fetch data into modal
-            $('.editProductBtn').on('click', function() {
-                const productId = $(this).data('id'); // Get product ID from the data attribute
-
-                $.ajax({
-                    url: '/product/' + productId +
-                        '/edit', // Ensure this route returns the correct product data
-                    method: 'GET',
-                    success: function(response) {
-                        console.log(response); // Log the full response to check the structure
-
-                        // Populate modal fields with fetched product data
-                        $('#editProductName').val(response.product.name);
-                        $('#editProductImage').val(response.product
-                            .image); // Assuming image field should be populated here
-
-                        // Populate the Product Variant section dynamically
-                        const variantContainer = $('#editProductVariantContainer');
-                        variantContainer
-                            .empty(); // Clear any existing variants before adding new ones
-
-                        response.product.product_varients.forEach(function(variant, index) {
-                            // Create a new input field for each variant
-                            variantContainer.append(`
-                    <div class="form-group row">
-                        <div class="col-sm-10">
-                            <label for="editProductVariantUnit${index}">Unit</label>
-                            <input type="text" class="form-control" id="editProductVariantUnit${index}" name="product_varients[${index}][unit]" value="${variant.unit}" required>
-                        </div>
-                        <div class="col-sm-10">
-                            <label for="editProductVariantPrice${index}">Price</label>
-                            <input type="text" class="form-control" id="editProductVariantPrice${index}" name="product_varients[${index}][price]" value="${variant.price}" required>
-                        </div>
-                    </div>
-                `);
-                        });
-
-                        // Set the form action URL to the correct product update route
-                        const formActionUrl = '/product/' + response.product.id;
-                        $('#editProductForm').attr('action', formActionUrl);
-
-                        // Open the modal
-                        $('#editProductModal').modal('show');
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error fetching product data:', error);
-                    }
-                });
-            });
-
-
-
-
-            // Update Product
-            // $('#updateProductBtn').on('click', function() {
-
-            //     //const formData = new FormData(this); // This captures all form data including files
-            //     const form = $('#editProductForm')[0]; // Ensure this points to the correct form element
-            //     console.log(form);
-            //     if (!form) {
-            //         console.error('Form element not found.');
-            //         return;
-            //     }
-            //     // console.log()
-            //     // Create a FormData object from the form
-            //     const formData = new FormData(form);
-
-            //     $.ajax({
-            //         url: form.action,
-            //         type: "PUT",
-            //         data: formData,
-            //         processData: false,
-            //         contentType: false,
-            //         success: function(response) {
-            //             // Handle success (e.g., reload the page or show success message)
-            //             location.reload(); // For example, reload the page after updating
-            //         },
-            //         error: function(xhr, status, error) {
-            //             console.error('Error updating product:', error);
-            //         }
-            //     });
-            // });
-
-            $('#updateProductBtn').on('click', function() {
-                // Ensure the form element exists
-                const form = $('#editProductForm')[0];
-                if (!form) {
-                    console.error('Form element not found.');
-                    return;
+                // If a category is selected, fetch subcategories
+                if (categoryId) {
+                    $.ajax({
+                        url: '/sub-category/fetch/' + categoryId, // Replace with your actual route
+                        type: 'GET',
+                        success: function(data) {
+                            let options =
+                                '<option value="" disabled selected>Select Subcategory</option>';
+                            data.forEach(subCategory => {
+                                options +=
+                                    `<option value="${subCategory.id}">${subCategory.name}</option>`;
+                            });
+                            subCategoryDropdown.html(options).prop('disabled', false);
+                        },
+                        error: function() {
+                            subCategoryDropdown.html(
+                                '<option value="" disabled selected>Error loading subcategories</option>'
+                            );
+                        }
+                    });
+                } else {
+                    // If no category is selected, reset the subcategory dropdown
+                    subCategoryDropdown.html(
+                        '<option value="" disabled selected>Select Subcategory</option>');
                 }
-
-                // Create a FormData object from the form
-                const formData = new FormData(form);
-
-                // Log the formData for debugging
-                for (let [key, value] of formData.entries()) {
-                    console.log(`${key}: ${value}`); // Logs key-value pairs
-                }
-
-                // Send AJAX request
-                $.ajax({
-                    url: form.action.replace(':data-id', $('#editProductId')
-                .val()), // Replace placeholder with actual ID
-                    type: "POST", // Use POST to send the data and rely on _method for PUT
-                    data: formData,
-                    processData: false, // Prevent jQuery from processing the data
-                    contentType: false, // Prevent jQuery from setting the content type
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr(
-                            'content') // Include CSRF token
-                    },
-                    success: function(response) {
-                        console.log('Product updated successfully:', response);
-                        // location.reload(); // Reload page or handle success
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error updating product:', xhr.responseText || error);
-                    }
-                });
-
             });
-
-
-
-
-
-
-
-
-
-
 
 
 
 
         });
-
-
-        function SubmitMethod() {
-            alert("Hi");
-        }
-        // onclick="SubmitMethod()"
     </script>
 @endsection

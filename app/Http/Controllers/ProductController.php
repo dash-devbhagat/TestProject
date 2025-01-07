@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVarient;
+use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -14,9 +16,12 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::with('productVarients')->get();
+        // $products = Product::with('productVarients')->get();
+        $products = Product::with(['productVarients', 'category', 'subCategory'])->get();
+        $categories = Category::where('is_active', 1)->get();
         // return $products;
-        return view('admin.product.manage_products', compact('products'));
+        // return $categories;
+        return view('admin.product.manage_products', compact('products','categories'));
     }
 
     /**
@@ -33,9 +38,13 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         // dd($request->all());
+
           // Validate input data
           $validated = $request->validate([
             'product_name' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'sub_category_id' => 'nullable|exists:sub_categories,id',
+            'product_details' => 'nullable',
             'product_image' => 'nullable|max:2048',
             'productvarient.*.unit' => 'nullable|string|max:255',
             'productvarient.*.price' => 'nullable|numeric',
@@ -60,6 +69,9 @@ class ProductController extends Controller
         // Create the new category
         $product = Product::create([
             'name' => $request->product_name,
+            'category_id' => $request->category_id,
+            'sub_category_id' => $request->sub_category_id ?? null,
+            'details' => $request->product_details,
             'image' => $path,
             'sku' => $sku,
         ]);
@@ -86,21 +98,35 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        
+        $product = Product::with('productVarients')->findOrFail($id);
+        // return $product;
+        return view('admin.product.view_product', compact('product'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    // public function edit(string $id)
+    // {
+    //     $product = Product::with('productVarients')->find($id);
+    //     return view('admin.product.edit_product', compact('product'));
+    //     // return $product;
+    //     return response()->json([
+    //         'product' => $product,
+    //         // 'productVariants' => $product->productVariants,
+    //     ]);
+    // }
+    public function edit($id)
     {
         $product = Product::with('productVarients')->find($id);
-        // return $product;
-        return response()->json([
-            'product' => $product,
-            // 'productVariants' => $product->productVariants,
-        ]);
+        $productVariants = $product->productVarients ?? [];  // Fallback to an empty array if no variants are found
+
+        $categories = Category::where('is_active',1)->get(); // Pass all categories
+        $subCategories = SubCategory::where('category_id', $product->category_id)->where('is_active',1)->get();
+        
+        return view('admin.product.edit_product', compact('product', 'productVariants', 'categories', 'subCategories'));
     }
+
 
     /**
      * Update the specified resource in storage.
@@ -113,13 +139,20 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
 
         $validated = $request->validate([
-            'product_name' => 'string|max:255',
+            'product_name' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'sub_category_id' => 'nullable|exists:sub_categories,id',
+            'product_details' => 'nullable',
             'product_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'product_varients.*.unit' => 'string|max:255',  
             'product_varients.*.price' => 'numeric',
         ]);
 
-        $product->name = $request->name;
+        // $product->name = $request->name;
+        $product->name = $request->product_name;
+        $product->details = $request->product_details;
+        $product->category_id = $request->category_id;
+        $product->sub_category_id = $request->sub_category_id ?? null;
 
         // Handle Image Upload
         if ($request->hasFile('product_image')) {

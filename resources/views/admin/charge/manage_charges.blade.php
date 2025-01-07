@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'Category Management')
+@section('title', 'Charges Management')
 
 @section('content')
     <div class="content-wrapper">
@@ -9,15 +9,12 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1>Manage Categories and Subcategories</h1>
+                        <h1>Manage Charges</h1>
                     </div>
                     <!-- Add User Button on the right side -->
                     <div class="col-sm-6 text-right">
-                        {{-- <button type="button" class="btn btn-success" data-toggle="modal"
-                            data-target="#addSubcategoryModal">Add Sub
-                            Categories</button> --}}
-                        <a href="{{ route('sub-category.index') }}" class="btn btn-success">Add Sub
-                            Categories</a>
+                        {{-- <a href="{{ route('sub-category.index') }}" class="btn btn-success">Add Sub
+                            Categories</a> --}}
                     </div>
 
                     {{-- Bootstrap Alert --}}
@@ -37,25 +34,41 @@
 
                 </div>
 
-                <form action="{{ route('category.store') }}" method="POST" enctype="multipart/form-data"
+                <form action="{{ route('charge.store') }}" method="POST" enctype="multipart/form-data"
                     class="form-horizontal mt-4">
                     @csrf
                     <div class="card-body">
                         <div class="form-group row">
 
-                            <div class="col-sm-6">
-                                <label for="category_name">Category Name</label>
-                                <input type="text" class="form-control @error('category_name') is-invalid @enderror"
-                                    id="category_name" name="category_name" placeholder="Enter Category Name">
-                                @error('category_name')
+                            <div class="col-sm-4">
+                                <label for="name">Charge Name</label>
+                                <input type="text" class="form-control @error('name') is-invalid @enderror"
+                                    id="name" name="name" placeholder="Enter Charge Name">
+                                @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="col-sm-6">
-                                <label for="category_image">Category Image</label>
-                                <input type="file" class="form-control" id="category_image" name="category_image"
-                                    accept="image/*">
+                            <div class="col-sm-4">
+                                <label for="type">Type</label>
+                                <select class="form-control @error('name') is-invalid @enderror" id="type"
+                                    name="type">
+                                    <option value="" disabled selected>Select Type</option>
+                                    <option value="percentage">Percentage</option>
+                                    <option value="fixed">Fixed Amount</option>
+                                </select>
+                                @error('type')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-sm-4">
+                                <label for="value">Value</label>
+                                <input type="number" class="form-control @error('value') is-invalid @enderror"
+                                    id="value" name="value" placeholder="Enter Value">
+                                @error('value')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                         </div>
@@ -79,14 +92,13 @@
                 <!-- /.card-header -->
 
                 <div class="card-body">
-                    <h3>Manage Categories</h3>
+                    <h3>Manage Value</h3>
                     <table id="bonusTable" class="table table-bordered table-hover">
                         <thead>
                             <tr>
                                 <th>Sr</th>
-                                <th>Category Name</th>
-                                <th>Category Image</th>
-                                <th>SubCategories</th>
+                                <th>Name</th>
+                                <th>Amount</th>
                                 <th>Active Status</th>
                                 <th>Action</th>
                             </tr>
@@ -95,52 +107,27 @@
                             @php
                                 $i = 1;
                             @endphp
-                            @foreach ($categories as $category)
+
+                            @foreach ($charges as $charge)
                                 <tr>
                                     <td>{{ $i }}</td>
-                                    <td>{{ $category->name }}</td>
-                                    {{-- <td>{{ $category->image ?? 'N/A' }}</td> --}}
-                                    <td class="text-center">
-                                        @if ($category->image)
-                                            <img src="{{ asset('storage/' . $category->image) }}" alt="Category Image"
-                                                width="80" height="50">
-                                        @else
-                                            N/A
-                                        @endif
-                                    </td>
-                                    <td>{{ $category->subCategories->count() }}</td>
-                                    <td class="text-center">
-                                        <!-- Active/Inactive Toggle Icon -->
-                                        <a href="javascript:void(0);" id="toggleStatusBtn{{ $category->id }}"
-                                            data-id="{{ $category->id }}" class="text-center" data-toggle="tooltip"
-                                            title="{{ $category->is_active ? 'Deactivate' : 'Activate' }}">
-                                            <i
-                                                class="fas {{ $category->is_active ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-2x"></i>
-                                        </a>
-                                    </td>
-                                    <td class="text-center">
-                                        <!-- Edit Icon -->
-                                        <a href="#javascript" class="text-primary" data-toggle="modal"
-                                            data-target="#exampleModal" data-bs-toggle="tooltip" title="Edit">
-                                            <i class="fa fa-edit editCatBtn" data-id="{{ $category->id }}"></i>
-                                        </a>
-                                        <!-- Delete Icon -->
-                                        <form action="{{ route('category.destroy', $category->id) }}" method="POST"
-                                            style="display:inline;"
-                                            onsubmit="return confirm('Are you sure you want to delete this category?');">
+                                    <td>{{ $charge->name }}</td>
+                                    <td>{{ $charge->value }}</td>
+                                    <td>
+                                        <a href="{{ route('charges.edit', $charge) }}"
+                                            class="btn btn-warning btn-sm">Edit</a>
+                                        <form action="{{ route('charges.destroy', $charge) }}" method="POST"
+                                            style="display:inline;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-link text-danger p-0 m-0"
-                                                data-bs-toggle="tooltip" title="Delete">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
+                                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                         </form>
                                     </td>
                                 </tr>
-                                @php
-                                    $i++;
-                                @endphp
                             @endforeach
+
+
+
                         </tbody>
                     </table>
                 </div>
@@ -171,8 +158,7 @@
                         <input type="hidden" id="editCategoryId" name="id">
                         <div class="form-group">
                             <label for="editCategoryName">Category Name</label>
-                            <input type="text" class="form-control" id="editCategoryName" name="category_name"
-                                required>
+                            <input type="text" class="form-control" id="editCategoryName" name="category_name" required>
                         </div>
                         <div class="form-group">
                             <label for="editCategoryImage">Category Image</label>
