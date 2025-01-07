@@ -25,13 +25,19 @@ class MobileUser extends Authenticatable
         'gender',
         'profilepic',
         'birthdate',
-        'is_profile_complete'
+        'is_profile_complete',
+        'address_id'
     ];
 
 
     protected $hidden = [
         'password',
     ];
+
+    public function address()
+    {
+        return $this->belongsTo(Address::class, 'address_id');
+    }
 
     public function payments()
     {
@@ -41,5 +47,20 @@ class MobileUser extends Authenticatable
     public function bonus()
     {
         return $this->hasMany(Bonus::class, 'id', 'bonus_id');
+    }
+
+    public function updateAddress($addressData)
+    {
+        $address = $this->address ?? new Address(); // Create new address if not present
+        $address->fill($addressData);
+
+        // Ensure that user_id is assigned before saving
+        $address->user_id = $this->id; // Assign the current user's id to user_id
+
+        $address->save();
+
+        // Optionally, update the address_id of the user to link to the new address
+        $this->address_id = $address->id;
+        $this->save();
     }
 }

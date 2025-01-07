@@ -26,6 +26,8 @@ class DatabaseSeeder extends Seeder
             SubCategorySeeder::class,
             ProductSeeder::class,
             ProductVariantSeeder::class,
+            StateSeeder::class,
+            CitySeeder::class,
         ]);
     }
 }

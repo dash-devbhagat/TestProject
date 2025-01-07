@@ -139,8 +139,14 @@ class MobileUserController extends Controller
         $user->auth_token_expires_at = now()->addMinutes(1200); // Set expiration time
         $user->save();
 
+        $user->update([
+            'auth_token' => $authToken,
+            'fcm_token' => $request->fcm_token,
+            'device_type' => $request->device_type,
+        ]);
+
         // Check if profile is complete (based on phone, gender, and birthdate)
-        if (empty($user->phone) || empty($user->gender) || empty($user->birthdate)) {
+        if (empty($user->phone) || empty($user->gender) || empty($user->birthdate) || empty($user->address_id)) {
             $user->is_profile_complete = false;
             $user->save();
 
@@ -162,11 +168,7 @@ class MobileUserController extends Controller
 
 
             // Update user with the authentication token, fcm token, and device type
-            $user->update([
-                'auth_token' => $authToken,
-                'fcm_token' => $request->fcm_token,
-                'device_type' => $request->device_type,
-            ]);
+
 
             // Return response with token and message
             return response()->json([

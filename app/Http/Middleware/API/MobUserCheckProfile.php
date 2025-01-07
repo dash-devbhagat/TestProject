@@ -12,7 +12,7 @@ class MobUserCheckProfile
         $user = $request->user();
 
         // Required fields to consider the profile complete
-        $requiredFields = ['phone', 'gender', 'birthdate'];
+        $requiredFields = ['phone', 'gender', 'birthdate', 'address_id'];
         $isProfileComplete = true;
 
         foreach ($requiredFields as $field) {
