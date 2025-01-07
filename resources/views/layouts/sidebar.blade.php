@@ -64,9 +64,21 @@
                 <li class="nav-item">
                     <a href="{{ route('product.index') }}"
                         class="nav-link {{ request()->routeIs('product.index') ? 'active' : '' }}">
-                         <i class="nav-icon fas fa-box"></i>
+                        <i class="nav-icon fas fa-box"></i>
                         <p>
                             Product Management
+                        </p>
+                    </a>
+                </li>
+            @endif
+
+            @if (Auth::user()->role === 'admin')
+                <li class="nav-item">
+                    <a href="{{ route('charge.index') }}"
+                        class="nav-link {{ request()->routeIs('charge.index') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-hand-holding-usd"></i>
+                        <p>
+                            Charges Management
                         </p>
                     </a>
                 </li>
@@ -78,12 +90,24 @@
                         class="nav-link {{ request()->routeIs('ph.index') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-wallet"></i>
                         <p>
-                            Payment History
+                            Bonus Payment History
                         </p>
                     </a>
                 </li>
             @endif
-            
+
+            {{-- @if (Auth::user()->role === 'admin')
+                <li class="nav-item">
+                    <a href="{{ route('ph.index') }}"
+                        class="nav-link {{ request()->routeIs('ph.index') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-wallet"></i>
+                        <p>
+                            Order Payment History
+                        </p>
+                    </a>
+                </li>
+            @endif --}}
+
         </ul>
     </nav>
     <!-- /.sidebar-menu -->
