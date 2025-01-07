@@ -88,7 +88,7 @@
                 <li class="nav-item">
                     <a href="{{ route('ph.index') }}"
                         class="nav-link {{ request()->routeIs('ph.index') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-wallet"></i>
+                        <i class="nav-icon fas fa-gift"></i>
                         <p>
                             Bonus Payment History
                         </p>
@@ -96,17 +96,17 @@
                 </li>
             @endif
 
-            {{-- @if (Auth::user()->role === 'admin')
+            @if (Auth::user()->role === 'admin')
                 <li class="nav-item">
                     <a href="{{ route('ph.index') }}"
                         class="nav-link {{ request()->routeIs('ph.index') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-wallet"></i>
+                        <i class="nav-icon fas fa-receipt"></i>
                         <p>
                             Order Payment History
                         </p>
                     </a>
                 </li>
-            @endif --}}
+            @endif
 
         </ul>
     </nav>

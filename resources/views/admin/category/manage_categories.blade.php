@@ -80,7 +80,7 @@
 
                 <div class="card-body">
                     <h3>Manage Categories</h3>
-                    <table id="bonusTable" class="table table-bordered table-hover">
+                    <table id="usersTable" class="table table-bordered table-hover">
                         <thead>
                             <tr>
                                 <th>Sr</th>

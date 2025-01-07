@@ -61,6 +61,17 @@
                                             @endforelse
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <th>Product Image</th>
+                                        <td>
+                                            @if ($product->image)
+                                                <img src="{{ asset('storage/' . $product->image) }}" alt="Category Image"
+                                                    width="200" height="200">
+                                            @else
+                                                No Image Available
+                                            @endif
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>

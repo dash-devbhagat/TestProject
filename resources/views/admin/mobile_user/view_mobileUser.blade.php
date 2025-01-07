@@ -65,6 +65,27 @@
                                         <td><strong>Birthdate</strong></td>
                                         <td>{{ $user->birthdate ?? 'Not Completed' }}</td>
                                     </tr>
+                                    <tr>
+                                        <td><strong>Profile Status</strong></td>
+                                        <td>
+                                            @if ($user->is_profile_complete)
+                                                <p class="text-success">Completed</p>
+                                            @else
+                                                <p class="text-danger">Incomplete</p>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Profile Image</strong></td>
+                                        <td>
+                                            @if ($user->profilepic)
+                                                <img src="{{ asset('storage/' . $user->profilepic) }}" alt="Profile Image"
+                                                    width="200" height="200">
+                                            @else
+                                                No Image Available
+                                            @endif
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>

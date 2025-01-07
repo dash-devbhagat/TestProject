@@ -50,11 +50,40 @@
                                     </tr>
                                     <tr>
                                         <td><strong>Phone:</strong></td>
-                                        <td>{{ $user->phone ?? 'Not Completed' }}</td>
+                                        <td>{{ $user->phone ?? 'Not Available' }}</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Location:</strong></td>
-                                        <td>{{ $user->location ?? 'Not Completed' }}</td>
+                                        <td>{{ $user->location ?? 'Not Available' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Longtitude:</strong></td>
+                                        <td>{{ $user->longitude ?? 'Not Available' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Latitude:</strong></td>
+                                        <td>{{ $user->latitude ?? 'Not Available' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Profile Status:</strong></td>
+                                        <td>
+                                            @if ($user->isProfile)
+                                                <p class="text-success">Completed</p>
+                                            @else
+                                                <p class="text-danger">Incomplete</p>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Logo</th>
+                                        <td>
+                                            @if ($user->logo)
+                                                <img src="{{ asset('storage/' . $user->logo) }}" alt="Logo"
+                                                    width="200" height="200">
+                                            @else
+                                                No Image Available
+                                            @endif
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
