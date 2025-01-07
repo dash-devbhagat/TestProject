@@ -14,7 +14,7 @@
                     </div>
                     <!-- Back button on the right -->
                     <div class="col-sm-6 text-right">
-                        <a href="{{ url()->previous() }}" class="btn btn-secondary text-light">
+                        <a href="{{ route('mobileUser.index') }}" class="btn btn-secondary text-light">
                             <i class="fas fa-arrow-left"></i> Back
                         </a>
                     </div>

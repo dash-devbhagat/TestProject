@@ -86,6 +86,7 @@
                                 <th>Sr</th>
                                 <th>Category Name</th>
                                 <th>Category Image</th>
+                                <th>SubCategories</th>
                                 <th>Active Status</th>
                                 <th>Action</th>
                             </tr>
@@ -107,6 +108,7 @@
                                             N/A
                                         @endif
                                     </td>
+                                    <td>{{ $category->subCategories->count() }}</td>
                                     <td class="text-center">
                                         <!-- Active/Inactive Toggle Icon -->
                                         <a href="javascript:void(0);" id="toggleStatusBtn{{ $category->id }}"

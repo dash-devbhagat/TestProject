@@ -14,7 +14,7 @@
                     <!-- Add User Button on the right side -->
                     <!-- Back button on the right -->
                     <div class="col-sm-6 text-right">
-                        <a href="{{ url()->previous() }}" class="btn btn-secondary text-light">
+                        <a href="{{  route('category.index') }}" class="btn btn-secondary text-light">
                             <i class="fas fa-arrow-left"></i> Back
                         </a>
                     </div>

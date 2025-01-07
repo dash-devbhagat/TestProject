@@ -14,7 +14,7 @@
                     </div>
                     <!-- Back button on the right -->
                     <div class="col-sm-6 text-right">
-                        <a href="{{ url()->previous() }}" class="btn btn-secondary text-light">
+                        <a href="{{ route('product.index') }}" class="btn btn-secondary text-light">
                             <i class="fas fa-arrow-left"></i> Back
                         </a>
                     </div>
@@ -32,24 +32,34 @@
                         <div class="col-md-12">
                             <h3 class="text-primary">Product Details</h3>
                             <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Product Name</th>
-                                        <th>Product SKU</th>
-                                        <th>Unit</th>
-                                        <th>Price</th>
-                                    </tr>
-                                </thead>
                                 <tbody>
                                     <tr>
+                                        <th>Product Name</th>
                                         <td>{{ $product->name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Product SKU</th>
                                         <td>{{ $product->sku }}</td>
-                                        @forelse($product->productVarients as $variant)
-                                            <td>{{ $variant->unit }}</td>
-                                            <td>{{ $variant->price }}</td>
-                                        @empty
-                                            <td colspan="3">No variants available</td>
-                                        @endforelse
+                                    </tr>
+                                    <tr>
+                                        <th>Product Details</th>
+                                        <td>{{ $product->details ?? 'No Details Available' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Product Variants</th>
+                                        <td>
+                                            @forelse ($product->productVarients as $variant)
+                                                <div class="mb-2">
+                                                    <strong>Unit:</strong> {{ $variant->unit }} <br>
+                                                    <strong>Price:</strong> {{ $variant->price }}
+                                                </div>
+                                                @if (!$loop->last)
+                                                    <hr> <!-- Add horizontal line between variants -->
+                                                @endif
+                                            @empty
+                                                <p>No Variants Available</p>
+                                            @endforelse
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
