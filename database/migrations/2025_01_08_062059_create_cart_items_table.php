@@ -19,7 +19,6 @@ class CreateCartItemsTable extends Migration
             $table->unsignedBigInteger('product_id');
             $table->unsignedBigInteger('product_variant_id');
             $table->integer('quantity');
-            $table->decimal('price', 8, 2);
             $table->timestamps();
 
             // Foreign key constraints

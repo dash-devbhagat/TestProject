@@ -6,6 +6,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\ProductVarient;
+use App\Models\Charge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -51,8 +52,6 @@ class CartController extends Controller
             ], 200);
         }
 
-        $price = $variant->price;
-
         // Check if Product is Already in Cart
         $cartItem = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $product->id)
@@ -68,14 +67,12 @@ class CartController extends Controller
                 'product_id' => $product->id,
                 'product_variant_id' => $variant->id,
                 'quantity' => $request->quantity,
-                'price' => $price,
             ]);
         }
 
         return response()->json([
             'data' => [
                 'cart_id' => $cart->id,
-
             ],
             'meta' => [
                 'success' => true,
@@ -83,6 +80,9 @@ class CartController extends Controller
             ],
         ], 200);
     }
+
+
+
 
     // View Cart
     public function viewCart()
@@ -102,19 +102,21 @@ class CartController extends Controller
 
         $cartItems = $cart->items;
         $cartTotal = $cartItems->sum(function ($item) {
-            return $item->price * $item->quantity;
+            $variant = $item->productVariant;
+            return $variant->price * $item->quantity;  // Fetch the price dynamically from product_varients
         });
 
         $cartTotal = number_format($cartTotal, 2, '.', '');
 
         $items = $cartItems->map(function ($item) {
+            $variant = $item->productVariant;
             return [
                 'cart_item_id' => $item->id,
                 'product_name' => $item->product->name,
-                'variant' => $item->productVariant->unit,
-                'price' => number_format($item->price, 2, '.', ''),
+                'variant' => $variant->unit,
+                'price' => number_format($variant->price, 2, '.', ''),  // Fetch the price dynamically from product_varients
                 'quantity' => $item->quantity,
-                'total_price' => number_format($item->price * $item->quantity, 2, '.', ''),
+                'total_price' => number_format($variant->price * $item->quantity, 2, '.', ''),
             ];
         });
 
@@ -129,6 +131,8 @@ class CartController extends Controller
             ],
         ], 200);
     }
+
+
 
     // Update Cart Item
     public function updateCartItem(Request $request)
@@ -178,22 +182,22 @@ class CartController extends Controller
         $product = $cartItem->product;
         $variant = $cartItem->productVariant;
 
-        $totalPrice = number_format($cartItem->price * $cartItem->quantity, 2, '.', '');
+        $totalPrice = number_format($variant->price * $cartItem->quantity, 2, '.', '');
 
         $cart = Cart::find($cartItem->cart_id);
         $cartTotal = $cart->items->sum(function ($item) {
-            return $item->price * $item->quantity;
+            $variant = $item->productVariant;
+            return $variant->price * $item->quantity;  // Fetch the price dynamically from product_varients
         });
         $cartTotal = number_format($cartTotal, 2, '.', '');
 
         return response()->json([
             'data' => [
-
                 'cart_item_id' => $cartItem->id,
                 'product_name' => $product->name,
                 'product_variant' => $variant->unit,
                 'quantity' => $cartItem->quantity,
-                'price' => number_format($cartItem->price, 2, '.', ''),
+                'price' => number_format($variant->price, 2, '.', ''),  // Fetch the price dynamically from product_varients
                 'total_price' => $totalPrice,
             ],
             'cart_total' => $cartTotal,
@@ -203,6 +207,7 @@ class CartController extends Controller
             ],
         ], 200);
     }
+
 
     // Remove Item from Cart
     public function removeFromCart(Request $request)
@@ -255,6 +260,75 @@ class CartController extends Controller
             'meta' => [
                 'success' => false,
                 'message' => 'Cart is empty.',
+            ],
+        ], 200);
+    }
+
+    public function checkout()
+    {
+        $user = Auth::user();
+        $cart = Cart::where('user_id', $user->id)->first();
+
+        if (!$cart || $cart->items->isEmpty()) {
+            return response()->json([
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => 'Your cart is empty.',
+                ],
+            ], 200);
+        }
+
+        // Calculate Cart Total
+        $cartTotal = $cart->items->sum(function ($item) {
+            $variant = $item->productVariant;  // Fetch price dynamically from product_varients table
+            return $variant->price * $item->quantity;
+        });
+
+        // Format cart total
+        $cartTotal = number_format($cartTotal, 2, '.', '');
+
+        // Fetch Additional Charges
+        $charges = Charge::where('is_active', 1)->get();
+
+        $additionalCharges = [];
+        $totalAdditionalCharges = 0;
+
+        foreach ($charges as $charge) {
+            if ($charge->type === 'percentage') {
+                $chargeAmount = ($cartTotal * $charge->value) / 100;
+            } else { // Rupees
+                $chargeAmount = $charge->value;
+            }
+
+            // Format charge amount
+            $chargeAmount = number_format($chargeAmount, 2, '.', '');
+
+            $additionalCharges[] = [
+                'name' => $charge->name,
+                'type' => $charge->type,
+                'value' => $charge->value,
+                'amount' => $chargeAmount,
+            ];
+
+            $totalAdditionalCharges += $chargeAmount;
+        }
+
+        // Grand Total
+        $grandTotal = $cartTotal + $totalAdditionalCharges;
+
+        // Format grand total
+        $grandTotal = number_format($grandTotal, 2, '.', '');
+
+        return response()->json([
+            'data' => [
+                'cart_total' => $cartTotal,
+                'additional_charges' => $additionalCharges,
+                'grand_total' => $grandTotal,
+            ],
+            'meta' => [
+                'success' => true,
+                'message' => 'Checkout details calculated successfully.',
             ],
         ], 200);
     }

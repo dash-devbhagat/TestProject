@@ -38,4 +38,5 @@ Route::middleware(['custom.auth', 'mob.check.profile'])->group(function () {
     Route::post('v1/cart/update', [CartController::class, 'updateCartItem']);
     Route::post('v1/cart/remove', [CartController::class, 'removeFromCart']);
     Route::post('v1/cart/clear', [CartController::class, 'clearCart']);
+    Route::get('v1/cart/checkout', [CartController::class, 'checkout']);
 });
