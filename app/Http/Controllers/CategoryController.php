@@ -130,7 +130,6 @@ class CategoryController extends Controller
     {
         $category = Category::findOrFail($id);
         
-        // Toggle the user's active status
         $category->is_active = !$category->is_active;
         $category->save();
 

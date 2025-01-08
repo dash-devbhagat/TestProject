@@ -77,6 +77,7 @@ Route::middleware(['auth', 'check.active'])->group(function () {
     Route::post('/product/{id}/toggle-status', [ProductController::class, 'toggleStatus']);
 
     Route::resource('charge', ChargeController::class);
+    Route::post('/charge/{id}/toggle-status', [ChargeController::class, 'toggleStatus']);
 
     Route::get('/payment-history', [PaymentHistoryController::class, 'index'])->name('ph.index');
     

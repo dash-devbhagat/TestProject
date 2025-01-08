@@ -113,7 +113,6 @@ class SubCategoryController extends Controller
     {
         $subcategory = SubCategory::findOrFail($id);
         
-        // Toggle the user's active status
         $subcategory->is_active = !$subcategory->is_active;
         $subcategory->save();
 

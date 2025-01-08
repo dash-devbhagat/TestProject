@@ -30,7 +30,15 @@ class ChargeController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:percentage,fixed',
+            'value' => 'required|numeric',
+        ]);
+
+        Charge::create($request->all());
+
+        return redirect()->route('charge.index')->with('success', 'Charge Created Successfully.');
     }
 
     /**
@@ -46,7 +54,10 @@ class ChargeController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $charge = Charge::findOrFail($id);
+        return response()->json([
+            'charge' => $charge
+        ]);
     }
 
     /**
@@ -54,7 +65,25 @@ class ChargeController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        // dd($request->all());
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:percentage,fixed',
+            'value' => 'required|numeric',
+        ]);
+
+        $charge = Charge::findOrFail($id);
+
+        $charge->name = $validatedData['name'];
+        $charge->type = $validatedData['type'];
+        $charge->value = $validatedData['value'];
+
+        $charge->save();
+
+        // return redirect()->route('charge.index')->with('success', 'Charge Updated Successfully.');
+        session()->flash('success', 'Charge Updated Successfully.');
+
+        return response()->json(['success' => true, 'charge' => $charge]);
     }
 
     /**
@@ -62,6 +91,24 @@ class ChargeController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $charge = Charge::findOrFail($id);
+
+        $charge->delete();
+    
+        return redirect()->route('charge.index')->with('success', 'Charge Deleted Successfully.');
+    }
+
+    public function toggleStatus($id)
+    {
+        $charge = Charge::findOrFail($id);
+        
+        $charge->is_active = !$charge->is_active;
+        $charge->save();
+
+        return response()->json([
+            'success' => true,
+            'status' => $charge->is_active ? 'activated' : 'deactivated',
+            'message' => $charge->is_active ? 'Charge activated successfully.' : 'Charge deactivated successfully.'
+        ]);
     }
 }

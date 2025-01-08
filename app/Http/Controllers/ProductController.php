@@ -43,7 +43,7 @@ class ProductController extends Controller
           $validated = $request->validate([
             'product_name' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
-            'sub_category_id' => 'nullable|exists:sub_categories,id',
+            'sub_category_id' => 'nullable',
             'product_details' => 'nullable',
             'product_image' => 'nullable|max:2048',
             'productvarient.*.unit' => 'nullable|string|max:255',
@@ -61,7 +61,8 @@ class ProductController extends Controller
 
         // Generate the SKU: 'PROD-xxxx'
         // We get the next product count to generate a unique sequential number
-        $productCount = Product::count() + 1;  // Increment the count for the SKU
+        $lastId = Product::max('id'); // Get the maximum ID from the products table
+        $productCount = $lastId + 1;
 
         // Format the SKU as 'PROD-XXXX' with zero-padding to 4 digits
         $sku = 'PRODUCT-' . str_pad($productCount, 4, '0', STR_PAD_LEFT);
@@ -70,7 +71,7 @@ class ProductController extends Controller
         $product = Product::create([
             'name' => $request->product_name,
             'category_id' => $request->category_id,
-            'sub_category_id' => $request->sub_category_id ?? null,
+            'sub_category_id' => ($request->sub_category_id == "null") ? null : $request->sub_category_id,
             'details' => $request->product_details,
             'image' => $path,
             'sku' => $sku,
@@ -202,7 +203,6 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
         
-        // Toggle the user's active status
         $product->is_active = !$product->is_active;
         $product->save();
 

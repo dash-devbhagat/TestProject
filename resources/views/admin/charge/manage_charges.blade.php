@@ -93,7 +93,7 @@
 
                 <div class="card-body">
                     <h3>Manage Value</h3>
-                    <table id="bonusTable" class="table table-bordered table-hover">
+                    <table id="usersTable" class="table table-bordered table-hover">
                         <thead>
                             <tr>
                                 <th>Sr</th>
@@ -112,20 +112,41 @@
                                 <tr>
                                     <td>{{ $i }}</td>
                                     <td>{{ $charge->name }}</td>
-                                    <td>{{ $charge->value }}</td>
                                     <td>
-                                        <a href="{{ route('charges.edit', $charge) }}"
-                                            class="btn btn-warning btn-sm">Edit</a>
-                                        <form action="{{ route('charges.destroy', $charge) }}" method="POST"
-                                            style="display:inline;">
+                                        @if ($charge->type === 'percentage')
+                                            {{ $charge->value }}%
+                                        @else
+                                            ₹{{ $charge->value }}
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        <!-- Active/Inactive Toggle Icon -->
+                                        <a href="javascript:void(0);" id="toggleStatusBtn{{ $charge->id }}"
+                                            data-id="{{ $charge->id }}" class="text-center" data-toggle="tooltip"
+                                            title="{{ $charge->is_active ? 'Deactivate' : 'Activate' }}">
+                                            <i
+                                                class="fas {{ $charge->is_active ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-2x"></i>
+                                        </a>
+                                    </td>
+                                    <td class="text-center">
+                                        <!-- Edit Icon -->
+                                        <a href="#javascript" class="text-primary" data-bs-toggle="tooltip" title="Edit">
+                                            <i class="fa fa-edit editChargeBtn" data-id="{{ $charge->id }}"></i>
+                                        </a>
+                                        <!-- Delete Icon -->
+                                        <form action="{{ route('charge.destroy', $charge->id) }}" method="POST"
+                                            style="display:inline;"
+                                            onsubmit="return confirm('Are you sure you want to delete this charge?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                            <button type="submit" class="btn btn-link text-danger p-0 m-0"
+                                                data-bs-toggle="tooltip" title="Delete">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
                                         </form>
                                     </td>
                                 </tr>
                             @endforeach
-
 
 
                         </tbody>
@@ -140,36 +161,42 @@
     </div>
 
 
-    <!-- Edit Category Modal -->
-    <div class="modal fade" id="editCategoryModal" tabindex="-1" role="dialog" aria-labelledby="editCategoryModalLabel"
+    <!-- Edit Charge Modal -->
+    <div class="modal fade" id="editChargeModal" tabindex="-1" role="dialog" aria-labelledby="editChargeModalLabel"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editCategoryModalLabel">Edit Category</h5>
+                    <h5 class="modal-title" id="editChargeModalLabel">Edit Charge</h5>
                     <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="editCategoryForm" method="POST" action="" enctype="multipart/form-data">
+                    <form id="editChargeForm" method="POST" action="">
                         @csrf
                         @method('PUT')
-                        <input type="hidden" id="editCategoryId" name="id">
+                        <input type="hidden" id="editChargeId" name="id">
                         <div class="form-group">
-                            <label for="editCategoryName">Category Name</label>
-                            <input type="text" class="form-control" id="editCategoryName" name="category_name" required>
+                            <label for="editChargeName">Charge Name</label>
+                            <input type="text" class="form-control" id="editChargeName" name="name">
                         </div>
                         <div class="form-group">
-                            <label for="editCategoryImage">Category Image</label>
-                            <input type="file" class="form-control" id="editCategoryImage" name="category_image"
-                                accept="image/*">
+                            <label for="editChargeType">Type</label>
+                            <select class="form-control" id="editChargeType" name="type">
+                                <option value="percentage">Percentage</option>
+                                <option value="fixed">Fixed Amount</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editChargeValue">Value</label>
+                            <input type="number" class="form-control" id="editChargeValue" name="value">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" id="updateCategoryBtn" class="btn btn-primary">Save changes</button>
+                    <button type="button" id="updateChargeBtn" class="btn btn-primary">Save changes</button>
                 </div>
             </div>
         </div>
@@ -190,17 +217,23 @@
             });
 
             // Open the Edit Modal and Populate Data
-            $('.editCatBtn').on('click', function() {
-                const categoryId = $(this).data('id');
+            $('.editChargeBtn').on('click', function() {
+                const chargeId = $(this).data('id');
+                console.log(chargeId);
 
                 $.ajax({
-                    url: '/category/' + categoryId + '/edit', // Fetch category data
+                    url: '/charge/' + chargeId + '/edit',
                     type: "GET",
                     success: function(response) {
-                        const category = response.category;
-                        $('#editCategoryName').val(category.name);
-                        $('#editCategoryId').val(category.id);
-                        $('#editCategoryModal').modal('show');
+                        // console.log(response);
+                        const charge = response.charge;
+                        $('#editChargeName').val(charge.name);
+                        $('#editChargeType').val(charge.type);
+                        $('#editChargeValue').val(charge.value);
+                        $('#editChargeId').val(charge.id);
+                        $('#editChargeForm').attr('action', '/charges/' + charge
+                            .id); // Set form action
+                        $('#editChargeModal').modal('show');
                     },
                     error: function() {
                         alert('Error fetching category data.');
@@ -209,20 +242,20 @@
             });
 
             // Update the Category
-            $('#updateCategoryBtn').on('click', function() {
-                const formData = new FormData($('#editCategoryForm')[0]);
+            $('#updateChargeBtn').on('click', function() {
+                const formData = new FormData($('#editChargeForm')[0]);
                 formData.append('_method', 'PUT'); // Add method override for PUT
 
                 $.ajax({
-                    url: '/category/' + $('#editCategoryId')
-                        .val(), // PUT request to update category
+                    url: '/charge/' + $('#editChargeId')
+                        .val(), 
                     type: "POST", // Use POST since we're using _method override for PUT
                     data: formData,
                     contentType: false, // Necessary for file uploads
                     processData: false, // Prevents jQuery from processing the data
                     success: function(response) {
-                        $('#editCategoryModal').modal('hide');
-                        location.reload(); // Reload the page or update dynamically
+                        $('#editChargeModal').modal('hide');
+                        location.reload(); 
                     },
                     error: function() {
                         alert('Error updating category data. Please try again.');
@@ -236,7 +269,7 @@
                 var categoryId = $(this).data('id');
 
                 $.ajax({
-                    url: '/category/' + categoryId +
+                    url: '/charge/' + categoryId +
                         '/toggle-status', // Use the route for toggling status
                     method: 'POST',
                     data: {

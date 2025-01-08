@@ -10,7 +10,7 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6 d-flex">
-                        <h1>Payment History</h1>
+                        <h1>Bonus Payment History</h1>
                     </div>
                 </div>
             </div><!-- /.container-fluid -->
