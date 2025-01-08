@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BonusController;
+use App\Http\Controllers\BonusPaymentHistoryController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\ChargeController;
 use App\Http\Controllers\MobileUserController;
+use App\Http\Controllers\OrderPaymentHistoryController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentHistoryController;
 use App\Http\Controllers\ProductController;
@@ -14,6 +16,7 @@ use App\Http\Controllers\UserController;
 use App\Models\SubCategory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
 
 
 
@@ -64,7 +67,7 @@ Route::middleware(['auth', 'check.active'])->group(function () {
     Route::post('/mobileUser/{id}/toggle-status', [MobileUserController::class, 'toggleStatus']);
 
     Route::resource('bonus', BonusController::class);
-    Route::post('/bonus`/{id}/toggle-status', [BonusController::class, 'toggleStatus']);
+    Route::post('/bonus/{id}/toggle-status', [BonusController::class, 'toggleStatus']);
 
     Route::resource('category', CategoryController::class);
     Route::post('/category/{id}/toggle-status', [CategoryController::class, 'toggleStatus']);
@@ -79,7 +82,9 @@ Route::middleware(['auth', 'check.active'])->group(function () {
     Route::resource('charge', ChargeController::class);
     Route::post('/charge/{id}/toggle-status', [ChargeController::class, 'toggleStatus']);
 
-    Route::get('/payment-history', [PaymentHistoryController::class, 'index'])->name('ph.index');
+    Route::get('/bonus-payment-history', [BonusPaymentHistoryController::class, 'index'])->name('ph.index');
+
+    Route::get('/order-payment-history', [OrderPaymentHistoryController::class, 'index'])->name('oh.index');
     
 
     // for staff

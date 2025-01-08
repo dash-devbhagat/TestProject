@@ -266,10 +266,10 @@
 
             // Toggle Status
             $(document).on('click', '[id^="toggleStatusBtn"]', function() {
-                var categoryId = $(this).data('id');
+                var chargeId = $(this).data('id');
 
                 $.ajax({
-                    url: '/charge/' + categoryId +
+                    url: '/charge/' + chargeId +
                         '/toggle-status', // Use the route for toggling status
                     method: 'POST',
                     data: {

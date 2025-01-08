@@ -1,7 +1,7 @@
 <!-- resources/views/home.blade.php -->
 @extends('layouts.master')
 
-@section('title', 'Bonus Payment History')
+@section('title', 'Order Payment History')
 
 @section('content')
     <div class="content-wrapper">
@@ -10,7 +10,7 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6 d-flex">
-                        <h1>Bonus Payment History</h1>
+                        <h1>Order Payment History</h1>
                     </div>
                 </div>
             </div><!-- /.container-fluid -->
@@ -29,20 +29,26 @@
                         <thead>
                             <tr>
                                 <th>Sr</th>
-                                <th>User</th>
-                                <th>Bonus</th>
-                                <th>Amount</th>
+                                <th>Product Name</th>
+                                <th>Order Number</th>
+                                <th>Order Date</th>
+                                <th>Payment Date</th>
+                                <th>Payment Method</th>
+                                <th>Amount Paid</th>
                                 <th>Payment Status</th>
-                                <th>Referred By</th>
-                                <th>Referred To</th>
-                                <th>Date</th>
+                                {{-- A unique invoice number for the payment (if applicable). --}}
+                                <th>Invoice Number</th>
+                                {{-- Identifier provided by the payment gateway (e.g., PayPal, Stripe). --}}
+                                <th>Transaction ID</th>
+                                {{-- View Invoice (to view or download the invoice as a PDF). --}}
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @php
                                 $i = 1;
                             @endphp
-                            @foreach ($payments as $payment)
+                            {{-- @foreach ($payments as $payment)
                             <tr>
                                 <td>{{ $i }}</td>
                                 <td>{{ $payment->user->name }}</td>
@@ -56,7 +62,7 @@
                                 @php
                                     $i++;
                                 @endphp
-                            @endforeach
+                            @endforeach --}}
                         </tbody>
                     </table>
                 </div>

@@ -42,6 +42,14 @@
                                         <td>{{ $product->sku }}</td>
                                     </tr>
                                     <tr>
+                                        <th>Product Category</th>
+                                        <td>{{ $product->category->name ?? 'Not Available' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Product SubCategory</th>
+                                        <td>{{ $product->subCategory->name ?? 'Not Available' }}</td>
+                                    </tr>
+                                    <tr>
                                         <th>Product Details</th>
                                         <td>{{ $product->details ?? 'No Details Available' }}</td>
                                     </tr>

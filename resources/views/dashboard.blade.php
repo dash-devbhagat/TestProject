@@ -46,7 +46,7 @@
                     <div class="card-header">
                         <h3 class="card-title">Order Overview</h3>
                     </div>
-                    <div class="card-body">
+                    {{-- <div class="card-body">
                         <div class="row">
                             <div class="col-lg-4 col-md-6 col-sm-12">
                                 <div class="card bg-danger text-white mb-3">
@@ -76,7 +76,70 @@
                                 </div>
                             </div>
                         </div>
+                    </div> --}}
+
+                    <div class="container-fluid">
+                        <!-- Order Status Cards -->
+                        <div class="row mb-4">
+                            <div class="col-lg-4 col-md-6 col-sm-12">
+                                <div class="card bg-danger text-white mb-3 status-card" data-status="pending">
+                                    <div class="card-header">Pending Orders</div>
+                                    <div class="card-body">
+                                        <h3>{{ $pendingOrders ?? '0' }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4 col-md-6 col-sm-12">
+                                <div class="card bg-warning text-dark mb-3 status-card" data-status="in-progress">
+                                    <div class="card-header">In Progress Orders</div>
+                                    <div class="card-body">
+                                        <h3>{{ $inProgressOrders ?? '0' }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4 col-md-6 col-sm-12">
+                                <div class="card bg-success text-white mb-3 status-card" data-status="completed">
+                                    <div class="card-header">Completed Orders</div>
+                                    <div class="card-body">
+                                        <h3>{{ $completedOrders ?? '0' }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+
+                        <!-- Dynamic Cards -->
+                        <div id="dynamic-cards">
+                            <h5 class="mb-3">Orders</h5>
+                            <div class="row">
+                                <!-- Default View (All Cards) -->
+                                <div class="card text-danger bg-white mb-3 mx-3" style="max-width: 18rem;">
+                                    <div class="card-header">Header</div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">Danger card title</h5>
+                                        <p class="card-text">Pending Orders Card Example</p>
+                                    </div>
+                                </div>
+                                <div class="card text-warning bg-white mb-3 mx-3" style="max-width: 18rem;">
+                                    <div class="card-header">Header</div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">Warning card title</h5>
+                                        <p class="card-text">In Progress Orders Card Example</p>
+                                    </div>
+                                </div>
+                                <div class="card text-success bg-white mb-3 mx-3" style="max-width: 18rem;">
+                                    <div class="card-header">Header</div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">Success card title</h5>
+                                        <p class="card-text">Completed Orders Card Example</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
             @else
                 <div class="card">
@@ -87,11 +150,16 @@
                         <ul class="list-group">
                             <li class="list-group-item"><strong>Name:</strong> {{ Auth::user()->name }}</li>
                             <li class="list-group-item"><strong>Email:</strong> {{ Auth::user()->email }}</li>
-                            <li class="list-group-item"><strong>Phone:</strong> {{ Auth::user()->phone ?? 'Not provided' }}</li>
-                            <li class="list-group-item"><strong>Store Name:</strong> {{ Auth::user()->storename ?? 'Not provided' }}</li>
-                            <li class="list-group-item"><strong>Location:</strong> {{ Auth::user()->location ?? 'Not provided' }}</li>
-                            <li class="list-group-item"><strong>Latitude:</strong> {{ Auth::user()->latitude ?? 'Not provided' }}</li>
-                            <li class="list-group-item"><strong>Longitude:</strong> {{ Auth::user()->longitude ?? 'Not provided' }}</li>
+                            <li class="list-group-item"><strong>Phone:</strong> {{ Auth::user()->phone ?? 'Not provided' }}
+                            </li>
+                            <li class="list-group-item"><strong>Store Name:</strong>
+                                {{ Auth::user()->storename ?? 'Not provided' }}</li>
+                            <li class="list-group-item"><strong>Location:</strong>
+                                {{ Auth::user()->location ?? 'Not provided' }}</li>
+                            <li class="list-group-item"><strong>Latitude:</strong>
+                                {{ Auth::user()->latitude ?? 'Not provided' }}</li>
+                            <li class="list-group-item"><strong>Longitude:</strong>
+                                {{ Auth::user()->longitude ?? 'Not provided' }}</li>
                         </ul>
                         <div class="mt-3">
                             <a href="{{ route('user.edit-profile') }}" class="btn btn-primary">Update Profile</a>
@@ -103,3 +171,49 @@
         <!-- /.content -->
     </div>
 @endsection
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusCards = document.querySelectorAll('.status-card');
+        const dynamicCards = document.getElementById('dynamic-cards');
+
+        const cardTemplates = {
+            pending: `
+                <div class="card text-danger bg-white mb-3" style="max-width: 18rem;">
+                    <div class="card-header">Header</div>
+                    <div class="card-body">
+                        <h5 class="card-title">Danger card title</h5>
+                        <p class="card-text">Pending Orders Card Example</p>
+                    </div>
+                </div>
+            `,
+            'in-progress': `
+                <div class="card text-warning bg-white mb-3" style="max-width: 18rem;">
+                    <div class="card-header">Header</div>
+                    <div class="card-body">
+                        <h5 class="card-title">Warning card title</h5>
+                        <p class="card-text">In Progress Orders Card Example</p>
+                    </div>
+                </div>
+            `,
+            completed: `
+                <div class="card text-success bg-white mb-3" style="max-width: 18rem;">
+                    <div class="card-header">Header</div>
+                    <div class="card-body">
+                        <h5 class="card-title">Success card title</h5>
+                        <p class="card-text">Completed Orders Card Example</p>
+                    </div>
+                </div>
+            `,
+        };
+
+        statusCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const status = this.dataset.status;
+
+                // Update the dynamic cards section
+                dynamicCards.innerHTML = cardTemplates[status];
+            });
+        });
+    });
+</script>

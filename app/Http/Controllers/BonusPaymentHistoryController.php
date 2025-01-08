@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 
-class PaymentHistoryController extends Controller
+class BonusPaymentHistoryController extends Controller
 {
     public function index(){
         $payments = Payment::with(['user', 'bonus','paymentParent','paymentChild'])

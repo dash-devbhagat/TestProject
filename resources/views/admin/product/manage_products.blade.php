@@ -34,14 +34,16 @@
 
                 </div>
 
-                <form method="POST" enctype="multipart/form-data" class="mt-4">
+                {{-- <form method="POST" enctype="multipart/form-data" class="mt-4"> --}}
+                    <form action="{{ route('product.store') }}" method="POST" enctype="multipart/form-data"
+                    class="form-horizontal mt-4">
                     @csrf
 
                     <div class="form-group row">
                         <div class="col-sm-5">
                             <label for="category_id">Category</label>
                             <select class="form-control @error('category_id') is-invalid @enderror" name="category_id"
-                                id="category_id" required>
+                                id="category_id">
                                 <option value="" disabled selected>Select Category</option>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -68,7 +70,7 @@
                         <div class="col-sm-5">
                             <label for="product_name">Product Name</label>
                             <input type="text" class="form-control @error('product_name') is-invalid @enderror"
-                                name="product_name" id="product_name" placeholder="Enter Product Name" required>
+                                name="product_name" id="product_name" placeholder="Enter Product Name">
                             @error('product_name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -76,7 +78,7 @@
                         <div class="col-sm-5">
                             <label for="product_image">Product Image</label>
                             <input type="file" class="form-control @error('product_image') is-invalid @enderror"
-                                name="product_image" id="product_image" required>
+                                name="product_image" id="product_image">
                             @error('product_image')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -84,7 +86,7 @@
                         <div class="col-sm-10">
                             <label for="product_details">Product Details</label>
                             <input type="text" class="form-control @error('product_details') is-invalid @enderror"
-                                name="product_details" id="product_details" placeholder="Enter Product Details" required>
+                                name="product_details" id="product_details" placeholder="Enter Product Details">
                             @error('product_details')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -99,7 +101,8 @@
                         <div id="extra-fields-container"></div>
                     </div>
                     <div class="card-footer d-flex">
-                        <button type="button" id="saveProductBtn" class="btn btn-primary">Save</button>
+                        {{-- <button type="button" id="saveProductBtn" class="btn btn-primary">Save</button> --}}
+                        <button type="submit" id="saveProductBtn" class="btn btn-primary">Save</button>
                     </div>
                 </form>
 
@@ -247,59 +250,59 @@
 
 
             // Add Product
-            $('#saveProductBtn').click(function() {
-                let formData = {
-                    category_id: $('#category_id').val(),
-                    sub_category_id: $('#sub_category_id').val() ? $('#sub_category_id').val() : null,
-                    product_name: $('#product_name').val(),
-                    product_details: $('#product_details').val(),
-                    _token: $('input[name="_token"]').val(),
-                    product_image: $('#product_image')[0].files[0], // File input
-                    productvarient: [] // Array for variants
-                };
+            // $('#saveProductBtn').click(function() {
+            //     let formData = {
+            //         category_id: $('#category_id').val(),
+            //         sub_category_id: $('#sub_category_id').val() ? $('#sub_category_id').val() : null,
+            //         product_name: $('#product_name').val(),
+            //         product_details: $('#product_details').val(),
+            //         _token: $('input[name="_token"]').val(),
+            //         product_image: $('#product_image')[0].files[0], // File input
+            //         productvarient: [] // Array for variants
+            //     };
 
-                // Add dynamically created unit and price fields to productvarient
-                $('#extra-fields-container .form-group').each(function() {
-                    const unit = $(this).find('input[name="unit[]"]').val();
-                    const price = $(this).find('input[name="price[]"]').val();
-                    if (unit && price) {
-                        formData.productvarient.push({
-                            unit: unit,
-                            price: price
-                        });
-                    }
-                });
+            //     // Add dynamically created unit and price fields to productvarient
+            //     $('#extra-fields-container .form-group').each(function() {
+            //         const unit = $(this).find('input[name="unit[]"]').val();
+            //         const price = $(this).find('input[name="price[]"]').val();
+            //         if (unit && price) {
+            //             formData.productvarient.push({
+            //                 unit: unit,
+            //                 price: price
+            //             });
+            //         }
+            //     });
 
-                let ajaxData = new FormData();
-                ajaxData.append('category_id', formData.category_id);
-                ajaxData.append('sub_category_id', formData.sub_category_id);
-                ajaxData.append('product_name', formData.product_name);
-                ajaxData.append('product_details', formData.product_details);
-                ajaxData.append('_token', formData._token);
-                ajaxData.append('product_image', formData.product_image);
+            //     let ajaxData = new FormData();
+            //     ajaxData.append('category_id', formData.category_id);
+            //     ajaxData.append('sub_category_id', formData.sub_category_id);
+            //     ajaxData.append('product_name', formData.product_name);
+            //     ajaxData.append('product_details', formData.product_details);
+            //     ajaxData.append('_token', formData._token);
+            //     ajaxData.append('product_image', formData.product_image);
 
-                // Append each variant
-                formData.productvarient.forEach((variant, index) => {
-                    ajaxData.append(`productvarient[${index}][unit]`, variant.unit);
-                    ajaxData.append(`productvarient[${index}][price]`, variant.price);
-                });
+            //     // Append each variant
+            //     formData.productvarient.forEach((variant, index) => {
+            //         ajaxData.append(`productvarient[${index}][unit]`, variant.unit);
+            //         ajaxData.append(`productvarient[${index}][price]`, variant.price);
+            //     });
 
-                $.ajax({
-                    url: '{{ route('product.store') }}', // Replace with the correct route
-                    type: 'POST',
-                    data: ajaxData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        // alert('Product created successfully!');
-                        location.reload();
-                    },
-                    error: function(error) {
-                        console.error(error);
-                        // alert('Error creating the product.');
-                    }
-                });
-            });
+            //     $.ajax({
+            //         url: '{{ route('product.store') }}', // Replace with the correct route
+            //         type: 'POST',
+            //         data: ajaxData,
+            //         processData: false,
+            //         contentType: false,
+            //         success: function(response) {
+            //             // alert('Product created successfully!');
+            //             location.reload();
+            //         },
+            //         error: function(error) {
+            //             console.error(error);
+            //             // alert('Error creating the product.');
+            //         }
+            //     });
+            // });
 
             // Toggle Status
             $(document).on('click', '[id^="toggleStatusBtn"]', function() {

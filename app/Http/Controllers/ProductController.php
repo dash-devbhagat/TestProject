@@ -88,10 +88,10 @@ class ProductController extends Controller
             }
         }
 
-        // return redirect()->route('product.index')->with('success', 'Product Created Successfully.');
-        session()->flash('success', 'Product Created Successfully.');
+        return redirect()->route('product.index')->with('success', 'Product Created Successfully.');
+        // session()->flash('success', 'Product Created Successfully.');
 
-        return response()->json(['success' => true]);
+        // return response()->json(['success' => true]);
     }
 
     /**
@@ -99,7 +99,7 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        $product = Product::with('productVarients')->findOrFail($id);
+        $product = Product::with(['productVarients', 'category', 'subCategory'])->findOrFail($id);
         // return $product;
         return view('admin.product.view_product', compact('product'));
     }

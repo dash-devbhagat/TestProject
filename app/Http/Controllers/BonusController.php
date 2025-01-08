@@ -44,11 +44,11 @@ class BonusController extends Controller
             'amount' => $request->amount,
         ]);
     
-        // return response()->json(['message' => 'Bonus added successfully!']);
+        return redirect()->route('bonus.index')->with('success', 'Bonus Created Successfully.');
 
-        session()->flash('success', 'Bonus Created Successfully.');
+        // session()->flash('success', 'Bonus Created Successfully.');
     
-        return response()->json(['success' => true]);
+        // return response()->json(['success' => true]);
     }
     
 
@@ -102,5 +102,20 @@ class BonusController extends Controller
         $bonus->delete();
     
         return redirect()->route('bonus.index')->with('success', 'Bonus Deleted Successfully.');
+    }
+
+    public function toggleStatus($id)
+    {
+        // dd($id);
+        $bonus = Bonus::findOrFail($id);
+        
+        $bonus->is_active = !$bonus->is_active;
+        $bonus->save();
+
+        return response()->json([
+            'success' => true,
+            'status' => $bonus->is_active ? 'activated' : 'deactivated',
+            'message' => $bonus->is_active ? 'Bonus activated successfully.' : 'Bonus deactivated successfully.'
+        ]);
     }
 }

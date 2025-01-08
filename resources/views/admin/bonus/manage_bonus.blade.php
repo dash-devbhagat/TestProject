@@ -34,25 +34,27 @@
 
                 </div>
 
-                <form class="form-horizontal">
+                {{-- <form class="form-horizontal"> --}}
+                <form action="{{ route('bonus.store') }}" method="POST" enctype="multipart/form-data"
+                    class="form-horizontal mt-4">
                     @csrf
                     <div class="card-body">
                         <div class="form-group row">
                             <!-- Column 1: Bonus Type -->
                             <div class="col-sm-6">
                                 <label for="bonusType" class="col-form-label">Bonus Type</label>
-                                <input type="text" class="form-control @error('type') is-invalid @enderror" id="bonusType" name="type"
-                                    placeholder="Enter Bonus Type">
-                                    @error('type')
+                                <input type="text" class="form-control @error('type') is-invalid @enderror"
+                                    id="bonusType" name="type" placeholder="Enter Bonus Type">
+                                @error('type')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <!-- Column 2: Bonus Amount -->
                             <div class="col-sm-6">
                                 <label for="bonusAmount" class="col-form-label">Bonus Amount</label>
-                                <input type="number" class="form-control @error('amount') is-invalid @enderror" id="bonusAmount" name="amount"
-                                    placeholder="Enter Bonus Amount" step="0.01">
-                                    @error('amount')
+                                <input type="number" class="form-control @error('amount') is-invalid @enderror"
+                                    id="bonusAmount" name="amount" placeholder="Enter Bonus Amount" step="0.01">
+                                @error('amount')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -60,6 +62,7 @@
                     </div>
                     <!-- /.card-body -->
                     <div class="card-footer">
+                        {{-- <button type="buton" id="saveBonusBtn" class="btn btn-primary float-right">Save</button> --}}
                         <button type="submit" id="saveBonusBtn" class="btn btn-primary float-right">Save</button>
                     </div>
                     <!-- /.card-footer -->
@@ -83,6 +86,7 @@
                                 <th>Sr</th>
                                 <th>Bonus Type</th>
                                 <th>Bonus Amount</th>
+                                <th>Active Status</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -95,6 +99,15 @@
                                     <td>{{ $i }}</td>
                                     <td>{{ $bonus->type }}</td>
                                     <td>{{ $bonus->amount }}</td>
+                                    <td class="text-center">
+                                        <!-- Active/Inactive Toggle Icon -->
+                                        <a href="javascript:void(0);" id="toggleStatusBtn{{ $bonus->id }}"
+                                            data-id="{{ $bonus->id }}" class="text-center" data-toggle="tooltip"
+                                            title="{{ $bonus->is_active ? 'Deactivate' : 'Activate' }}">
+                                            <i
+                                                class="fas {{ $bonus->is_active ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-2x"></i>
+                                        </a>
+                                    </td>
                                     <td class="text-center">
                                         <!-- Edit Icon -->
                                         <a href="#javascript" class="text-primary" data-toggle="modal"
@@ -177,46 +190,52 @@
     <script>
         $(document).ready(function() {
 
-            // Add Bonus
-            $('#saveBonusBtn').on('click', function() {
-                event.preventDefault();
-                // Collect form data
-                let formData = {
-                    type: $('#bonusType').val(),
-                    amount: $('#bonusAmount').val(),
-                    _token: $('input[name="_token"]').val(),
-                };
-
-                // Perform AJAX Request
-                $.ajax({
-                    url: "{{ route('bonus.store') }}", // Route to store method
-                    type: "POST",
-                    data: formData,
-                    success: function(response) {
-
-
-                        // Display success message
-                        // alert(response.message);
-
-                        // Optionally, reload or dynamically update the user list
-                        location.reload();
-                    },
-                    error: function(xhr) {
-                        // Handle validation errors
-                        let errors = xhr.responseJSON.errors;
-                        if (errors) {
-                            // if (errors.type) alert("Error: " + errors.type);
-                            // if (errors.amount) alert("Error: " + errors.amount);
-                            console.log(
-                                "error occured in name or email or password. remove above comment and know what is wrong."
-                            );
-                        } else {
-                            alert("An error occurred. Please try again.");
-                        }
-                    }
-                });
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
             });
-            
+
+            // Add Bonus
+            // $('#saveBonusBtn').on('click', function() {
+            //     event.preventDefault();
+            //     // Collect form data
+            //     let formData = {
+            //         type: $('#bonusType').val(),
+            //         amount: $('#bonusAmount').val(),
+            //         _token: $('input[name="_token"]').val(),
+            //     };
+
+            //     // Perform AJAX Request
+            //     $.ajax({
+            //         url: "{{ route('bonus.store') }}", // Route to store method
+            //         type: "POST",
+            //         data: formData,
+            //         success: function(response) {
+
+
+            //             // Display success message
+            //             // alert(response.message);
+
+            //             // Optionally, reload or dynamically update the user list
+            //             location.reload();
+            //         },
+            //         error: function(xhr) {
+            //             // Handle validation errors
+            //             let errors = xhr.responseJSON.errors;
+            //             if (errors) {
+            //                 // if (errors.type) alert("Error: " + errors.type);
+            //                 // if (errors.amount) alert("Error: " + errors.amount);
+            //                 console.log(
+            //                     "error occured in name or email or password. remove above comment and know what is wrong."
+            //                 );
+            //             } else {
+            //                 alert("An error occurred. Please try again.");
+            //             }
+            //         }
+            //     });
+            // });
+
 
             // On Edit Icon Click Modal Open
             $('.editBonusBtn').on('click', function() {
@@ -249,10 +268,10 @@
             $('#updateBonusBtn').on('click', function() {
                 // Collect form data
                 const formData = {
-                    id: $('#editBonusId').val(), 
-                    type: $('#editBonusType').val(), 
-                    amount: $('#editBonusAmount').val(), 
-                    _token: $('input[name="_token"]').val(), 
+                    id: $('#editBonusId').val(),
+                    type: $('#editBonusType').val(),
+                    amount: $('#editBonusAmount').val(),
+                    _token: $('input[name="_token"]').val(),
                 };
 
                 // Perform AJAX Request
@@ -271,8 +290,31 @@
                         location.reload();
                     },
                     error: function(xhr) {
-                       // Handle errors
-                       alert('Error updating bonus data. Please try again.');
+                        // Handle errors
+                        alert('Error updating bonus data. Please try again.');
+                    }
+                });
+            });
+
+            // Toggle Status
+            $(document).on('click', '[id^="toggleStatusBtn"]', function() {
+                var bonusId = $(this).data('id');
+                console.log(bonusId)
+
+                $.ajax({
+                    url: '/bonus/' + bonusId +
+                        '/toggle-status', // Use the route for toggling status
+                    method: 'POST',
+                    data: {
+                        _token: $('input[name="_token"]').val(), // CSRF token
+                    },
+                    success: function(response) {
+                        // Optionally, display a success message
+                        // alert(response.message);
+                        location.reload();
+                    },
+                    error: function() {
+                        alert('An error occurred while toggling user status.');
                     }
                 });
             });

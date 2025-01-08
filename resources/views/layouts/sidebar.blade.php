@@ -98,8 +98,8 @@
 
             @if (Auth::user()->role === 'admin')
                 <li class="nav-item">
-                    <a href="{{ route('ph.index') }}"
-                        class="nav-link {{ request()->routeIs('ph.index') ? 'active' : '' }}">
+                    <a href="{{ route('oh.index') }}"
+                        class="nav-link {{ request()->routeIs('oh.index') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-receipt"></i>
                         <p>
                             Order Payment History
