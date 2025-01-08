@@ -10,7 +10,7 @@ use App\Http\Controllers\API\V1\CategoryAPIController;
 use App\Http\Controllers\API\V1\SubCategoryAPIController;
 use App\Http\Controllers\API\V1\StateAPIController;
 use App\Http\Controllers\API\V1\CityAPIController;
-
+use App\Http\Controllers\API\V1\ProductAPIController;
 // Authentication Routes
 Route::post('v1/auth/signup', [MobileUserController::class, 'signup']);
 Route::post('v1/auth/signin', [MobileUserController::class, 'signin']);
@@ -30,4 +30,5 @@ Route::middleware(['custom.auth', 'mob.check.profile'])->group(function () {
     Route::post('v1/subcategories', [SubCategoryAPIController::class, 'getSubCategoriesByCategoryId']);
     Route::get('v1/states', [StateAPIController::class, 'getAllStates']);
     Route::post('v1/cities', [CityAPIController::class, 'getCitiesByStateId']);
+    Route::post('v1/products', [ProductAPIController::class, 'getActiveProducts']);
 });
