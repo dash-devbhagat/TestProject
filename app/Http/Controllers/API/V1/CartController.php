@@ -7,6 +7,8 @@ use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\ProductVarient;
 use App\Models\Charge;
+use App\Models\Order;
+use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -264,6 +266,74 @@ class CartController extends Controller
         ], 200);
     }
 
+    // public function checkout()
+    // {
+    //     $user = Auth::user();
+    //     $cart = Cart::where('user_id', $user->id)->first();
+
+    //     if (!$cart || $cart->items->isEmpty()) {
+    //         return response()->json([
+    //             'data' => json_decode('{}'),
+    //             'meta' => [
+    //                 'success' => false,
+    //                 'message' => 'Your cart is empty.',
+    //             ],
+    //         ], 200);
+    //     }
+
+    //     // Calculate Cart Total
+    //     $cartTotal = $cart->items->sum(function ($item) {
+    //         $variant = $item->productVariant;  // Fetch price dynamically from product_varients table
+    //         return $variant->price * $item->quantity;
+    //     });
+
+    //     // Format cart total
+    //     $cartTotal = number_format($cartTotal, 2, '.', '');
+
+    //     // Fetch Additional Charges
+    //     $charges = Charge::where('is_active', 1)->get();
+
+    //     $additionalCharges = [];
+    //     $totalAdditionalCharges = 0;
+
+    //     foreach ($charges as $charge) {
+    //         if ($charge->type === 'percentage') {
+    //             $chargeAmount = ($cartTotal * $charge->value) / 100;
+    //         } else { // Rupees
+    //             $chargeAmount = $charge->value;
+    //         }
+
+    //         // Format charge amount
+    //         $chargeAmount = number_format($chargeAmount, 2, '.', '');
+
+    //         $additionalCharges[] = [
+    //             'name' => $charge->name,
+    //             'type' => $charge->type,
+    //             'value' => $charge->value,
+    //             'amount' => $chargeAmount,
+    //         ];
+
+    //         $totalAdditionalCharges += $chargeAmount;
+    //     }
+
+    //     // Grand Total
+    //     $grandTotal = $cartTotal + $totalAdditionalCharges;
+
+    //     // Format grand total
+    //     $grandTotal = number_format($grandTotal, 2, '.', '');
+
+    //     return response()->json([
+    //         'data' => [
+    //             'cart_total' => $cartTotal,
+    //             'additional_charges' => $additionalCharges,
+    //             'grand_total' => $grandTotal,
+    //         ],
+    //         'meta' => [
+    //             'success' => true,
+    //             'message' => 'Checkout details calculated successfully.',
+    //         ],
+    //     ], 200);
+    // }
     public function checkout()
     {
         $user = Auth::user();
@@ -281,7 +351,7 @@ class CartController extends Controller
 
         // Calculate Cart Total
         $cartTotal = $cart->items->sum(function ($item) {
-            $variant = $item->productVariant;  // Fetch price dynamically from product_varients table
+            $variant = $item->productVariant;
             return $variant->price * $item->quantity;
         });
 
@@ -301,34 +371,56 @@ class CartController extends Controller
                 $chargeAmount = $charge->value;
             }
 
-            // Format charge amount
             $chargeAmount = number_format($chargeAmount, 2, '.', '');
-
             $additionalCharges[] = [
                 'name' => $charge->name,
                 'type' => $charge->type,
                 'value' => $charge->value,
                 'amount' => $chargeAmount,
             ];
-
             $totalAdditionalCharges += $chargeAmount;
         }
 
         // Grand Total
         $grandTotal = $cartTotal + $totalAdditionalCharges;
-
-        // Format grand total
         $grandTotal = number_format($grandTotal, 2, '.', '');
+
+        // Create Order Entry
+        $order = Order::create([
+            'user_id' => $user->id,
+            'status' => 'pending',
+            'sub_total' => $cartTotal,
+            'charges_total' => $totalAdditionalCharges,
+            'grand_total' => $grandTotal,
+            'address_id' => $user->address_id, // Assuming user's address is used
+            'transaction_status' => 'pending', // Assuming pending status for now
+        ]);
+
+        // Create Order Items
+        foreach ($cart->items as $cartItem) {
+            OrderItem::create([
+                'order_id' => $order->id,
+                'cart_id' => $cart->id,  // Adding the cart_id here
+                'product_id' => $cartItem->product_id,
+                'product_variant_id' => $cartItem->product_variant_id,
+                'quantity' => $cartItem->quantity,
+            ]);
+        }
+
+        // Clear Cart after Checkout
+        $cart->items()->delete();
 
         return response()->json([
             'data' => [
+                'order_id' => $order->id,
                 'cart_total' => $cartTotal,
                 'additional_charges' => $additionalCharges,
+                'charges_total' => number_format($totalAdditionalCharges, 2, '.', ''), // Added charges total here
                 'grand_total' => $grandTotal,
             ],
             'meta' => [
                 'success' => true,
-                'message' => 'Checkout details calculated successfully.',
+                'message' => 'Checkout successful, order placed.',
             ],
         ], 200);
     }
