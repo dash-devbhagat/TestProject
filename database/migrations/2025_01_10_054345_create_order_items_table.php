@@ -14,7 +14,6 @@ class CreateOrderItemsTable extends Migration
             $table->unsignedBigInteger('product_id');
             $table->unsignedBigInteger('product_variant_id')->nullable();
             $table->unsignedBigInteger('cart_id')->nullable();
-            $table->unsignedBigInteger('cart_item_id')->nullable();
             $table->integer('quantity');
             $table->timestamps();
 
@@ -22,7 +21,6 @@ class CreateOrderItemsTable extends Migration
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             $table->foreign('product_variant_id')->references('id')->on('product_varients')->onDelete('cascade');
             $table->foreign('cart_id')->references('id')->on('carts')->onDelete('cascade');
-            $table->foreign('cart_item_id')->references('id')->on('cart_items')->onDelete('cascade');
         });
     }
 
