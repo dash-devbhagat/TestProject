@@ -92,4 +92,62 @@ class TransactionAPIController extends Controller
             ],
         ], 200);
     }
+
+    public function cancelOrder(Request $request)
+    {
+        // Validate the request to ensure an orderId is provided
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+        ]);
+
+        $orderId = $request->input('order_id');
+
+        // Fetch the order by ID
+        $order = Order::where('id', $orderId)
+            ->where('user_id', Auth::user()->id)  // Ensure the user is canceling their own order
+            ->first();
+
+        // Check if order exists
+        if (!$order) {
+            return response()->json([
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => 'Order not found or you are not authorized to cancel this order.',
+                ],
+            ], 200);
+        }
+
+        // Check if the order is in a cancellable state (e.g., "pending")
+        if ($order->status !== 'pending') {
+            return response()->json([
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => 'Only pending orders can be canceled.',
+                ],
+            ], 200);
+        }
+
+        // Check if payment was successful
+        $refundMessage = '';
+        if ($order->transaction_status === 'success') {
+            $refundMessage = 'Since your payment was successful, a refund will be processed.';
+        }
+
+        // Update order status to 'cancelled'
+        $order->status = 'cancelled';
+        $order->save();
+
+        return response()->json([
+            'data' => [
+                'order_id' => $order->id,
+                'order_status' => $order->status,
+            ],
+            'meta' => [
+                'success' => true,
+                'message' => 'Order successfully canceled.' . ($refundMessage ? ' ' . $refundMessage : ''),
+            ],
+        ], 200);
+    }
 }
