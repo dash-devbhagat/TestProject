@@ -12,7 +12,6 @@ class Transaction extends Model
     protected $fillable = [
         'user_id',
         'order_id',
-        'order_item_id',
         'payment_mode',
         'payment_type',
         'payment_status',
@@ -20,16 +19,11 @@ class Transaction extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(MobileUser::class, 'user_id');
     }
 
     public function order()
     {
         return $this->belongsTo(Order::class, 'order_id');
-    }
-
-    public function orderItem()
-    {
-        return $this->belongsTo(OrderItem::class, 'order_item_id');
     }
 }
