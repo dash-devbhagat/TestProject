@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\ChargeController;
 use App\Http\Controllers\MobileUserController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderPaymentHistoryController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentHistoryController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\UserController;
 use App\Models\SubCategory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
 
 
 
@@ -49,9 +51,7 @@ Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']
 Route::middleware(['auth', 'check.active'])->group(function () {
 
     // for both
-    Route::get('/dashboard', function () {
-        return view('dashboard', ['user' => Auth::user()]);
-    })->middleware('profile.complete')->name('dashboard');
+    Route::get('/dashboard', [AuthController::class, 'index'])->name('dashboard');
 
     Route::get('/change-password', [ChangePasswordController::class, 'showChangePasswordForm'])->name('change.password');
     Route::post('/change-password', [ChangePasswordController::class, 'changePassword'])->name('change.password.submit');
@@ -65,6 +65,9 @@ Route::middleware(['auth', 'check.active'])->group(function () {
     Route::get('mobileUser',[MobileUserController::class, 'index'])->name('mobileUser.index');
     Route::get('mobileUser/{id}',[MobileUserController::class, 'show'])->name('mobileUser.show');
     Route::post('/mobileUser/{id}/toggle-status', [MobileUserController::class, 'toggleStatus']);
+
+    Route::resource('order',OrderController::class);
+    Route::post('/order/update-status/{id}', [OrderController::class, 'updateStatus'])->name('order.updateStatus');
 
     Route::resource('bonus', BonusController::class);
     Route::post('/bonus/{id}/toggle-status', [BonusController::class, 'toggleStatus']);

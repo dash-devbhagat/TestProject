@@ -4,15 +4,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\SendPasswordChangeMail;  // Correct import
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
-use App\Mail\SendPasswordChangeMail;  // Correct import
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Session;
 
 
 
@@ -35,6 +37,7 @@ class AuthController extends Controller
 
             if ($user->role === 'admin') { // Adjust based on your role attribute
                 return redirect()->route('dashboard');
+
             }
 
             if ($user->phone && $user->storename && $user->location && $user->latitude && $user->longitude && $user->logo) {
@@ -62,5 +65,16 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/');
+    }
+
+    public function index()
+    {
+        $orders = Order::with(['user', 'address', 'items', 'transactions'])->get();
+
+        $pendingOrders = $orders->where('status', 'pending')->count();
+        $inProgressOrders = $orders->where('status', 'in progress')->count();
+        $completedOrders = $orders->where('status', 'delivered')->count();
+
+        return view('dashboard', compact('orders', 'pendingOrders', 'inProgressOrders', 'completedOrders'));
     }
 }
