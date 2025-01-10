@@ -12,6 +12,7 @@ use App\Http\Controllers\API\V1\StateAPIController;
 use App\Http\Controllers\API\V1\CityAPIController;
 use App\Http\Controllers\API\V1\ProductAPIController;
 use App\Http\Controllers\API\V1\CartController;
+use App\Http\Controllers\API\V1\TransactionAPIController;
 // Authentication Routes
 Route::post('v1/auth/signup', [MobileUserController::class, 'signup']);
 Route::post('v1/auth/signin', [MobileUserController::class, 'signin']);
@@ -39,4 +40,5 @@ Route::middleware(['custom.auth', 'mob.check.profile'])->group(function () {
     Route::post('v1/cart/remove', [CartController::class, 'removeFromCart']);
     Route::post('v1/cart/clear', [CartController::class, 'clearCart']);
     Route::get('v1/cart/checkout', [CartController::class, 'checkout']);
+    Route::post('v1/order/payment', [TransactionAPIController::class, 'processPayment']);
 });

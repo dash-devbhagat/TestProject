@@ -12,7 +12,6 @@ class CreateTransactionsTable extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('order_id')->nullable();
-            $table->unsignedBigInteger('order_item_id')->nullable();
             $table->enum('payment_mode', ['online', 'cash on delivery']);
             $table->enum('payment_type', ['credit', 'debit', 'upi'])->nullable();
             $table->enum('payment_status', ['failed', 'pending', 'success'])->default('pending');
@@ -20,7 +19,6 @@ class CreateTransactionsTable extends Migration
 
             $table->foreign('user_id')->references('id')->on('mobile_users')->onDelete('cascade');
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
-            $table->foreign('order_item_id')->references('id')->on('order_items')->onDelete('cascade');
         });
     }
 
