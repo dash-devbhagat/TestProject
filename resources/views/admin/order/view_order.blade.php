@@ -55,7 +55,7 @@
                                     </tr>
                                     <tr>
                                         <th>Order SKU</th>
-                                        <td>123</td>
+                                        <td>{{ $order->order_number }}</td>
                                     </tr>
                                     <tr>
                                         <th>User Name</th>
@@ -134,8 +134,8 @@
                                         <td>${{ number_format($order->grand_total, 2) }}</td>
                                     </tr>
                                     <tr>
-                                        <th>Transaction ID</th>
-                                        <td>{{ $order->transaction_id }}</td>
+                                        <th>Transaction Number</th>
+                                        <td>00{{ $order->transaction_id }}</td>
                                     </tr>
                                     <tr>
                                         <th>Transaction Status</th>

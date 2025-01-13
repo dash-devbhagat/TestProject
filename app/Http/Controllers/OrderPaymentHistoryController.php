@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 
 class OrderPaymentHistoryController extends Controller
 {
     public function index(){
-        // $payments = Payment::with(['user', 'bonus','paymentParent','paymentChild'])
-        // ->orderBy('created_at', 'desc')
-        // ->get();
-        // return $payments;
-
-        // return view('admin.order_payment_history.order_payment_history', compact('payments'));
-        return view('admin.order_payment_history.order_payment_history');
+        $transactions = Transaction::with(['user', 'order'])
+        ->orderBy('created_at', 'desc')
+        ->get();
+        // return $transactions;
+        return view('admin.order_payment_history.order_payment_history',compact('transactions'));
     }
 }

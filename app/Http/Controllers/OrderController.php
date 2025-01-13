@@ -74,4 +74,10 @@ class OrderController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function cancelledOrders(){
+        $cancelledOrders = Order::where('status', 'cancelled')->get();
+
+        return view('admin.order.cancelled_orders', compact('cancelledOrders'));
+    }
+
 }

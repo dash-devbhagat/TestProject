@@ -74,7 +74,8 @@ class AuthController extends Controller
         $pendingOrders = $orders->where('status', 'pending')->count();
         $inProgressOrders = $orders->where('status', 'in progress')->count();
         $completedOrders = $orders->where('status', 'delivered')->count();
+        $cancelledOrdersCount = $orders->where('status', 'cancelled')->count();
 
-        return view('dashboard', compact('orders', 'pendingOrders', 'inProgressOrders', 'completedOrders'));
+        return view('dashboard', compact('orders', 'pendingOrders', 'inProgressOrders', 'completedOrders','cancelledOrdersCount'));
     }
 }

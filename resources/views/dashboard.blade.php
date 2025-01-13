@@ -50,6 +50,12 @@
                             <div class="text-center float-end">
                                 <button class="btn btn-secondary" onclick="filterOrders('all')">Show All Orders</button>
                             </div>
+                            {{-- view cancelled orders --}}
+                            <div class="text-center float-end mr-3">
+                                <a href="{{ route('cancelled-orders') }}" class="btn btn-outline-danger">View Cancelled
+                                    Orders ({{ $cancelledOrdersCount }})</a>
+                            </div>
+
                         </div>
                         <div class="card-body">
                             <!-- Order Status Filter Cards -->
@@ -90,52 +96,56 @@
                                 <h5 class="mb-3">Orders</h5>
                                 <div class="row" id="ordersContainer">
                                     @forelse ($orders as $order)
-                                        @php
-                                            // Determine card classes based on order status
-                                            switch ($order->status) {
-                                                case 'pending':
-                                                    $cardClass = 'bg-danger text-white';
-                                                    $headerText = 'Pending Order';
-                                                    break;
-                                                case 'in progress':
-                                                    $cardClass = 'bg-warning text-dark';
-                                                    $headerText = 'In Progress Order';
-                                                    break;
-                                                case 'delivered':
-                                                    $cardClass = 'bg-success text-white';
-                                                    $headerText = 'Completed Order';
-                                                    break;
-                                                default:
-                                                    $cardClass = 'bg-secondary text-white';
-                                                    $headerText = 'Unknown Status';
-                                                    break;
-                                            }
-                                        @endphp
-                                        <div class="col-lg-4 col-md-6 col-sm-12 mb-4 order-card"
-                                            data-status="{{ $order->status }}">
-                                            <a href="{{ route('order.show', $order->id) }}" class="text-decoration-none">
-                                                <div class="card {{ $cardClass }} h-100">
-                                                    <div class="card-header">{{ $headerText }}</div>
-                                                    <div class="card-body">
-                                                        <h5 class="card-title">Order #{{ $order->id }}</h5>
-                                                        <p class="card-text">
-                                                            <strong>User:</strong> {{ $order->user->name }} <br>
-                                                            <strong>Total:</strong>
-                                                            ${{ number_format($order->grand_total, 2) }}<br>
-                                                            <strong>Status:</strong> {{ ucfirst($order->status) }} <br>
-                                                            <strong>Address:</strong> {{ $order->address->address_line }},
-                                                            {{ $order->address->city->name ?? 'N/A' }} <br>
-                                                        </p>
+                                        @if ($order->status !== 'cancelled')
+                                            @php
+                                                // Determine card classes based on order status
+                                                switch ($order->status) {
+                                                    case 'pending':
+                                                        $cardClass = 'bg-danger text-white';
+                                                        $headerText = 'Pending Order';
+                                                        break;
+                                                    case 'in progress':
+                                                        $cardClass = 'bg-warning text-dark';
+                                                        $headerText = 'In Progress Order';
+                                                        break;
+                                                    case 'delivered':
+                                                        $cardClass = 'bg-success text-white';
+                                                        $headerText = 'Completed Order';
+                                                        break;
+                                                    default:
+                                                        $cardClass = 'bg-secondary text-white';
+                                                        $headerText = 'Cancelled Order';
+                                                        break;
+                                                }
+                                            @endphp
+                                            <div class="col-lg-4 col-md-6 col-sm-12 mb-4 order-card"
+                                                data-status="{{ $order->status }}">
+                                                <a href="{{ route('order.show', $order->id) }}"
+                                                    class="text-decoration-none">
+                                                    <div class="card {{ $cardClass }} h-100">
+                                                        <div class="card-header">{{ $headerText }}</div>
+                                                        <div class="card-body">
+                                                            <h5 class="card-title">Order #{{ $order->id }}</h5>
+                                                            <p class="card-text">
+                                                                <strong>User:</strong> {{ $order->user->name }} <br>
+                                                                <strong>Total:</strong>
+                                                                ${{ number_format($order->grand_total, 2) }}<br>
+                                                                <strong>Status:</strong> {{ ucfirst($order->status) }} <br>
+                                                                <strong>Address:</strong>
+                                                                {{ $order->address->address_line }},
+                                                                {{ $order->address->city->name ?? 'N/A' }} <br>
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                    @empty
-                                        <div class="col-12">
-                                            <div class="alert alert-info" role="alert">
-                                                No orders available.
+                                                </a>
                                             </div>
-                                        </div>
+                                            @endif
+                                        @empty
+                                            <div class="col-12">
+                                                <div class="alert alert-info" role="alert">
+                                                    No orders available.
+                                                </div>
+                                            </div>
                                     @endforelse
                                 </div>
                             </div>

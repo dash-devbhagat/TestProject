@@ -68,6 +68,7 @@ Route::middleware(['auth', 'check.active'])->group(function () {
 
     Route::resource('order',OrderController::class);
     Route::post('/order/update-status/{id}', [OrderController::class, 'updateStatus'])->name('order.updateStatus');
+    Route::get('/cancelled-orders', [OrderController::class, 'cancelledOrders'])->name('cancelled-orders');
 
     Route::resource('bonus', BonusController::class);
     Route::post('/bonus/{id}/toggle-status', [BonusController::class, 'toggleStatus']);
