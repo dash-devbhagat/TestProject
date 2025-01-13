@@ -46,6 +46,8 @@
                                                 </option>
                                                 <option value="delivered"
                                                     {{ $order->status == 'delivered' ? 'selected' : '' }}>Delivered</option>
+                                                <option value="cancelled"
+                                                    {{ $order->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                                             </select>
                                             <i id="editIcon" class="fas fa-edit text-primary ml-2" style="cursor: pointer;"
                                                 title="Edit Status"></i>

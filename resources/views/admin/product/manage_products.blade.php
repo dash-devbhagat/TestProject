@@ -168,10 +168,6 @@
                                             <i class="fa fa-eye"></i>
                                         </a>
                                         <!-- Edit Icon -->
-                                        {{-- <a href="#javascript" class="text-primary" data-toggle="modal"
-                                            data-target="#editProductModal" data-bs-toggle="tooltip" title="Edit">
-                                            <i class="fa fa-edit editProductBtn" data-id="{{ $product->id }}"></i>
-                                        </a> --}}
                                         <a href="{{ route('product.edit', $product->id) }}" class="text-primary"
                                             data-bs-toggle="tooltip" title="Edit">
                                             <i class="fa fa-edit"></i>

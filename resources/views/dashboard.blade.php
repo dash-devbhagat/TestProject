@@ -61,21 +61,43 @@
                             <!-- Order Status Filter Cards -->
                             <div class="row mb-4">
                                 <!-- Pending Orders Filter Card -->
-                                <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                                {{-- <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
                                     <div class="card bg-white text-danger h-100 filter-card" data-status="pending">
                                         <div class="card-header">Pending Orders</div>
                                         <div class="card-body">
                                             <h3>{{ $pendingOrders }}</h3>
+                                            <a  class="btn btn-outline-danger btn-sm float-end">
+                                                View in Table Form
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div> --}}
+                                <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                                    <div class="card bg-white text-danger h-100 filter-card" data-status="pending">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">Pending Orders</h5>
+                                        </div>
+                                        <div class="card-body d-flex flex-column">
+                                            <h3 class="mb-3">{{ $pendingOrders }}</h3>
+                                            <a href="{{ route('orders.table', ['status' => 'pending']) }}" class="btn btn-outline-danger btn-sm mt-auto">
+                                                View in Table Form
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
 
+
                                 <!-- In Progress Orders Filter Card -->
                                 <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
                                     <div class="card bg-white text-dark h-100 filter-card" data-status="in progress">
-                                        <div class="card-header">In Progress Orders</div>
-                                        <div class="card-body">
-                                            <h3>{{ $inProgressOrders }}</h3>
+                                        <div class="card-header">
+                                            <h5 class="mb-0">In Progress Orders</h5>
+                                        </div>
+                                        <div class="card-body d-flex flex-column">
+                                            <h3 class="mb-3">{{ $inProgressOrders }}</h3>
+                                            <a href="{{ route('orders.table', ['status' => 'in progress']) }}" class="btn btn-outline-dark btn-sm mt-auto">
+                                                View in Table Form
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -83,9 +105,14 @@
                                 <!-- Completed Orders Filter Card -->
                                 <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
                                     <div class="card bg-white text-success h-100 filter-card" data-status="delivered">
-                                        <div class="card-header">Completed Orders</div>
-                                        <div class="card-body">
-                                            <h3>{{ $completedOrders }}</h3>
+                                        <div class="card-header">
+                                            <h5 class="mb-0">Completed Orders</h5>
+                                        </div>
+                                        <div class="card-body d-flex flex-column">
+                                            <h3 class="mb-3">{{ $completedOrders }}</h3>
+                                            <a href="{{ route('orders.table', ['status' => 'delivered']) }}" class="btn btn-outline-success btn-sm mt-auto">
+                                                View in Table Form
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -139,13 +166,13 @@
                                                     </div>
                                                 </a>
                                             </div>
-                                            @endif
-                                        @empty
-                                            <div class="col-12">
-                                                <div class="alert alert-info" role="alert">
-                                                    No orders available.
-                                                </div>
+                                        @endif
+                                    @empty
+                                        <div class="col-12">
+                                            <div class="alert alert-info" role="alert">
+                                                No orders available.
                                             </div>
+                                        </div>
                                     @endforelse
                                 </div>
                             </div>
