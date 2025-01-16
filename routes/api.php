@@ -13,6 +13,7 @@ use App\Http\Controllers\API\V1\CityAPIController;
 use App\Http\Controllers\API\V1\ProductAPIController;
 use App\Http\Controllers\API\V1\CartController;
 use App\Http\Controllers\API\V1\TransactionAPIController;
+use App\Http\Controllers\API\V1\OrderAPIController;
 // Authentication Routes
 Route::post('v1/auth/signup', [MobileUserController::class, 'signup']);
 Route::post('v1/auth/signin', [MobileUserController::class, 'signin']);
@@ -41,5 +42,7 @@ Route::middleware(['custom.auth', 'mob.check.profile'])->group(function () {
     Route::post('v1/cart/clear', [CartController::class, 'clearCart']);
     Route::get('v1/cart/checkout', [CartController::class, 'checkout']);
     Route::post('v1/order/payment', [TransactionAPIController::class, 'processPayment']);
-    Route::post('v1/order/cancel', [TransactionAPIController::class, 'cancelOrder']);
+    Route::post('v1/order/cancel', [OrderAPIController::class, 'cancelOrder']);
+    Route::get('v1/orders', [OrderAPIController::class, 'getAllOrders']);
+    Route::post('v1/order/details', [OrderAPIController::class, 'getOrderDetails']);
 });
