@@ -54,8 +54,13 @@ class TransactionAPIController extends Controller
             ], 400);
         }
 
+        // Generate a unique transaction number
+        $transactionNumber = 'TXN-' . str_pad(mt_rand(0, 99999), 5, '0', STR_PAD_LEFT);
+
+
         // Create a transaction
         $transaction = Transaction::create([
+            'transaction_number' => $transactionNumber,
             'user_id' => Auth::user()->id,
             'order_id' => $order->id,
             'payment_mode' => $request->payment_mode,
@@ -83,6 +88,7 @@ class TransactionAPIController extends Controller
         return response()->json([
             'data' => [
                 'transaction_id' => $transaction->id,
+                'transaction_number' => $transaction->transaction_number,
                 'order_id' => $order->id,
                 'payment_status' => $request->payment_status,
             ],
