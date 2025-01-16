@@ -137,8 +137,8 @@
                                     </tr>
                                     <tr>
                                         <th>Transaction Number</th>
-                                        <td>00{{ $order->transaction_id }}</td>
-                                    </tr>
+                                        <td>{{ $order->transactions->first()->transaction_number ?? 'N/A' }}</td>
+                                    </tr>                                    
                                     <tr>
                                         <th>Transaction Status</th>
                                         <td>{{ ucfirst($order->transaction_status) }}</td>

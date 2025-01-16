@@ -48,7 +48,7 @@
                             @foreach ($transactions as $transaction)
                             <tr>
                                 <td>{{ $i }}</td>
-                                <td>00{{ $transaction->id }}</td>
+                                <td>{{ $transaction->transaction_number }}</td>
                                 <td>{{ $transaction->user->name }}</td>
                                 <td>{{ $transaction->order->order_number }}</td>
                                 <td>{{ ucfirst($transaction->order->status) }}</td>
