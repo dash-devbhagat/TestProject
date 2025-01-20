@@ -27,15 +27,15 @@
                                 setTimeout(function() {
                                     let alert = document.querySelector('.alert');
                                     if (alert) {
-                                        alert.classList.remove('show'); // Close the alert
-                                        alert.addEventListener('transitionend', () => alert.remove()); // Remove from DOM
+                                        alert.classList.remove('show');
+                                        alert.addEventListener('transitionend', () => alert.remove());
                                     }
-                                }, 2000); // 2 seconds
+                                }, 2000);
                             </script>
                         @endif
                     </div>
                 </div>
-            </div><!-- /.container-fluid -->
+            </div>
         </section>
 
         <!-- Main content -->
@@ -48,14 +48,13 @@
                             <h3 class="card-title">Order Overview</h3>
                             <!-- Show All Orders Button -->
                             <div class="text-center float-end">
-                                <button class="btn btn-secondary" onclick="filterOrders('all')">Show All Orders</button>
+                                <button class="btn btn-secondary" id="showAllOrdersButton">Show All Orders</button>
                             </div>
-                            {{-- view cancelled orders --}}
+                            <!-- View Cancelled Orders -->
                             <div class="text-center float-end mr-3">
                                 <a href="{{ route('cancelled-orders') }}" class="btn btn-outline-danger">View Cancelled
                                     Orders ({{ $cancelledOrdersCount }})</a>
                             </div>
-
                         </div>
                         <div class="card-body">
                             <!-- Order Status Filter Cards -->
@@ -68,13 +67,9 @@
                                         </div>
                                         <div class="card-body d-flex flex-column">
                                             <h3 class="mb-3">{{ $pendingOrders }}</h3>
-                                            {{-- <a href="{{ route('orders.table', ['status' => 'pending']) }}" class="btn btn-outline-danger btn-sm mt-auto">
-                                                View in Table Form
-                                            </a> --}}
                                         </div>
                                     </div>
                                 </div>
-
 
                                 <!-- In Progress Orders Filter Card -->
                                 <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
@@ -84,9 +79,6 @@
                                         </div>
                                         <div class="card-body d-flex flex-column">
                                             <h3 class="mb-3">{{ $inProgressOrders }}</h3>
-                                            {{-- <a href="{{ route('orders.table', ['status' => 'in progress']) }}" class="btn btn-outline-dark btn-sm mt-auto">
-                                                View in Table Form
-                                            </a> --}}
                                         </div>
                                     </div>
                                 </div>
@@ -99,9 +91,6 @@
                                         </div>
                                         <div class="card-body d-flex flex-column">
                                             <h3 class="mb-3">{{ $completedOrders }}</h3>
-                                            {{-- <a href="{{ route('orders.table', ['status' => 'delivered']) }}" class="btn btn-outline-success btn-sm mt-auto">
-                                                View in Table Form
-                                            </a> --}}
                                         </div>
                                     </div>
                                 </div>
@@ -112,50 +101,48 @@
                                 <h5 class="mb-3">Orders</h5>
                                 <div class="row" id="ordersContainer">
                                     @forelse ($orders as $order)
-                                        @if ($order->status !== 'cancelled')
-                                            @php
-                                                // Determine card classes based on order status
-                                                switch ($order->status) {
-                                                    case 'pending':
-                                                        $cardClass = 'bg-danger text-white';
-                                                        $headerText = 'Pending Order';
-                                                        break;
-                                                    case 'in progress':
-                                                        $cardClass = 'bg-warning text-dark';
-                                                        $headerText = 'In Progress Order';
-                                                        break;
-                                                    case 'delivered':
-                                                        $cardClass = 'bg-success text-white';
-                                                        $headerText = 'Completed Order';
-                                                        break;
-                                                    default:
-                                                        $cardClass = 'bg-secondary text-white';
-                                                        $headerText = 'Cancelled Order';
-                                                        break;
-                                                }
-                                            @endphp
-                                            <div class="col-lg-4 col-md-6 col-sm-12 mb-4 order-card"
-                                                data-status="{{ $order->status }}">
-                                                <a href="{{ route('order.show', $order->id) }}"
-                                                    class="text-decoration-none">
-                                                    <div class="card {{ $cardClass }} h-100">
-                                                        <div class="card-header">{{ $headerText }}</div>
-                                                        <div class="card-body">
-                                                            <h5 class="card-title">Order #{{ $order->id }}</h5>
-                                                            <p class="card-text">
-                                                                <strong>User:</strong> {{ $order->user->name }} <br>
-                                                                <strong>Total:</strong>
-                                                                ${{ number_format($order->grand_total, 2) }}<br>
-                                                                <strong>Status:</strong> {{ ucfirst($order->status) }} <br>
-                                                                <strong>Address:</strong>
-                                                                {{ $order->address->address_line }},
-                                                                {{ $order->address->city->name ?? 'N/A' }} <br>
-                                                            </p>
-                                                        </div>
+                                        @php
+                                            // Determine card classes based on order status
+                                            switch ($order->status) {
+                                                case 'pending':
+                                                    $cardClass = 'bg-danger text-white';
+                                                    $headerText = 'Pending Order';
+                                                    break;
+                                                case 'in progress':
+                                                    $cardClass = 'bg-warning text-dark';
+                                                    $headerText = 'In Progress Order';
+                                                    break;
+                                                case 'delivered':
+                                                    $cardClass = 'bg-success text-white';
+                                                    $headerText = 'Completed Order';
+                                                    break;
+                                                default:
+                                                    $cardClass = 'bg-secondary text-white';
+                                                    $headerText = 'Cancelled Order';
+                                                    break;
+                                            }
+                                        @endphp
+                                        <div class="col-lg-4 col-md-6 col-sm-12 mb-4 order-card"
+                                            data-status="{{ $order->status }}">
+                                            <a href="{{ route('order.show', $order->id) }}"
+                                                class="text-decoration-none">
+                                                <div class="card {{ $cardClass }} h-100">
+                                                    <div class="card-header">{{ $headerText }}</div>
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">Order #{{ $order->id }}</h5>
+                                                        <p class="card-text">
+                                                            <strong>User:</strong> {{ $order->user->name }} <br>
+                                                            <strong>Total:</strong>
+                                                            ${{ number_format($order->grand_total, 2) }}<br>
+                                                            <strong>Status:</strong> {{ ucfirst($order->status) }} <br>
+                                                            <strong>Address:</strong>
+                                                            {{ $order->address->address_line }},
+                                                            {{ $order->address->city->name ?? 'N/A' }} <br>
+                                                        </p>
                                                     </div>
-                                                </a>
-                                            </div>
-                                        @endif
+                                                </div>
+                                            </a>
+                                        </div>
                                     @empty
                                         <div class="col-12">
                                             <div class="alert alert-info" role="alert">
@@ -198,15 +185,16 @@
                 </div>
             @endif
         </section>
-        <!-- /.content -->
     </div>
 @endsection
 
 @section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Add event listeners for the filter cards
             const filterCards = document.querySelectorAll('.filter-card');
+            const showAllOrdersButton = document.getElementById('showAllOrdersButton');
+
+            // Add event listeners for the filter cards
             filterCards.forEach(card => {
                 card.addEventListener('click', function(event) {
                     const status = event.target.closest('.filter-card').getAttribute('data-status');
@@ -214,35 +202,24 @@
                 });
             });
 
-            // Show all orders by default when the page loads
-            filterOrders('all');
+            // Event listener for the Show All Orders button
+            showAllOrdersButton.addEventListener('click', function() {
+                filterOrders('all', true);
+            });
         });
 
-        function filterOrders(status) {
+        function filterOrders(status, showCancelled = false) {
             const allCards = document.querySelectorAll('.order-card');
-            const filterCards = document.querySelectorAll('.filter-card');
 
-            // Reset all filter cards to remove the active class
-            filterCards.forEach(card => card.classList.remove('active'));
-
-            // Add the active class to the clicked filter card
-            if (status !== 'all') {
-                const activeCard = document.querySelector(`.filter-card[data-status="${status}"]`);
-                if (activeCard) {
-                    activeCard.classList.add('active');
-                }
-            }
-
-            if (status === 'all') {
+            if (status === 'all' && showCancelled) {
                 allCards.forEach(card => card.style.display = 'block');
+            } else if (status === 'all') {
+                allCards.forEach(card => {
+                    card.style.display = card.getAttribute('data-status') === 'cancelled' ? 'none' : 'block';
+                });
             } else {
                 allCards.forEach(card => {
-                    // Show cards that match the selected status and hide the rest
-                    if (card.getAttribute('data-status') === status) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
+                    card.style.display = card.getAttribute('data-status') === status ? 'block' : 'none';
                 });
             }
         }
