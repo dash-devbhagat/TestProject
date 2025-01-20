@@ -47,8 +47,10 @@
                                 <td>{{ $i }}</td>
                                 <td>{{ $payment->user->name }}</td>
                                 <td>{{ $payment->bonus->type }}</td>
-                                <td>{{ $payment->amount }}</td>
-                                <td>{{ ucfirst($payment->payment_status) }}</td>
+                                <td>₹{{ $payment->amount }}</td>
+                                <td class="{{ $payment->payment_status === 'completed' ? 'text-success' : ($payment->payment_status === 'pending' ? 'text-danger' : '') }}">
+                                    {{ ucfirst($payment->payment_status) }}
+                                </td>                                
                                 <td>{{ $payment->paymentParent ? $payment->paymentParent->name : 'N/A' }}</td>
                                 <td>{{ $payment->paymentChild ? $payment->paymentChild->name : 'N/A' }}</td>
                                 <td>{{ $payment->created_at->format('d-m-Y') }}</td>

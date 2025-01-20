@@ -45,7 +45,7 @@
                                         <td>{{ $i }}</td>
                                         <td>{{ $order->order_number }}</td>
                                         <td>{{ $order->user->name }}</td>
-                                        <td>${{ number_format($order->grand_total, 2) }}</td>
+                                        <td>₹{{ number_format($order->grand_total, 2) }}</td>
                                         <td>{{ ucfirst($order->status) }}</td>
                                     </tr>
                                 @empty

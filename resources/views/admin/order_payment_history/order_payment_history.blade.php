@@ -46,19 +46,28 @@
                                 $i = 1;
                             @endphp
                             @foreach ($transactions as $transaction)
-                            <tr>
-                                <td>{{ $i }}</td>
-                                <td>{{ $transaction->transaction_number }}</td>
-                                <td>{{ $transaction->user->name }}</td>
-                                <td>{{ $transaction->order->order_number }}</td>
-                                <td>{{ ucfirst($transaction->order->status) }}</td>
-                                <td>{{ $transaction->order->created_at->format('d-m-Y') }}</td>
-                                <td>{{ $transaction->created_at->format('d-m-Y') }}</td>
-                                <td>{{ ucfirst($transaction->payment_mode) }}</td>
-                                <td>{{ ucfirst($transaction->payment_type) }}</td>
-                                <td>${{ $transaction->order->grand_total }}</td>
-                                 <td>{{ ucfirst($transaction->payment_status) }}</td>
-                            </tr>
+                                <tr>
+                                    <td>{{ $i }}</td>
+                                    <td>{{ $transaction->transaction_number }}</td>
+                                    <td>{{ $transaction->user->name }}</td>
+                                    <td>{{ $transaction->order->order_number }}</td>
+                                    <td
+                                        class="
+                                    {{ $transaction->order->status === 'delivered' ? 'text-success' : '' }}
+                                    {{ $transaction->order->status === 'in progress' ? 'text-info' : '' }}
+                                    {{ in_array($transaction->order->status, ['pending', 'cancelled']) ? 'text-danger' : '' }}">
+                                        {{ ucfirst($transaction->order->status) }}
+                                    </td>
+                                    <td>{{ $transaction->order->created_at->format('d-m-Y') }}</td>
+                                    <td>{{ $transaction->created_at->format('d-m-Y') }}</td>
+                                    <td>{{ ucfirst($transaction->payment_mode) }}</td>
+                                    <td>{{ ucfirst($transaction->payment_type) }}</td>
+                                    <td>₹{{ $transaction->order->grand_total }}</td>
+                                    <td
+                                        class="{{ $transaction->payment_status === 'success' ? 'text-success' : ($transaction->payment_status === 'failed' || $transaction->payment_status === 'pending' ? 'text-danger' : '') }}">
+                                        {{ ucfirst($transaction->payment_status) }}
+                                    </td>
+                                </tr>
                                 @php
                                     $i++;
                                 @endphp

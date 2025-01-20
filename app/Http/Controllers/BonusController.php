@@ -36,12 +36,14 @@ class BonusController extends Controller
         $request->validate([
             'type' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0',
+            'percentage' => 'required|numeric|min:0|max:100',
         ]);
     
         // Save bonus to database
         Bonus::create([
             'type' => $request->type,
             'amount' => $request->amount,
+            'percentage' => $request->percentage,
         ]);
     
         return redirect()->route('bonus.index')->with('success', 'Bonus Created Successfully.');
@@ -76,14 +78,16 @@ class BonusController extends Controller
     {
          // Validate the request
         $validatedData = $request->validate([
-        'type' => 'required|string|max:255',
+        'type' => 'requiredstring|max:255',
         'amount' => 'required|numeric|min:0',
+        'percentage' => 'required|numeric|min:0|max:100',
          ]);
 
         $bonus = Bonus::findOrFail($id);
 
         $bonus->type = $validatedData['type'];
         $bonus->amount = $validatedData['amount'];
+        $bonus->percentage = $validatedData['percentage'];
 
         $bonus->save();
 

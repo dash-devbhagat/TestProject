@@ -1,161 +1,146 @@
 @extends('layouts.master')
 
-@section('title', 'Order Management')
+@section('title', 'Order Details')
 
 @section('content')
     <div class="content-wrapper">
-        <!-- Content Header (Page header) -->
-        <section class="content-header">
-            <div class="container-fluid">
-                <div class="row mb-2">
-                    <!-- Heading on the left -->
-                    <div class="col-sm-6">
-                        <h1>Order Details</h1>
-                    </div>
-                    <!-- Back button on the right -->
-                    <div class="col-sm-6 text-right">
-                        <a href="{{ route('order.index') }}" class="btn btn-secondary text-light">
-                            <i class="fas fa-arrow-left"></i> Back
-                        </a>
-                    </div>
+        <div class="container-fluid">
+
+            <div class="container">
+                <!-- Title -->
+                <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
+                    <h3 class="text-primary mb-0">Order Details - Order #{{ $order->id }}</h3>
+                    <a href="{{ route('order.index') }}" class="btn btn-secondary text-light">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
                 </div>
-            </div><!-- /.container-fluid -->
-        </section>
 
-        <!-- Main content -->
-        <section class="content">
-            <!-- Default box -->
-            <div class="card">
-                <div class="card-body">
-                    <div class="row">
-                        <!-- Order Details Table -->
-                        <div class="col-md-12">
-                            <h3 class="text-primary">Order Details - Order #{{ $order->id }}</h3>
-                            <table class="table table-bordered">
-                                <tbody>
-                                    <tr>
-                                        <th>Status</th>
-                                        <td>
-                                            <span id="statusText">{{ ucfirst($order->status) }}</span>
-                                            <select id="statusDropdown" class="form-select d-none"
-                                                style="width: auto; display: inline;">
-                                                <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>
-                                                    Pending</option>
-                                                <option value="in progress"
-                                                    {{ $order->status == 'in progress' ? 'selected' : '' }}>In Progress
-                                                </option>
-                                                <option value="delivered"
-                                                    {{ $order->status == 'delivered' ? 'selected' : '' }}>Delivered</option>
-                                                <option value="cancelled"
-                                                    {{ $order->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                                            </select>
-                                            <i id="editIcon" class="fas fa-edit text-primary ml-2" style="cursor: pointer;"
-                                                title="Edit Status"></i>
-                                            <i id="saveIcon" class="fas fa-check text-success ml-2 d-none"
-                                                style="cursor: pointer;" title="Save Status"></i>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Order SKU</th>
-                                        <td>{{ $order->order_number }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>User Name</th>
-                                        <td>{{ $order->user->name }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>User Email</th>
-                                        <td>{{ $order->user->email }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>User Phone</th>
-                                        <td>{{ $order->user->phone }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Address</th>
-                                        <td>{{ $order->address->address_line }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>City</th>
-                                        <td>{{ $order->address->city->name ?? 'N/A' }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>State</th>
-                                        <td>{{ $order->address->state->name ?? 'N/A' }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Zip Code</th>
-                                        <td>{{ $order->address->zip_code }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Order Items</th>
-                                        <td>
-                                            @forelse ($order->items as $item)
-                                                <div class="mb-3">
-                                                    <strong>Product Name:</strong> {{ $item->product->name }} <br>
-                                                    <hr>
-                                                    <strong>Product SKU:</strong> {{ $item->product->sku }} <br>
-                                                    <hr>
-                                                    <strong>Product Details:</strong>
-                                                    {{ $item->product->details ?? 'No details available' }} <br>
-                                                    <hr>
-                                                    <strong>Product Category:</strong>
-                                                    {{ $item->product->category->name ?? 'Not Available' }} <br>
-                                                    <hr>
-                                                    <strong>Product SubCategory:</strong>
-                                                    {{ $item->product->subCategory->name ?? 'Not Available' }} <br>
-                                                    <hr>
-                                                    <strong>Variant Unit:</strong>
-                                                    {{ $item->productVariant->unit ?? 'No Variant Available' }} <br>
-                                                    <hr>
-                                                    <strong>Variant Price:</strong>
-                                                    ${{ number_format($item->productVariant->price, 2) }} <br>
-                                                    <hr>
-                                                    <strong>Quantity:</strong> {{ $item->quantity }}
-                                                </div>
-                                                @if (!$loop->last)
-                                                    <hr> <!-- Horizontal line between items -->
-                                                @endif
-                                            @empty
-                                                <p>No Items Available</p>
-                                            @endforelse
-                                        </td>
-                                    </tr>
+                <!-- Main content -->
+                <div class="row">
+                    <div class="col-lg-8">
+                        <!-- Details -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <div class="mb-3 d-flex justify-content-between">
+                                    <div>
+                                        <span class="me-3">
+                                            <span class="fw-bold">Order Date:</span> {{ $order->created_at->format('d-m-Y') }}
+                                        </span>                                        
+                                        <span class="me-3"><span class="fw-bold">Order SKU:</span> {{ $order->order_number }}</span>
+                                        {{-- <span class="badge rounded-pill bg-info">{{ ucfirst($order->status) }}</span> --}}
+                                    </div>
 
-
-                                    <tr>
-                                        <th>Subtotal</th>
-                                        <td>${{ number_format($order->sub_total, 2) }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Charges</th>
-                                        <td>${{ number_format($order->charges_total, 2) }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Grand Total</th>
-                                        <td>${{ number_format($order->grand_total, 2) }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Transaction Number</th>
-                                        <td>{{ $order->transactions->first()->transaction_number ?? 'N/A' }}</td>
-                                    </tr>                                    
-                                    <tr>
-                                        <th>Transaction Status</th>
-                                        <td>{{ ucfirst($order->transaction_status) }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                    <div>
+                                        <span id="statusText"><span class="fw-bold">Order Status:</span> {{ ucfirst($order->status) }}</span>
+                                        <select id="statusDropdown" class="form-select d-none"
+                                            style="width: auto; display: inline;">
+                                            <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>
+                                                Pending</option>
+                                            <option value="in progress"
+                                                {{ $order->status == 'in progress' ? 'selected' : '' }}>In Progress
+                                            </option>
+                                            <option value="delivered"
+                                                {{ $order->status == 'delivered' ? 'selected' : '' }}>Delivered</option>
+                                            <option accesskey="" value="cancelled"
+                                                {{ $order->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                        </select>
+                                        <i id="editIcon" class="fas fa-edit text-primary ml-2" style="cursor: pointer;"
+                                            title="Edit Status"></i>
+                                        <i id="saveIcon" class="fas fa-check text-success ml-2 d-none"
+                                            style="cursor: pointer;" title="Save Status"></i>
+                                    </div>
+                                 
+                                </div>
+                                <table class="table table-bordered">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th class="text-center" style="width: 120px;">Product Image</th>
+                                            <th style="width: 150px;">Product SKU</th>
+                                            <th style="width: 150px;">Product Category</th>
+                                            <th style="width: 150px;">Product Subcategory</th>
+                                            <th style="width: 120px;">Product Variant</th>
+                                            <th style="width: 120px;">Variant Price</th>
+                                            <th style="width: 120px;">Product Quantity</th>
+                                            <th style="width: 150px;">Total Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($order->items as $item)
+                                            <tr>
+                                                <td class="text-center">
+                                                    @if ($item->product->image)
+                                                        <img src="{{ asset('storage/' . $item->product->image) }}" alt="Product Image" width="80">
+                                                    @else
+                                                        N/A
+                                                    @endif
+                                                </td>
+                                                <td>{{ $item->product->sku }}</td>
+                                                <td>{{ $item->product->category->name ?? 'Not Available' }}</td>
+                                                <td>{{ $item->product->subCategory->name ?? 'Not Available' }}</td>
+                                                <td>{{ $item->productVariant->unit ?? 'No Variant Available' }}</td>
+                                                <td>₹{{ number_format($item->productVariant->price, 2) }}</td>
+                                                <td>{{ $item->quantity }}</td>
+                                                <td>₹{{ number_format($item->productVariant->price * $item->quantity, 2) }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="7" class="text-end fw-bold">Subtotal</td>
+                                            <td class="text-end fw-bold">₹{{ number_format($order->sub_total, 2) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="7" class="text-end">Charges</td>
+                                            <td class="text-end">₹{{ number_format($order->charges_total, 2) }}</td>
+                                        </tr>
+                                        {{-- <tr>
+                                            <td colspan="7" class="text-end">Discount (Code: NEWYEAR)</td>
+                                            <td class="text-danger text-end">-₹10.00</td>
+                                        </tr> --}}
+                                        <tr class="fw-bold">
+                                            <td colspan="7" class="text-end">Grand Total</td>
+                                            <td class="text-end">₹{{ number_format($order->grand_total, 2) }}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                                
+                            </div>
+                        </div>
+                     
+                    </div>
+                    <div class="col-lg-4">
+                        <!-- Customer Notes -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h3 class="h6">Transaction Details</h3>
+                                @foreach ($order->transactions as $transaction)
+                                    <p>Transaction Number: #{{ $transaction->transaction_number }} <br> Transaction
+                                        Date: {{ $transaction->created_at->format('d-m-Y') }} <br>Transaction Mode:
+                                        {{ ucfirst($transaction->payment_mode) }} <br>Transaction Type:
+                                        {{ ucfirst($transaction->payment_type) }}<br> Transaction Status: <span
+                                            class="badge bg-success rounded-pill">{{ ucfirst($transaction->payment_status) }}</span>
+                                    </p>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="card mb-4">
+                            <!-- Shipping information -->
+                            <div class="card-body">
+                                <h3 class="h6">User Details</h3>
+                                <address>
+                                    <strong>{{ $order->user->name }}</strong><br>
+                                    {{ $order->address->address_line }},
+                                    {{ $order->address->city->name }}, {{ $order->address->state->name }} -
+                                    {{ $order->address->zip_code }}.<br>
+                                    {{ $order->user->phone }}<br>
+                                    {{ $order->user->email }}
+                                </address>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <!-- /.card-body -->
-
-                <div class="card-footer">
-                    {{-- Optionally, add a back button or any other actions --}}
-                </div>
             </div>
-        </section>
-        <!-- /.content -->
+        </div>
     </div>
 @endsection
 
@@ -195,8 +180,7 @@
                     .then(data => {
                         if (data.success) {
                             // Update the UI
-                            statusText.textContent = newStatus.charAt(0).toUpperCase() + newStatus
-                                .slice(1);
+                            statusText.textContent = `Order Status: ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}`; // Updated line
                             statusText.classList.remove('d-none');
                             editIcon.classList.remove('d-none');
                             statusDropdown.classList.add('d-none');
