@@ -318,7 +318,9 @@ class CartController extends Controller
         $grandTotal = number_format($grandTotal, 2, '.', '');
 
         // Generate Order Number (e.g., OR-2025-000001)
-        $orderNumber = 'OR-' . date('Y') . '-' . str_pad(Order::count() + 1, 6, '0', STR_PAD_LEFT);
+        // $orderNumber = 'OR-' . date('Y') . '-' . str_pad(Order::count() + 1, 6, '0', STR_PAD_LEFT);
+        $orderNumber = 'OR-' . date('Y') . '-' . strtoupper(uniqid());
+
 
         // Create Order Entry
         $order = Order::create([
