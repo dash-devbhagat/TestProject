@@ -45,4 +45,7 @@ Route::middleware(['custom.auth', 'mob.check.profile'])->group(function () {
     Route::post('v1/order/cancel', [OrderAPIController::class, 'cancelOrder']);
     Route::get('v1/orders', [OrderAPIController::class, 'getAllOrders']);
     Route::post('v1/order/details', [OrderAPIController::class, 'getOrderDetails']);
+    Route::post('v1/order/applybonus', [TransactionAPIController::class, 'applyBonus']);
+    Route::get('v1/user/bonus/details', [MobileUserProfileController::class, 'showBonusDetails']);
+
 });

@@ -254,6 +254,7 @@ class MobileUserController extends Controller
                 'user_id' => $user->id,
                 'bonus_id' => $signupBonus->id,
                 'amount' => $signupBonus->amount,
+                'remaining_amount' => $signupBonus->amount,
                 'payment_status' => 'completed',
                 'parent_id' => $user->referred_by,
             ]);
@@ -268,6 +269,7 @@ class MobileUserController extends Controller
                     'user_id' => $user->referred_by,
                     'bonus_id' => $referralBonus->id,
                     'amount' => $referralBonus->amount,
+                    'remaining_amount' => $referralBonus->amount,
                     'payment_status' => 'completed',
                     'child_id' => $user->id,
                 ]);

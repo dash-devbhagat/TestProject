@@ -346,7 +346,7 @@ class CartController extends Controller
         }
 
         // Clear Cart after Checkout
-        $cart->items()->delete();
+        // $cart->items()->delete();
 
         return response()->json([
             'data' => [

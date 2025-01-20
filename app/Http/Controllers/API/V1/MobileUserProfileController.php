@@ -8,6 +8,10 @@ use App\Models\MobileUser;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Bonus;
+use App\Models\Payment;
+use App\Models\Order;
+use Illuminate\Support\Facades\Auth;
 
 class MobileUserProfileController extends Controller
 {
@@ -284,5 +288,72 @@ class MobileUserProfileController extends Controller
                 'message' => 'Profile picture updated successfully.',
             ]
         ], 200); // 200 OK status
+    }
+
+public function showBonusDetails(Request $request)
+    {
+        // Retrieve the authenticated user
+        $user = Auth::user();
+
+        // Fetch all bonuses associated with the user
+        $bonusDetails = [];
+        $totalBonusAmount = 0;
+        $totalRemainingBonusAmount = 0;
+        $totalBonusUsed = 0;
+
+        $bonusTypes = [];
+
+        // Loop through all payments to fetch bonuses
+        foreach ($user->payments as $payment) {
+            // Fetch the bonus associated with this payment
+            $bonus = Bonus::find($payment->bonus_id);
+
+            if ($bonus && $bonus->is_active) {
+                $usedBonus = $payment->amount - $payment->remaining_amount;
+
+                // Accumulate totals for each bonus type
+                if (!isset($bonusTypes[$bonus->type])) {
+                    $bonusTypes[$bonus->type] = [
+                        'total_available' => 0,
+                        'total_used' => 0,
+                        'percentage' => $bonus->percentage,
+                    ];
+                }
+
+                // Accumulate available and used bonuses
+                $bonusTypes[$bonus->type]['total_available'] += $payment->remaining_amount + $usedBonus;
+                $bonusTypes[$bonus->type]['total_used'] += $usedBonus;
+
+                // Update the total amounts
+                $totalBonusAmount += $payment->amount;
+                $totalRemainingBonusAmount += $payment->remaining_amount;
+                $totalBonusUsed += $usedBonus;
+            }
+        }
+
+        // Prepare the bonus type details
+        foreach ($bonusTypes as $type => $details) {
+            $bonusDetails[] = [
+                'bonus_type' => $type,
+                'total_bonus_amount' => number_format($details['total_available'], 2, '.', ''),
+                'remaining_bonus_amount' => number_format($details['total_available'] - $details['total_used'], 2, '.', ''),
+                'percentage' => number_format($details['percentage'], 2, '.', ''),
+                'total_used_bonus' => number_format($details['total_used'], 2, '.', ''),
+            ];
+        }
+
+        // Return the response with bonus details
+        return response()->json([
+            'data' => [
+                'total_bonus_amount' => number_format($totalBonusAmount, 2, '.', ''),
+                'remaining_total_bonus' => number_format($totalRemainingBonusAmount, 2, '.', ''),
+                'total_bonus_used' => number_format($totalBonusUsed, 2, '.', ''),
+                'bonus_details' => $bonusDetails,
+            ],
+            'meta' => [
+                'success' => true,
+                'message' => 'Bonus details retrieved successfully.',
+            ],
+        ], 200);
     }
 }
