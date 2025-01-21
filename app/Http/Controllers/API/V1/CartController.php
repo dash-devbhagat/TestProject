@@ -103,6 +103,16 @@ class CartController extends Controller
         }
 
         $cartItems = $cart->items;
+
+        if ($cartItems->isEmpty()) {
+        return response()->json([
+            'data' => null,
+            'meta' => [
+                'success' => false,
+                'message' => 'Cart is empty.',
+            ],
+        ], 200);
+    }
         $cartTotal = $cartItems->sum(function ($item) {
             $variant = $item->productVariant;
             return $variant->price * $item->quantity;  // Fetch the price dynamically from product_varients
