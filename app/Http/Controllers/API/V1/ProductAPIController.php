@@ -66,6 +66,9 @@ public function getActiveProducts(Request $request)
         $query->where('sub_category_id', $request->input('sub_category_id'));
     }
 
+    // Sort products by id in ascending order
+    $query->orderBy('id', 'asc');
+
     // Execute the query
     $products = $query->get();
 

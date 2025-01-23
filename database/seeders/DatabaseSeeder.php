@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             StateSeeder::class,
             CitySeeder::class,
             BonusesSeeder::class,
+            ChargesSeeder::class,
         ]);
     }
 }

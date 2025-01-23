@@ -55,13 +55,13 @@ class CityAPIController extends Controller
 
         // Return the cities data in the required format
         return response()->json([
-            'data' => $cities->map(function ($city) use ($state) {
+            'data' => (object) ['Cities' => $cities->map(function ($city) use ($state) {
             return [
                 'id' => $city->id,
                 'name' => $city->name,
                 'state_id' => $state->id,
             ];
-        }),
+        })],
             'meta' => [
                 'success' => true,
                 'message' => 'Cities fetched successfully.',

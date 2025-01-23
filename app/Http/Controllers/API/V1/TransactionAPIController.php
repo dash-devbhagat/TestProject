@@ -119,66 +119,56 @@ class TransactionAPIController extends Controller
 
 public function applyBonus(Request $request)
 {
-
-    // Validation to ensure 'order_id' is provided
-    $validator = Validator::make($request->all(), [
-        'order_id' => 'required|exists:orders,id',
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json([
-            'data' => json_decode('{}'),
-            'meta' => [
-                'success' => false,
-                'message' => $validator->errors()->first(),
-            ],
-        ], 200);
-    }
-
-    // Fetch the Order
-    $order = Order::find($request->order_id);
-    if (!$order) {
-        return response()->json([
-            'data' => json_decode('{}'),
-            'meta' => [
-                'success' => false,
-                'message' => 'Order not found.',
-            ],
-        ], 200);
-    }
-
-    // Fetch the authenticated user
+    // Fetch authenticated user
     $user = Auth::user();
 
-    // Check if the authenticated user is the owner of the order
-    if ($order->user_id !== $user->id) {
+    // Retrieve the cart for the user
+    $cart = Cart::where('user_id', $user->id)->first();
+
+    if (!$cart) {
         return response()->json([
             'data' => json_decode('{}'),
             'meta' => [
                 'success' => false,
-                'message' => 'You are not authorized to apply bonus on this order.',
+                'message' => 'Cart is empty.',
             ],
-        ], 403); // Forbidden status
+        ], 200);
     }
+
+    // Fetch cart items and calculate total cart value
+    $cartItems = $cart->items;
+    if ($cartItems->isEmpty()) {
+        return response()->json([
+            'data' => null,
+            'meta' => [
+                'success' => false,
+                'message' => 'Cart is empty.',
+            ],
+        ], 200);
+    }
+
+    // Calculate the total cart value
+    $cartTotal = $cartItems->sum(function ($item) {
+        return $item->quantity * $item->productVariant->price;
+    });
 
     // Initialize variables to store total bonus used and details
     $totalBonusUsed = 0;
     $bonusDetails = [];
     $bonusTypes = [];
 
-    // Loop through all payments to fetch bonuses
+    // Loop through user's payments to fetch and apply bonuses
     foreach ($user->payments as $payment) {
-        // Fetch the bonus associated with this payment (check if bonus exists)
         $bonus = Bonus::find($payment->bonus_id);
 
         if ($bonus && $bonus->is_active) {
-            // Calculate the bonus usage based on the dynamic percentage
+            // Calculate bonus usage based on the dynamic percentage
             $bonusUsage = ($payment->remaining_amount * $bonus->percentage) / 100;
 
             // Update total bonus used
             $totalBonusUsed += $bonusUsage;
 
-            // Update the remaining amount in the payment table
+            // Deduct bonus usage from payment remaining amount
             $payment->remaining_amount -= $bonusUsage;
             $payment->save();
 
@@ -191,13 +181,12 @@ public function applyBonus(Request $request)
                 ];
             }
 
-            // Accumulate totals for each bonus type
             $bonusTypes[$bonus->type]['total_available'] += $payment->remaining_amount + $bonusUsage;
             $bonusTypes[$bonus->type]['total_used'] += $bonusUsage;
         }
     }
 
-        // Add validation to ensure total bonus used is greater than 0
+    // Validate that bonuses were applied
     if ($totalBonusUsed <= 0) {
         return response()->json([
             'data' => json_decode('{}'),
@@ -208,51 +197,49 @@ public function applyBonus(Request $request)
         ], 200);
     }
 
-    // Only apply bonus if order grand total is greater than the total bonus used
-    if ($order->grand_total > $totalBonusUsed) {
-        // Convert the grouped bonuses into an array
+    // Check if cart total allows bonus application
+    if ($cartTotal > $totalBonusUsed) {
+        // Convert grouped bonuses into an array
         foreach ($bonusTypes as $type => $details) {
             $bonusDetails[] = [
                 'bonus_type' => $type,
-                'total_available' => number_format($details['total_available'], 2, '.', ''),
                 'percentage' => number_format($details['percentage'], 2, '.', ''),
+                'total_available' => number_format($details['total_available'], 2, '.', ''),
                 'bonus_used' => number_format($details['total_used'], 2, '.', ''),
             ];
         }
 
-        // Update the order grand total by subtracting the total bonus used
-        $oldGrandTotal = $order->grand_total;
-        $newGrandTotal = $order->grand_total - $totalBonusUsed;
-        $order->grand_total = number_format($newGrandTotal, 2, '.', '');
-         $order->total_bonus_used = number_format($totalBonusUsed, 2, '.', '');
+        // Apply bonus to cart total
+        $oldCartTotal = $cartTotal;
+        $newCartTotal = $cartTotal - $totalBonusUsed;
 
-        // Save the updated order
-        $order->save();
+        // Update user's isbonusused column to true
+        $user->isbonusused = true;
+        $user->save();
+
+        return response()->json([
+            'data' => [
+                'cart_id' => $cart->id,
+                'old_cart_total' => number_format($oldCartTotal, 2, '.', ''),
+                'new_cart_total' => number_format($newCartTotal, 2, '.', ''),
+                'total_bonus_used' => number_format($totalBonusUsed, 2, '.', ''),
+                'bonus_details' => $bonusDetails,
+            ],
+            'meta' => [
+                'success' => true,
+                'message' => 'Bonuses applied successfully.',
+            ],
+        ], 200);
     } else {
-        // If grand total is less than total bonus used, return an error
         return response()->json([
             'data' => json_decode('{}'),
             'meta' => [
                 'success' => false,
-                'message' => 'Grand total is less than the total bonus used.',
+                'message' => 'Cart total is less than the total bonus used.',
             ],
         ], 200);
     }
-
-
-    return response()->json([
-        'data' => [
-            'order_id' => $order->id,
-            'old_grand_total' => number_format($oldGrandTotal, 2, '.', ''),
-            'new_grand_total' => $order->grand_total,
-            'total_bonus_used' => number_format($totalBonusUsed, 2, '.', ''),
-            'bonus_details' => $bonusDetails,
-        ],
-        'meta' => [
-            'success' => true,
-            'message' => 'Bonuses applied successfully.',
-        ],
-    ], 200);
 }
+
 
 }

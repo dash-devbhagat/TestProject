@@ -35,6 +35,7 @@ class MobileUserProfileController extends Controller
             'phone' => $user->phone,
             'gender' => $user->gender,
             'birthdate' => $user->birthdate,
+            'profilePicture' => $user->profilepic,
             'referral_code' => $user->referral_code,
             'address' => [
                 'address_line' => $user->address->address_line,
@@ -223,6 +224,7 @@ class MobileUserProfileController extends Controller
                 'phone' => $user->phone,
                 'gender' => $user->gender,
                 'birthdate' => $user->birthdate,
+                'profilePicture' => $user->profilepic,
                 'address' => $address,
                 ],
             ],

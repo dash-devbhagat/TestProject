@@ -64,7 +64,7 @@ class CartController extends Controller
             $cartItem->quantity += $request->quantity;
             $cartItem->save();
         } else {
-            CartItem::create([
+             $cartItem = CartItem::create([
                 'cart_id' => $cart->id,
                 'product_id' => $product->id,
                 'product_variant_id' => $variant->id,
@@ -75,6 +75,16 @@ class CartController extends Controller
         return response()->json([
             'data' => [
                 'cart_id' => $cart->id,
+                'cart_item_id' => $cartItem->id,
+                'items' => [
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+            'product_variant_id' => $variant->id, 
+            'variant' => $variant->unit,
+            'price' => number_format($variant->price, 2, '.', ''),
+            'quantity' => $cartItem->quantity,
+                ],
+            'total_price' => number_format($variant->price * $cartItem->quantity, 2, '.', ''),
             ],
             'meta' => [
                 'success' => true,
@@ -125,6 +135,7 @@ class CartController extends Controller
             return [
                 'cart_item_id' => $item->id,
                 'product_name' => $item->product->name,
+                'product_variant_id' => $variant->id,
                 'variant' => $variant->unit,
                 'price' => number_format($variant->price, 2, '.', ''),  // Fetch the price dynamically from product_varients
                 'quantity' => $item->quantity,
@@ -206,9 +217,12 @@ class CartController extends Controller
 
         return response()->json([
             'data' => [
+                'cart_id' => $cart->id,
                 'cart_item_id' => $cartItem->id,
                 'items' => [
+                'product_id' => $product->id,
                 'product_name' => $product->name,
+                'product_variant_id' => $variant->id,
                 'product_variant' => $variant->unit,
                 'quantity' => $cartItem->quantity,
                 'price' => number_format($variant->price, 2, '.', ''),  // Fetch the price dynamically from product_varients

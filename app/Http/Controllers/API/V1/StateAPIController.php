@@ -24,7 +24,7 @@ class StateAPIController extends Controller
         }
 
         return response()->json([
-            'data' => $states,
+            'data' => (object) ['States' => $states],
             'meta' => [
                 'success' => true,
                 'message' => 'States fetched successfully.',
