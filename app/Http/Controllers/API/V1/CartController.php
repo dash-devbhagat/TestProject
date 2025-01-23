@@ -140,6 +140,7 @@ class CartController extends Controller
             ],
             'meta' => [
                 'success' => true,
+                'message' => 'Cart items fetched successfully.',
             ],
         ], 200);
     }
@@ -206,11 +207,13 @@ class CartController extends Controller
         return response()->json([
             'data' => [
                 'cart_item_id' => $cartItem->id,
+                'items' => [
                 'product_name' => $product->name,
                 'product_variant' => $variant->unit,
                 'quantity' => $cartItem->quantity,
                 'price' => number_format($variant->price, 2, '.', ''),  // Fetch the price dynamically from product_varients
                 'total_price' => $totalPrice,
+                ],
             ],
             'cart_total' => $cartTotal,
             'meta' => [
@@ -360,12 +363,14 @@ class CartController extends Controller
 
         return response()->json([
             'data' => [
+                'order' => [
                 'order_id' => $order->id,
                 'order_number' => $order->order_number,  // Added order number to the response
                 'cart_total' => $cartTotal,
                 'additional_charges' => $additionalCharges,
                 'charges_total' => number_format($totalAdditionalCharges, 2, '.', ''), // Added charges total here
                 'grand_total' => $grandTotal,
+                ],
             ],
             'meta' => [
                 'success' => true,

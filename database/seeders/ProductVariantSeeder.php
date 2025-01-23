@@ -16,47 +16,47 @@ class ProductVariantSeeder extends Seeder
     {
 
         ProductVarient::create([
-            'product_id' => 3, // Product ID for Red T-Shirt
+            'product_id' => 1, // Product ID for Red T-Shirt
             'unit' => 'Small',
-            'price' => 19.99,
+            'price' => 19,
         ]);
 
         ProductVarient::create([
-            'product_id' => 3, // Product ID for Red T-Shirt
+            'product_id' => 1, // Product ID for Red T-Shirt
             'unit' => 'Medium',
-            'price' => 19.99,
+            'price' => 22,
         ]);
 
         ProductVarient::create([
-            'product_id' => 3, // Product ID for Red T-Shirt
+            'product_id' => 1, // Product ID for Red T-Shirt
             'unit' => 'Large',
-            'price' => 19.99,
+            'price' => 25,
         ]);
 
         // Create variants for the "Black Jacket"
         ProductVarient::create([
-            'product_id' => 4, // Product ID for Black Jacket
+            'product_id' => 2, // Product ID for Black Jacket
             'unit' => 'Small',
-            'price' => 59.99,
+            'price' => 60,
         ]);
 
         ProductVarient::create([
-            'product_id' => 4, // Product ID for Black Jacket
+            'product_id' => 2, // Product ID for Black Jacket
             'unit' => 'Medium',
-            'price' => 59.99,
+            'price' => 70,
         ]);
 
         ProductVarient::create([
-            'product_id' => 4, // Product ID for Black Jacket
+            'product_id' => 2, // Product ID for Black Jacket
             'unit' => 'Large',
-            'price' => 59.99,
+            'price' => 80,
         ]);
 
         // Create variants for the "Silver Laptop 16GB"
         ProductVarient::create([
-            'product_id' => 5, // Product ID for Silver Laptop 16GB
+            'product_id' => 3, // Product ID for Silver Laptop 16GB
             'unit' => '16GB RAM, 512GB SSD',
-            'price' => 999.99,
+            'price' => 1000,
         ]);
     }
 }

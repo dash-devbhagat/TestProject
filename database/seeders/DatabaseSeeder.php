@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             ProductVariantSeeder::class,
             StateSeeder::class,
             CitySeeder::class,
+            BonusesSeeder::class,
         ]);
     }
 }

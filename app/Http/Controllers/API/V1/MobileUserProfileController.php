@@ -47,7 +47,7 @@ class MobileUserProfileController extends Controller
 
         // Return a successful response with user profile data
         return response()->json([
-            'data' => $profileData,
+            'data' => ['user' => $profileData],
             'meta' => [
                 'success' => true,
                 'message' => 'User profile retrieved successfully.',
@@ -122,6 +122,7 @@ class MobileUserProfileController extends Controller
         // Return a successful response
         return response()->json([
             'data' => [
+                'user' => [
                 'name' => $user->name,
                 'email' => $user->email,
                 'phone' => $user->phone,
@@ -130,10 +131,11 @@ class MobileUserProfileController extends Controller
                 'referral_code' => $user->referral_code,
                 'address' => $address,
                 'is_profile_complete' => $user->is_profile_complete
+                ],
             ],
             'meta' => [
                 'success' => true,
-                'message' => 'Profile updated successfully.',
+                'message' => 'Profile Complete successfully.',
             ],
         ], 200); // 200 OK status
     }
@@ -215,16 +217,18 @@ class MobileUserProfileController extends Controller
         // Return the successful response with the updated profile and address
         return response()->json([
             'data' => [
+                'user' => [
                 'name' => $user->name,
                 'email' => $user->email,
                 'phone' => $user->phone,
                 'gender' => $user->gender,
                 'birthdate' => $user->birthdate,
                 'address' => $address,
+                ],
             ],
             'meta' => [
                 'success' => true,
-                'message' => 'Profile and address updated successfully.',
+                'message' => 'Profile updated successfully.',
             ]
         ], 200);
     }

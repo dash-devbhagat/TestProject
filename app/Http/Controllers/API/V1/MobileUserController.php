@@ -145,6 +145,8 @@ class MobileUserController extends Controller
             'device_type' => $request->device_type,
         ]);
 
+        $user->load('address');
+
         // Check if profile is complete (based on phone, gender, and birthdate)
         if (empty($user->phone) || empty($user->gender) || empty($user->birthdate) || empty($user->address_id)) {
             $user->is_profile_complete = false;
@@ -154,6 +156,21 @@ class MobileUserController extends Controller
                 'data' => [
                     'access_token' => $authToken,
                     'token_type' => 'Bearer',
+                    'user' => [
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+            'gender' => $user->gender,
+            'profilePicture' => $user->profilepic,
+            'birthDate' => $user->birthdate,
+            'referralCode' => $user->referral_code,
+            'address' => $user->address ? [
+                'addressLine' => $user->address->address_line,
+                'city' => $user->address->city ? $user->address->city->name : null,
+                'state' => $user->address->state ? $user->address->state->name : null,
+                'zipCode' => $user->address->zip_code,
+            ] : null,
+        ],
                 ],
                 'meta' => [
                     'success' => false,
@@ -171,16 +188,33 @@ class MobileUserController extends Controller
 
 
             // Return response with token and message
-            return response()->json([
-                'data' => [
-                    'access_token' => $authToken,
-                    'token_type' => 'Bearer',
-                ],
-                'meta' => [
-                    'success' => true,
-                    'message' => 'Logged in successfully.',
-                ],
-            ], 200); // 200 OK status
+           return response()->json([
+    'data' => [
+        'accessToken' => $authToken,
+        'tokenType' => 'Bearer',
+        'user' => [
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+            'gender' => $user->gender,
+            'profilePicture' => $user->profilepic,
+            'birthDate' => $user->birthdate,
+            'referralCode' => $user->referral_code,
+            'address' => $user->address ? [
+                'addressLine' => $user->address->address_line,
+                'city' => $user->address->city ? $user->address->city->name : null,
+                'state' => $user->address->state ? $user->address->state->name : null,
+                'zipCode' => $user->address->zip_code,
+            ] : null,
+        ],
+    ],
+    'meta' => [
+        'status' => 200,
+        'success' => true,
+        'message' => 'Logged in successfully.',
+    ],
+], 200);
+ // 200 OK status
         }
     }
 

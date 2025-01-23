@@ -27,6 +27,7 @@ class StateAPIController extends Controller
             'data' => $states,
             'meta' => [
                 'success' => true,
+                'message' => 'States fetched successfully.',
             ],
         ]);
     }

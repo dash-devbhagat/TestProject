@@ -24,17 +24,17 @@ Route::middleware('custom.auth')->post('v1/user/profile/complete', [MobileUserPr
 // Email Verification
 Route::get('v1/auth/verify/{token}', [MobileUserController::class, 'verifyEmail'])->name('api.verifyEmail');
 
+Route::get('v1/categories', [CategoryAPIController::class, 'getAllCategories']);
+Route::post('v1/subcategories', [SubCategoryAPIController::class, 'getSubCategoriesByCategoryId']);
+Route::get('v1/states', [StateAPIController::class, 'getAllStates']);
+Route::post('v1/cities', [CityAPIController::class, 'getCitiesByStateId']);
+Route::post('v1/products', [ProductAPIController::class, 'getActiveProducts']);    
+
 // Profile Routes
 Route::middleware(['custom.auth', 'mob.check.profile'])->group(function () {
     Route::get('v1/user/profile', [MobileUserProfileController::class, 'show']);
     Route::post('v1/user/profile/update', [MobileUserProfileController::class, 'updateProfile']);
     Route::post('v1/user/profile/picture', [MobileUserProfileController::class, 'updateProfilePic']);
-    Route::get('v1/categories', [CategoryAPIController::class, 'getAllCategories']);
-    Route::post('v1/subcategories', [SubCategoryAPIController::class, 'getSubCategoriesByCategoryId']);
-    Route::get('v1/states', [StateAPIController::class, 'getAllStates']);
-    Route::post('v1/cities', [CityAPIController::class, 'getCitiesByStateId']);
-    Route::post('v1/products', [ProductAPIController::class, 'getActiveProducts']);
-
     Route::post('v1/cart/add', [CartController::class, 'addToCart']);
     Route::get('v1/cart', [CartController::class, 'viewCart']);
     Route::post('v1/cart/update', [CartController::class, 'updateCartItem']);

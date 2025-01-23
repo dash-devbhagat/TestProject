@@ -22,6 +22,8 @@ class MobUserCheckProfile
             }
         }
 
+        $user->load('address');
+
         // Update profile completion status if needed
         if ($user->is_profile_complete !== $isProfileComplete) {
             $user->is_profile_complete = $isProfileComplete;
@@ -35,13 +37,28 @@ class MobUserCheckProfile
             if (!in_array($request->route()->uri(), $allowedRoutes)) {
                 return response()->json([
 
-                    'data' => json_decode('{}'),
-                    'meta' => [
-                        'success' => false,
-                        'message' => 'Your profile is incomplete. Please complete your profile to access this resource.',
-                    ],
-
-                ], 200);
+            'data' => [
+                'user' => [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'gender' => $user->gender,
+                    'profilePicture' => $user->profilepic,
+                    'birthDate' => $user->birthdate,
+                    'referralCode' => $user->referral_code,
+                    'address' => $user->address ? [
+                        'addressLine' => $user->address->address_line,
+                        'city' => $user->address->city ? $user->address->city->name : null,
+                        'state' => $user->address->state ? $user->address->state->name : null,
+                        'zipCode' => $user->address->zip_code,
+                    ] : null,
+                ],
+            ],
+            'meta' => [
+                'success' => false,
+                'message' => 'Your profile is incomplete. Please complete your profile to access this resource.',
+            ],
+        ], 200);
             }
         }
 

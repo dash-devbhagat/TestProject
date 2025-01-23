@@ -62,8 +62,13 @@ class SubCategoryAPIController extends Controller
             ], 200);
         }
 
+         $subcategories = $subcategories->map(function ($subcategory) use ($category) {
+        $subcategory->category_id = $category->id; // Add the category_id
+        return $subcategory;
+        });
+
         return response()->json([
-            'data' => $subcategories,
+            'data' => (object) ['subcategories' => $subcategories],
             'meta' => [
                 'success' => true,
             ],
