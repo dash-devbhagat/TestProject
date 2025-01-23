@@ -133,11 +133,8 @@
                                                         <p class="card-text">
                                                             <strong>User:</strong> {{ $order->user->name }} <br>
                                                             <strong>Total:</strong>
-                                                            ${{ number_format($order->grand_total, 2) }}<br>
+                                                            ₹{{ number_format($order->grand_total, 2) }}<br>
                                                             <strong>Status:</strong> {{ ucfirst($order->status) }} <br>
-                                                            <strong>Address:</strong>
-                                                            {{ $order->address->address_line }},
-                                                            {{ $order->address->city->name ?? 'N/A' }} <br>
                                                         </p>
                                                     </div>
                                                 </div>

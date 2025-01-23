@@ -130,9 +130,9 @@
                                                     $payment = $user->payments->firstWhere('bonus_id', $bonusId);
                                                 @endphp
                                                 @if ($payment && $payment->payment_status === 'pending')
-                                                    <span class="text-danger">${{ number_format($totalAmount, 2) }}</span>
+                                                    <span class="text-danger">₹{{ number_format($totalAmount, 2) }}</span>
                                                 @elseif ($payment && $payment->payment_status === 'completed')
-                                                    <span class="text-success">${{ number_format($totalAmount, 2) }}</span>
+                                                    <span class="text-success">₹{{ number_format($totalAmount, 2) }}</span>
                                                 @endif
                                             </td>
                                             
@@ -142,9 +142,9 @@
                                         <td><strong>Total Bonus Amount</strong></td>
                                         <td>
                                             @if ($bonusTotals->sum() == 0)
-                                                <span class="text-danger"><strong>${{ number_format($bonusTotals->sum(), 2) }}</strong></span>
+                                                <span class="text-danger"><strong>₹{{ number_format($bonusTotals->sum(), 2) }}</strong></span>
                                             @else
-                                                <strong>${{ number_format($bonusTotals->sum(), 2) }}</strong>
+                                                <strong>₹{{ number_format($bonusTotals->sum(), 2) }}</strong>
                                             @endif
                                         </td>
                                     </tr>                                    

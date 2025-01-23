@@ -41,7 +41,7 @@
                     <div class="card-body">
                         <div class="form-group row">
                             <!-- Column 1: Bonus Type -->
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                                 <label for="bonusType" class="col-form-label">Bonus Type</label>
                                 <input type="text" class="form-control @error('type') is-invalid @enderror"
                                     id="bonusType" name="type" placeholder="Enter Bonus Type">
@@ -49,8 +49,9 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+
                             <!-- Column 2: Bonus Amount -->
-                            <div class="col-sm-6">
+                            <div class="col-sm-4">
                                 <label for="bonusAmount" class="col-form-label">Bonus Amount</label>
                                 <input type="number" class="form-control @error('amount') is-invalid @enderror"
                                     id="bonusAmount" name="amount" placeholder="Enter Bonus Amount" step="0.01">
@@ -58,15 +59,29 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+
+                            <!-- Column 3: Bonus Percentage -->
+                            <div class="col-sm-4">
+                                <label for="bonusPercentage" class="col-form-label">Bonus Percentage</label>
+                                <input type="number" class="form-control @error('percentage') is-invalid @enderror"
+                                    id="bonusPercentage" name="percentage" placeholder="Enter Bonus Percentage"
+                                    step="0.01">
+                                @error('percentage')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
+
                     </div>
                     <!-- /.card-body -->
+
                     <div class="card-footer">
                         {{-- <button type="buton" id="saveBonusBtn" class="btn btn-primary float-right">Save</button> --}}
                         <button type="submit" id="saveBonusBtn" class="btn btn-primary float-right">Save</button>
                     </div>
                     <!-- /.card-footer -->
                 </form>
+
 
 
             </div><!-- /.container-fluid -->
@@ -86,6 +101,7 @@
                                 <th>Sr</th>
                                 <th>Bonus Type</th>
                                 <th>Bonus Amount</th>
+                                <th>Bonus Percentage</th>
                                 <th>Active Status</th>
                                 <th>Action</th>
                             </tr>
@@ -98,7 +114,8 @@
                                 <tr>
                                     <td>{{ $i }}</td>
                                     <td>{{ $bonus->type }}</td>
-                                    <td>{{ $bonus->amount }}</td>
+                                    <td>₹{{ $bonus->amount }}</td>
+                                    <td>{{ $bonus->percentage }}%</td>
                                     <td class="text-center">
                                         <!-- Active/Inactive Toggle Icon -->
                                         <a href="javascript:void(0);" id="toggleStatusBtn{{ $bonus->id }}"
@@ -172,6 +189,12 @@
                                 <label for="editBonusAmount" class="col-form-label">Bonus Amount</label>
                                 <input type="number" class="form-control" id="editBonusAmount" name="amount"
                                     placeholder="Enter Bonus Amount" step="0.01">
+                            </div>
+                            <!-- Column 3: Bonus Percentage -->
+                            <div class="col-sm-6">
+                                <label for="editBonusPercentage" class="col-form-label">Bonus Percentage (%)</label>
+                                <input type="number" class="form-control" id="editBonusPercentage" name="percentage"
+                                    placeholder="Enter Bonus Percentage" step="0.01" min="0" max="100">
                             </div>
                         </div>
                     </form>
@@ -251,6 +274,7 @@
                         // Populate modal fields with fetched data
                         $('#editBonusType').val(response.bonus.type);
                         $('#editBonusAmount').val(response.bonus.amount);
+                        $('#editBonusPercentage').val(response.bonus.percentage);
                         $('#editBonusId').val(response.bonus.id);
 
                         // Show the modal
@@ -271,6 +295,7 @@
                     id: $('#editBonusId').val(),
                     type: $('#editBonusType').val(),
                     amount: $('#editBonusAmount').val(),
+                    percentage: $('#editBonusPercentage').val(),
                     _token: $('input[name="_token"]').val(),
                 };
 
