@@ -155,6 +155,7 @@ public function applyBonus(Request $request)
     $totalBonusUsed = 0;
     $bonusDetails = [];
     $bonusTypes = [];
+    $totalRemainingBonusAmount = 0;  // Initialize remaining bonus amount
 
     // Loop through user's payments to fetch and apply bonuses
     foreach ($user->payments as $payment) {
@@ -182,6 +183,9 @@ public function applyBonus(Request $request)
 
             $bonusTypes[$bonus->type]['total_available'] += $payment->remaining_amount + $bonusUsage;
             $bonusTypes[$bonus->type]['total_used'] += $bonusUsage;
+
+            // Track remaining bonus amount
+            $totalRemainingBonusAmount += $payment->remaining_amount;
         }
     }
 
@@ -222,6 +226,7 @@ public function applyBonus(Request $request)
                 'old_cart_total' => number_format($oldCartTotal, 2, '.', ''),
                 'new_cart_total' => number_format($newCartTotal, 2, '.', ''),
                 'total_bonus_used' => number_format($totalBonusUsed, 2, '.', ''),
+                'remaining_total_bonus' => number_format($totalRemainingBonusAmount, 2, '.', ''), // Add this line
                 'bonus_details' => $bonusDetails,
             ],
             'meta' => [
@@ -239,6 +244,7 @@ public function applyBonus(Request $request)
         ], 200);
     }
 }
+
 
 
 

@@ -30,6 +30,7 @@ class MobileUserProfileController extends Controller
 
         // Prepare the response data
         $profileData = [
+            'user_id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'phone' => $user->phone,
@@ -39,7 +40,10 @@ class MobileUserProfileController extends Controller
             'referral_code' => $user->referral_code,
             'address' => [
                 'address_line' => $user->address->address_line,
-                'city' => $user->address->city ? $user->address->city->name : null,  // Assuming 'name' is the city name
+                'city_id' => $user->address->city ? $user->address->city->id : null,
+                'city' => $user->address->city ? $user->address->city->name : null,
+                  // Assuming 'name' is the city name
+                  'state_id' => $user->address->state ? $user->address->state->id : null, 
                 'state' => $user->address->state ? $user->address->state->name : null,  // Assuming 'name' is the state name
                 'zip_code' => $user->address->zip_code,
             ],
@@ -115,7 +119,9 @@ class MobileUserProfileController extends Controller
 
         $address = $user->address ? [
             'address_line' => $user->address->address_line,
+            'city_id' => $user->address->city ? $user->address->city->id : null,
             'city' => $user->address->city ? $user->address->city->name : null,
+            'state_id' => $user->address->state ? $user->address->state->id : null, 
             'state' => $user->address->state ? $user->address->state->name : null,
             'zip_code' => $user->address->zip_code,
         ] : null;
@@ -124,6 +130,7 @@ class MobileUserProfileController extends Controller
         return response()->json([
             'data' => [
                 'user' => [
+                'user_id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
                 'phone' => $user->phone,
@@ -210,7 +217,9 @@ class MobileUserProfileController extends Controller
         // Prepare the address data with only the required fields
         $address = $user->address ? [
             'address_line' => $user->address->address_line,
+            'city_id' => $user->address->city ? $user->address->city->id : null,
             'city' => $user->address->city ? $user->address->city->name : null,
+            'state_id' => $user->address->state ? $user->address->state->id : null, 
             'state' => $user->address->state ? $user->address->state->name : null,
             'zip_code' => $user->address->zip_code,
         ] : null;
@@ -219,6 +228,7 @@ class MobileUserProfileController extends Controller
         return response()->json([
             'data' => [
                 'user' => [
+                'user_id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
                 'phone' => $user->phone,
