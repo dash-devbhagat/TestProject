@@ -122,13 +122,15 @@ class CartController extends Controller
                 'message' => 'Cart is empty.',
             ],
         ], 200);
-    }
+       }
         $cartTotal = $cartItems->sum(function ($item) {
-            $variant = $item->productVariant;
-            return $variant->price * $item->quantity;  // Fetch the price dynamically from product_varients
+        $variant = $item->productVariant;
+        return $variant->price * $item->quantity; // Calculate total dynamically
         });
 
-        $cartTotal = number_format($cartTotal, 2, '.', '');
+        $cart->cart_total = number_format($cartTotal, 2, '.', '');
+        $cart->save();
+
 
         $items = $cartItems->map(function ($item) {
             $variant = $item->productVariant;
@@ -293,105 +295,116 @@ class CartController extends Controller
         ], 200);
     }
 
-    public function checkout()
-    {
-        $user = Auth::user();
-        $cart = Cart::where('user_id', $user->id)->first();
+public function checkout()
+{
+    $user = Auth::user();
+    $cart = Cart::where('user_id', $user->id)->first();
 
-        if (!$cart || $cart->items->isEmpty()) {
-            return response()->json([
-                'data' => json_decode('{}'),
-                'meta' => [
-                    'success' => false,
-                    'message' => 'Your cart is empty.',
-                ],
-            ], 200);
-        }
-
-        // Calculate Cart Total
-        $cartTotal = $cart->items->sum(function ($item) {
-            $variant = $item->productVariant;
-            return $variant->price * $item->quantity;
-        });
-
-        // Format cart total
-        $cartTotal = number_format($cartTotal, 2, '.', '');
-
-        // Fetch Additional Charges
-        $charges = Charge::where('is_active', 1)->get();
-
-        $additionalCharges = [];
-        $totalAdditionalCharges = 0;
-
-        foreach ($charges as $charge) {
-            if ($charge->type === 'percentage') {
-                $chargeAmount = ($cartTotal * $charge->value) / 100;
-            } else { // Rupees
-                $chargeAmount = $charge->value;
-            }
-
-            $chargeAmount = number_format($chargeAmount, 2, '.', '');
-            $additionalCharges[] = [
-                'name' => $charge->name,
-                'type' => $charge->type,
-                'value' => $charge->value,
-                'amount' => $chargeAmount,
-            ];
-            $totalAdditionalCharges += $chargeAmount;
-        }
-
-        // Grand Total
-        $grandTotal = $cartTotal + $totalAdditionalCharges;
-        $grandTotal = number_format($grandTotal, 2, '.', '');
-
-        // Generate Order Number (e.g., OR-2025-000001)
-        // $orderNumber = 'OR-' . date('Y') . '-' . str_pad(Order::count() + 1, 6, '0', STR_PAD_LEFT);
-        $orderNumber = 'OR-' . date('Y') . '-' . strtoupper(uniqid());
-
-
-        // Create Order Entry
-        $order = Order::create([
-            'user_id' => $user->id,
-            'status' => 'pending',
-            'sub_total' => $cartTotal,
-            'charges_total' => $totalAdditionalCharges,
-            'grand_total' => $grandTotal,
-            'address_id' => $user->address_id, // Assuming user's address is used
-            'transaction_status' => 'pending', // Assuming pending status for now
-            'order_number' => $orderNumber,    // Store the generated order number
-        ]);
-
-        // Create Order Items
-        foreach ($cart->items as $cartItem) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'cart_id' => $cart->id,  // Adding the cart_id here
-                'product_id' => $cartItem->product_id,
-                'product_variant_id' => $cartItem->product_variant_id,
-                'quantity' => $cartItem->quantity,
-            ]);
-        }
-
-        // Clear Cart after Checkout
-        // $cart->items()->delete();
-
+    if (!$cart || $cart->items->isEmpty()) {
         return response()->json([
-            'data' => [
-                'order' => [
-                'order_id' => $order->id,
-                'order_number' => $order->order_number,  // Added order number to the response
-                'cart_total' => $cartTotal,
-                'additional_charges' => $additionalCharges,
-                'charges_total' => number_format($totalAdditionalCharges, 2, '.', ''), // Added charges total here
-                'grand_total' => $grandTotal,
-                ],
-            ],
+            'data' => json_decode('{}'),
             'meta' => [
-                'success' => true,
-                'message' => 'Checkout successful, order placed.',
+                'success' => false,
+                'message' => 'Your cart is empty.',
             ],
         ], 200);
     }
+
+    // Use cart_total directly from the database
+    $cartTotal = $cart->cart_total;
+
+    // Format cart total
+    $cartTotal = number_format($cartTotal, 2, '.', '');
+
+    // Fetch Additional Charges
+    $charges = Charge::where('is_active', 1)->get();
+
+    $additionalCharges = [];
+    $totalAdditionalCharges = 0;
+
+    foreach ($charges as $charge) {
+        if ($charge->type === 'percentage') {
+            $chargeAmount = ($cartTotal * $charge->value) / 100;
+        } else { // Rupees
+            $chargeAmount = $charge->value;
+        }
+
+        $chargeAmount = number_format($chargeAmount, 2, '.', '');
+        $additionalCharges[] = [
+            'name' => $charge->name,
+            'type' => $charge->type,
+            'value' => $charge->value,
+            'amount' => $chargeAmount,
+        ];
+        $totalAdditionalCharges += $chargeAmount;
+    }
+
+    // Grand Total
+    $grandTotal = $cartTotal + $totalAdditionalCharges;
+    $grandTotal = number_format($grandTotal, 2, '.', '');
+
+    // Generate Order Number (e.g., OR-2025-000001)
+    $orderNumber = 'OR-' . date('Y') . '-' . strtoupper(uniqid());
+
+    // Create Order Entry
+    $order = Order::create([
+        'user_id' => $user->id,
+        'status' => 'pending',
+        'sub_total' => $cartTotal,
+        'charges_total' => $totalAdditionalCharges,
+        'grand_total' => $grandTotal,
+        'address_id' => $user->address_id, // Assuming user's address is used
+        'transaction_status' => 'pending', // Assuming pending status for now
+        'order_number' => $orderNumber,    // Store the generated order number
+    ]);
+
+    // Prepare Items for Response
+    $items = [];
+
+    // Create Order Items
+    foreach ($cart->items as $cartItem) {
+
+        $product = Product::find($cartItem->product_id);
+        $variant = ProductVarient::find($cartItem->product_variant_id);
+
+        OrderItem::create([
+            'order_id' => $order->id,
+            'cart_id' => $cart->id,  // Adding the cart_id here
+            'product_id' => $cartItem->product_id,
+            'product_variant_id' => $cartItem->product_variant_id,
+            'quantity' => $cartItem->quantity,
+        ]);
+
+         $items[] = [
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'product_variant_id' => $variant->id,
+            'variant' => $variant->unit,
+            'price' => number_format($variant->price, 2, '.', ''),
+            'quantity' => $cartItem->quantity,
+            'total_price' => number_format($variant->price * $cartItem->quantity, 2, '.', ''),
+        ];
+    }
+
+    return response()->json([
+        'data' => [
+            'order' => [
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,  // Added order number to the response
+                'new_cart_total' => $cartTotal,
+                'additional_charges' => $additionalCharges,
+                'charges_total' => number_format($totalAdditionalCharges, 2, '.', ''), // Added charges total here
+                'grand_total' => $grandTotal,
+            ],
+            'items' => $items,
+        ],
+        'meta' => [
+            'success' => true,
+            'message' => 'Checkout successful, order placed.',
+        ],
+    ], 200);
+}
+
 }
 
     // public function checkout()

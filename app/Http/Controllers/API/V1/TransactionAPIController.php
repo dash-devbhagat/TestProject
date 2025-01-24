@@ -57,7 +57,7 @@ class TransactionAPIController extends Controller
                 'message' => 'Payment has already been completed for this order.',
             ],
         ], 200);
-    }
+        }
 
         // Ensure the order is in "pending" status
         if ($order->status !== 'pending') {
@@ -101,8 +101,11 @@ class TransactionAPIController extends Controller
         $order->transaction_id = $transaction->id;
         $order->save();
 
-                // Clear Cart after Checkout
+                // Clear Cart
         $cart->items()->delete();
+        $cart->cart_total = 0;
+        $cart->save();
+
         return response()->json([
             'data' => [
                 'transaction_id' => $transaction->id,
@@ -135,22 +138,18 @@ public function applyBonus(Request $request)
         ], 200);
     }
 
-    // Fetch cart items and calculate total cart value
-    $cartItems = $cart->items;
-    if ($cartItems->isEmpty()) {
+    // Fetch cart total from the carts table
+    $cartTotal = $cart->cart_total;
+
+    if ($cartTotal <= 0) {
         return response()->json([
-            'data' => null,
+            'data' => json_decode('{}'),
             'meta' => [
                 'success' => false,
-                'message' => 'Cart is empty.',
+                'message' => 'Cart is empty or total is zero.',
             ],
         ], 200);
     }
-
-    // Calculate the total cart value
-    $cartTotal = $cartItems->sum(function ($item) {
-        return $item->quantity * $item->productVariant->price;
-    });
 
     // Initialize variables to store total bonus used and details
     $totalBonusUsed = 0;
@@ -213,9 +212,9 @@ public function applyBonus(Request $request)
         $oldCartTotal = $cartTotal;
         $newCartTotal = $cartTotal - $totalBonusUsed;
 
-        // Update user's isbonusused column to true
-        $user->isbonusused = true;
-        $user->save();
+        // Update cart total in the database
+        $cart->cart_total = number_format($newCartTotal, 2, '.', '');
+        $cart->save();
 
         return response()->json([
             'data' => [
@@ -240,6 +239,7 @@ public function applyBonus(Request $request)
         ], 200);
     }
 }
+
 
 
 }

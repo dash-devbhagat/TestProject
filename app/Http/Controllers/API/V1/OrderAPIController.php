@@ -24,6 +24,7 @@ class OrderAPIController extends Controller
         // Transform data to include only relevant details
         $ordersData = $orders->map(function ($order) {
             return [
+                 'order_id' => $order->id,
                 'order_number' => $order->order_number,
                 'status' => $order->status,
                 'sub_total' => number_format(
@@ -37,7 +38,9 @@ class OrderAPIController extends Controller
                 'transaction_status' => $order->transaction_status,
                 'items' => $order->items->map(function ($item) {
                     return [
+                        'product_id' => $item->product->id,
                         'product_name' => $item->product->name,
+                        'variant_id' => $item->productVariant->id,
                         'variant' => $item->productVariant->unit,
                         'quantity' => $item->quantity,
                         'price_per_unit' => number_format($item->productVariant->price, 2, '.', ''),
@@ -51,12 +54,14 @@ class OrderAPIController extends Controller
                         'payment_status' => $transaction->payment_status,
                     ];
                 }),
-                'created_at' => $order->created_at->format('Y-m-d H:i:s'),
+                'order_at' => $order->created_at->format('Y-m-d H:i:s'),
             ];
         });
 
         return response()->json([
-            'data' => $ordersData,
+             'data' => [
+            'orders_details' => $ordersData, // Wrap ordersData inside 'orderdata'
+        ],
             'meta' => [
                 'success' => true,
                 'message' => 'Orders retrieved successfully.',
@@ -102,6 +107,7 @@ class OrderAPIController extends Controller
 
         // Transform order data to include only relevant details
         $orderData = [
+            'order_id' => $order->id,
             'order_number' => $order->order_number,
             'status' => $order->status,
             'sub_total' => number_format($order->sub_total, 2, '.', ''),
@@ -110,7 +116,9 @@ class OrderAPIController extends Controller
             'transaction_status' => $order->transaction_status,
             'items' => $order->items->map(function ($item) {
                 return [
+                    'product_id' => $item->product->id,
                     'product_name' => $item->product->name,
+                    'variant_id' => $item->productVariant->id,
                     'variant' => $item->productVariant->unit,
                     'quantity' => $item->quantity,
                     'price_per_unit' => number_format($item->productVariant->price, 2, '.', ''),
@@ -119,16 +127,19 @@ class OrderAPIController extends Controller
             }),
             'transactions' => $order->transactions->map(function ($transaction) {
                 return [
+                    'transaction_id' => $transaction->id,
                     'transaction_number' => $transaction->transaction_number,
                     'payment_mode' => $transaction->payment_mode,
                     'payment_status' => $transaction->payment_status,
                 ];
             }),
-            'created_at' => $order->created_at->format('Y-m-d H:i:s'),
+            'order_date' => $order->created_at->format('Y-m-d H:i:s'),
         ];
 
         return response()->json([
-            'data' => $orderData,
+            'data' => [
+            'order_details' => $orderData, // Wrap ordersData inside 'orderdata'
+        ],
             'meta' => [
                 'success' => true,
                 'message' => 'Order details retrieved successfully.',

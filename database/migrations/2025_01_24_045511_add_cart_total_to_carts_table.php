@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddTotalBonusUsedToOrdersTable extends Migration
+class AddCartTotalToCartsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddTotalBonusUsedToOrdersTable extends Migration
      */
     public function up()
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->decimal('total_bonus_used', 10, 2)->default(0);
+        Schema::table('carts', function (Blueprint $table) {
+            $table->decimal('cart_total', 10, 2)->after('user_id')->default(0)->comment('Total cost of the cart items');
         });
     }
 
@@ -25,8 +25,8 @@ class AddTotalBonusUsedToOrdersTable extends Migration
      */
     public function down()
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn('total_bonus_used');
+        Schema::table('carts', function (Blueprint $table) {
+            $table->dropColumn('cart_total');
         });
     }
 }
