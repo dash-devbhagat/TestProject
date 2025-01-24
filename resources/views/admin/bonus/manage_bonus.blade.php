@@ -13,8 +13,7 @@
                     </div>
                     <!-- Add User Button on the right side -->
                     <div class="col-sm-6 text-right">
-                        {{-- <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addUserModal">Add
-                            User</button> --}}
+                        <a href="{{ route('bonusHistory') }}" class="btn btn-success">Bonus History</a>
                     </div>
 
                     {{-- Bootstrap Alert --}}
@@ -99,7 +98,7 @@
                         <thead>
                             <tr>
                                 <th>Sr</th>
-                                <th>Bonus Type</th>
+                                <th>Bonus Name</th>
                                 <th>Bonus Amount</th>
                                 <th>Bonus Percentage</th>
                                 <th>Active Status</th>
@@ -116,7 +115,7 @@
                                     <td>{{ $bonus->type }}</td>
                                     <td>₹{{ $bonus->amount }}</td>
                                     <td>{{ $bonus->percentage }}%</td>
-                                    <td class="text-center">
+                                    {{-- <td class="text-center">
                                         <!-- Active/Inactive Toggle Icon -->
                                         <a href="javascript:void(0);" id="toggleStatusBtn{{ $bonus->id }}"
                                             data-id="{{ $bonus->id }}" class="text-center" data-toggle="tooltip"
@@ -124,7 +123,19 @@
                                             <i
                                                 class="fas {{ $bonus->is_active ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-2x"></i>
                                         </a>
+                                    </td> --}}
+                                    <td class="text-center">
+                                        <!-- Active/Inactive Toggle Icon -->
+                                        <a href="javascript:void(0);" id="toggleStatusBtn{{ $bonus->id }}"
+                                            data-id="{{ $bonus->id }}" class="text-center" data-toggle="tooltip"
+                                            title="{{ $bonus->is_active ? 'Deactivate' : 'Activate' }}"
+                                            {{ !$bonus->is_active ? 'style="pointer-events: none;"' : '' }}>
+                                            <!-- Disable icon if inactive -->
+                                            <i
+                                                class="fas {{ $bonus->is_active ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-2x"></i>
+                                        </a>
                                     </td>
+
                                     <td class="text-center">
                                         <!-- Edit Icon -->
                                         <a href="#javascript" class="text-primary" data-toggle="modal"
@@ -322,27 +333,65 @@
             });
 
             // Toggle Status
+            // $(document).on('click', '[id^="toggleStatusBtn"]', function() {
+            //     var bonusId = $(this).data('id');
+            //     console.log(bonusId)
+
+            //     $.ajax({
+            //         url: '/bonus/' + bonusId +
+            //             '/toggle-status', // Use the route for toggling status
+            //         method: 'POST',
+            //         data: {
+            //             _token: $('input[name="_token"]').val(), // CSRF token
+            //         },
+            //         success: function(response) {
+            //             // Optionally, display a success message
+            //             // alert(response.message);
+            //             location.reload();
+            //         },
+            //         error: function() {
+            //             alert('An error occurred while toggling user status.');
+            //         }
+            //     });
+            // });
+            // Toggle Status
+
+            // Toggle Status
             $(document).on('click', '[id^="toggleStatusBtn"]', function() {
                 var bonusId = $(this).data('id');
-                console.log(bonusId)
 
                 $.ajax({
-                    url: '/bonus/' + bonusId +
-                        '/toggle-status', // Use the route for toggling status
+                    url: '/bonus/' + bonusId + '/toggle-status', // Route to toggle the bonus status
                     method: 'POST',
                     data: {
                         _token: $('input[name="_token"]').val(), // CSRF token
                     },
                     success: function(response) {
-                        // Optionally, display a success message
-                        // alert(response.message);
-                        location.reload();
+                        // Update icon based on new status
+                        if (response.is_active) {
+                            $('#toggleStatusBtn' + bonusId + ' i').removeClass(
+                                'fa-toggle-off text-muted').addClass(
+                                'fa-toggle-on text-success');
+                            $('#toggleStatusBtn' + bonusId).removeAttr(
+                                'style'); // Enable the icon again
+                        } else {
+                            $('#toggleStatusBtn' + bonusId + ' i').removeClass(
+                                'fa-toggle-on text-success').addClass(
+                                'fa-toggle-off text-muted');
+                            $('#toggleStatusBtn' + bonusId).css('pointer-events',
+                                'none'); // Disable the icon
+                        }
+
+                        // Reload the page to reflect changes
+                        window.location.reload();
                     },
                     error: function() {
-                        alert('An error occurred while toggling user status.');
+                        alert('An error occurred while toggling bonus status.');
                     }
                 });
             });
+
+
 
 
 

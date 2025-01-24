@@ -71,9 +71,9 @@ Route::middleware(['auth', 'check.active'])->group(function () {
     Route::get('/cancelled-orders', [OrderController::class, 'cancelledOrders'])->name('cancelled-orders');
     Route::get('/orders/table', [OrderController::class, 'table'])->name('orders.table');
 
-
     Route::resource('bonus', BonusController::class);
     Route::post('/bonus/{id}/toggle-status', [BonusController::class, 'toggleStatus']);
+    Route::get('bonus-history', [BonusController::class, 'bonusHistory'])->name('bonusHistory');
 
     Route::resource('category', CategoryController::class);
     Route::post('/category/{id}/toggle-status', [CategoryController::class, 'toggleStatus']);

@@ -12,7 +12,7 @@ class BonusController extends Controller
      */
     public function index()
     {
-        $bonuses = Bonus::all();
+        $bonuses = Bonus::where('is_active',true)->get();
         // return $bonus;
 
         return view('admin.bonus.manage_bonus', compact('bonuses'));
@@ -78,7 +78,7 @@ class BonusController extends Controller
     {
          // Validate the request
         $validatedData = $request->validate([
-        'type' => 'requiredstring|max:255',
+        'type' => 'required|string|max:255',
         'amount' => 'required|numeric|min:0',
         'percentage' => 'required|numeric|min:0|max:100',
          ]);
@@ -121,5 +121,12 @@ class BonusController extends Controller
             'status' => $bonus->is_active ? 'activated' : 'deactivated',
             'message' => $bonus->is_active ? 'Bonus activated successfully.' : 'Bonus deactivated successfully.'
         ]);
+    }
+
+    public function bonusHistory(){
+
+        $bonuses = Bonus::where('is_active',false)->get();
+
+        return view('admin.bonus.bonus_history', compact('bonuses'));
     }
 }
