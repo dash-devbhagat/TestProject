@@ -382,6 +382,11 @@ public function checkout()
             'variant' => $variant->unit,
             'price' => number_format($variant->price, 2, '.', ''),
             'quantity' => $cartItem->quantity,
+            'sku' => $product->sku,
+            'image' => $product->image,
+            'details' => $product->details,
+            'category_id' => $product->category_id,  // Added category_id
+            'sub_category_id' => $product->sub_category_id,  // Added sub_category_id
             'total_price' => number_format($variant->price * $cartItem->quantity, 2, '.', ''),
         ];
     }
