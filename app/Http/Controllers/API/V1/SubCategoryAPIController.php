@@ -71,6 +71,7 @@ class SubCategoryAPIController extends Controller
             'data' => (object) ['subcategories' => $subcategories],
             'meta' => [
                 'success' => true,
+                'message' => 'Subcategories fetched successfully.',
             ],
         ]);
     }

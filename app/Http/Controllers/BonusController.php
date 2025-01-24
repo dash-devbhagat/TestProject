@@ -78,7 +78,7 @@ class BonusController extends Controller
     {
          // Validate the request
         $validatedData = $request->validate([
-        'type' => 'requiredstring|max:255',
+        'type' => 'required|string|max:255',
         'amount' => 'required|numeric|min:0',
         'percentage' => 'required|numeric|min:0|max:100',
          ]);
