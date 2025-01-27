@@ -136,6 +136,7 @@ class CartController extends Controller
             $variant = $item->productVariant;
             return [
                 'cart_item_id' => $item->id,
+                'product_id' => $item->product->id,
                 'product_name' => $item->product->name,
                 'product_variant_id' => $variant->id,
                 'variant' => $variant->unit,

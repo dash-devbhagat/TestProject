@@ -85,7 +85,7 @@ public function getActiveProducts(Request $request)
     // Format the response
     $response = $products->map(function ($product) {
         return [
-            'id' => $product->id,
+            'product_id' => $product->id,
             'name' => $product->name,
             'sku' => $product->sku,
             'image' => $product->image,
@@ -94,7 +94,7 @@ public function getActiveProducts(Request $request)
             'sub_category_id' => $product->sub_category_id,  // Added sub_category_id
             'variants' => $product->productVarients->map(function ($variant) {
                 return [
-                    'id' => $variant->id,  // Added product_variant_id
+                    'variants_id' => $variant->id,  // Added product_variant_id
                     'unit' => $variant->unit,
                     'price' => $variant->price,
                 ];
