@@ -9,6 +9,8 @@ use App\Models\ProductVarient;
 use App\Models\Charge;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Category;
+use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -378,39 +380,25 @@ public function checkout()
     $grandTotal = $cartTotal + $totalAdditionalCharges;
     $grandTotal = number_format($grandTotal, 2, '.', '');
 
-    // Generate Order Number (e.g., OR-2025-000001)
-    $orderNumber = 'OR-' . date('Y') . '-' . strtoupper(uniqid());
-
-    // Create Order Entry
-    $order = Order::create([
-        'user_id' => $user->id,
-        'status' => 'pending',
-        'sub_total' => $cartTotal,
-        'charges_total' => $totalAdditionalCharges,
-        'grand_total' => $grandTotal,
-        'address_id' => $user->address_id, // Assuming user's address is used
-        'transaction_status' => 'pending', // Assuming pending status for now
-        'order_number' => $orderNumber,    // Store the generated order number
-    ]);
+        // Save total_charges and grand_total to the cart table
+    $cart->total_charges = $totalAdditionalCharges;
+    $cart->grand_total = $grandTotal;
+    $cart->save();
 
     // Prepare Items for Response
     $items = [];
 
-    // Create Order Items
     foreach ($cart->items as $cartItem) {
-
         $product = Product::find($cartItem->product_id);
         $variant = ProductVarient::find($cartItem->product_variant_id);
 
-        OrderItem::create([
-            'order_id' => $order->id,
-            'cart_id' => $cart->id,  // Adding the cart_id here
-            'product_id' => $cartItem->product_id,
-            'product_variant_id' => $cartItem->product_variant_id,
-            'quantity' => $cartItem->quantity,
-        ]);
+        // Fetch category and sub-category names
+        $category = Category::find($product->category_id);
+        $subCategory = SubCategory::find($product->sub_category_id);
 
-         $items[] = [
+
+        $items[] = [
+            'cart_item_id' => $cartItem->id,
             'product_id' => $product->id,
             'product_name' => $product->name,
             'product_variant_id' => $variant->id,
@@ -420,30 +408,31 @@ public function checkout()
             'sku' => $product->sku,
             'image' => $product->image,
             'details' => $product->details,
-            'category_id' => $product->category_id,  // Added category_id
-            'sub_category_id' => $product->sub_category_id,  // Added sub_category_id
+            'category_id' => $product->category_id,
+            'category_name' => $category ? $category->name : null, // Include category name
+            'sub_category_id' => $product->sub_category_id,
+            'sub_category_name' => $subCategory ? $subCategory->name : null, // Added sub_category_id
             'total_price' => number_format($variant->price * $cartItem->quantity, 2, '.', ''),
         ];
     }
 
+    // Return response without creating an order entry
     return response()->json([
         'data' => [
-            'order' => [
-                'order_id' => $order->id,
-                'order_number' => $order->order_number,  // Added order number to the response
-                'new_cart_total' => $cartTotal,
-                'additional_charges' => $additionalCharges,
-                'charges_total' => number_format($totalAdditionalCharges, 2, '.', ''), // Added charges total here
-                'grand_total' => $grandTotal,
-            ],
-            'items' => $items,
+            'cart_id' => $cart->id,
+            'new_cart_total' => $cartTotal,
+            'additional_charges' => $additionalCharges,
+            'total_charges' => number_format($totalAdditionalCharges, 2, '.', ''), // Added charges total here
+            'grand_total' => $grandTotal,
         ],
+        'items' => $items,
         'meta' => [
             'success' => true,
-            'message' => 'Checkout successful, order placed.',
+            'message' => 'Checkout successful',
         ],
     ], 200);
 }
+
 
 }
 

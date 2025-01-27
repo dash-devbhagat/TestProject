@@ -12,6 +12,12 @@ use App\Models\Payment;
 use App\Models\Bonus;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Charge;
+use App\Models\Product;
+use App\Models\ProductVarient;
+use App\Models\OrderItem;
+use App\Models\Category;
+use App\Models\SubCategory;
 
 class TransactionAPIController extends Controller
 {
@@ -20,10 +26,20 @@ public function processPayment(Request $request)
 {
     $user = Auth::user();
     $cart = Cart::where('user_id', $user->id)->first();
-    
+
+    if (!$cart || $cart->items->isEmpty()) {
+        return response()->json([
+            'data' => json_decode('{}'),
+            'meta' => [
+                'success' => false,
+                'message' => 'Your cart is empty.',
+            ],
+        ], 200);
+    }
+
     // Validate payment details
     $validator = Validator::make($request->all(), [
-        'order_id' => 'required|exists:orders,id',
+        'cart_id' => 'required|exists:carts,id',
         'payment_mode' => 'required|in:online,cash on delivery',
         'payment_type' => 'nullable|required_if:payment_mode,online|in:credit,debit,upi', // Only required for 'online'
         'payment_status' => 'required|in:success,pending,failed',
@@ -39,37 +55,38 @@ public function processPayment(Request $request)
         ], 200);
     }
 
-    // Fetch the Order
-    $order = Order::find($request->order_id);
-    if (!$order) {
-        return response()->json([
-            'data' => json_decode('{}'),
-            'meta' => [
-                'success' => false,
-                'message' => 'Order not found.',
-            ],
-        ], 404);
+    // Generate Order from Cart
+    $cartTotal = $cart->cart_total;
+    $charges = Charge::where('is_active', 1)->get();
+    $totalAdditionalCharges = 0;
+
+    foreach ($charges as $charge) {
+        $totalAdditionalCharges += $charge->type === 'percentage'
+            ? ($cartTotal * $charge->value) / 100
+            : $charge->value;
     }
 
-    if ($order->transaction_status === 'success') {
-        return response()->json([
-            'data' => json_decode('{}'),
-            'meta' => [
-                'success' => false,
-                'message' => 'Payment has already been completed for this order.',
-            ],
-        ], 200);
-    }
+    $grandTotal = $cartTotal + $totalAdditionalCharges;
 
-    // Ensure the order is in "pending" status
-    if ($order->status !== 'pending') {
-        return response()->json([
-            'data' => json_decode('{}'),
-            'meta' => [
-                'success' => false,
-                'message' => 'Only pending orders can be paid for.',
-            ],
-        ], 400);
+    $order = Order::create([
+        'user_id' => $user->id,
+        'status' => 'pending',
+        'sub_total' => $cartTotal,
+        'charges_total' => $totalAdditionalCharges,
+        'grand_total' => $grandTotal,
+        'address_id' => $user->address_id,
+        'transaction_status' => 'pending',
+        'order_number' => 'OR-' . date('Y') . '-' . strtoupper(uniqid()),
+    ]);
+
+    foreach ($cart->items as $cartItem) {
+        OrderItem::create([
+            'order_id' => $order->id,
+            'cart_id' => $cart->id,
+            'product_id' => $cartItem->product_id,
+            'product_variant_id' => $cartItem->product_variant_id,
+            'quantity' => $cartItem->quantity,
+        ]);
     }
 
     // Generate a unique transaction number
@@ -78,18 +95,19 @@ public function processPayment(Request $request)
     // Create a transaction
     $transaction = Transaction::create([
         'transaction_number' => $transactionNumber,
-        'user_id' => Auth::user()->id,
+        'user_id' => $user->id,
         'order_id' => $order->id,
         'payment_mode' => $request->payment_mode,
         'payment_type' => $request->payment_mode === 'online' ? $request->payment_type : null,
         'payment_status' => $request->payment_status,
     ]);
 
-    // Update the Order based on payment status
+    // Update Order based on payment status
+    $message = '';
     if ($request->payment_status === 'success') {
         $order->status = 'pending';  // COD orders stay 'pending'
         $order->transaction_status = 'success';
-        $message = 'Payment was successful.';
+        $message = 'Payment was successful , order placed.';
         
         // Update the payments table's remaining amount after successful payment
         foreach ($user->payments as $payment) {
@@ -115,9 +133,11 @@ public function processPayment(Request $request)
     $order->transaction_id = $transaction->id;
     $order->save();
 
-    // Clear Cart
+    // Clear the cart
     $cart->items()->delete();
     $cart->cart_total = 0;
+    $cart->total_charges = 0;
+    $cart->grand_total = 0;
     $cart->save();
 
     return response()->json([
@@ -133,6 +153,8 @@ public function processPayment(Request $request)
         ],
     ], 200);
 }
+
+
 
 
 
