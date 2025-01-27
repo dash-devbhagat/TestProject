@@ -173,8 +173,8 @@ class MobileUserController extends Controller
             $user->save();
 
             return response()->json([
-                'data' => [
-                    'user' => [
+            'data' => [
+        'user' => [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
@@ -185,11 +185,22 @@ class MobileUserController extends Controller
             'is_profile_complete' => $user->is_profile_complete,
             'referralCode' => $user->referral_code,
             'address' => $user->address ? [
-                'addressLine' => $user->address->address_line,
-                'city' => $user->address->city ? $user->address->city->name : null,
-                'state' => $user->address->state ? $user->address->state->name : null,
-                'zipCode' => $user->address->zip_code,
-            ] : null,
+                'addressLine' => $user->address->address_line ?? 'null',
+                'city' => $user->address->city ? $user->address->city->name : 'null',
+                'city_id' => $user->address->city ? $user->address->city->id : 'null',
+                'state' => $user->address->state ? $user->address->state->name : 'null',
+                'state_id' => $user->address->state ? $user->address->state->id : 'null',
+                'zipCode' => $user->address->zip_code ?? 'null',
+            ] : [
+                'addressLine' => 'null',
+                'city' => 'null',
+                'city_id' => 'null',
+                'state' => 'null',
+                'state_id' => 'null',
+                'zipCode' => 'null',
+            ],
+
+
         ],
                 ],
                 'meta' => [
@@ -226,24 +237,34 @@ class MobileUserController extends Controller
             'birthDate' => $user->birthdate,
             'is_profile_complete' => $user->is_profile_complete,
             'referralCode' => $user->referral_code,
-            'address' => $user->address ? [
-                'addressLine' => $user->address->address_line,
-                'city' => $user->address->city ? $user->address->city->name : null,
-                'state' => $user->address->state ? $user->address->state->name : null,
-                'zipCode' => $user->address->zip_code,
-            ] : null,
+        'address' => $user->address ? [
+            'addressLine' => $user->address->address_line ?? 'null',
+            'city' => $user->address->city ? $user->address->city->name : 'null',
+            'city_id' => $user->address->city ? $user->address->city->id : 'null',
+            'state' => $user->address->state ? $user->address->state->name : 'null',
+            'state_id' => $user->address->state ? $user->address->state->id : 'null',
+            'zipCode' => $user->address->zip_code ?? 'null',
+        ] : [
+            'addressLine' => 'null',
+            'city' => 'null',
+            'city_id' => 'null',
+            'state' => 'null',
+            'state_id' => 'null',
+            'zipCode' => 'null',
         ],
-        ],
-        'meta' => [
-        'accessToken' => $authToken,
-        'tokenType' => 'Bearer',
-        'status' => 200,
-        'success' => true,
-        'message' => 'Logged in successfully.',
-        ],
-        ], 200);
-        // 200 OK status
-        }
+
+                ],
+                ],
+                'meta' => [
+                'accessToken' => $authToken,
+                'tokenType' => 'Bearer',
+                'status' => 200,
+                'success' => true,
+                'message' => 'Logged in successfully.',
+                ],
+                ], 200);
+                // 200 OK status
+                }
     }
 
 

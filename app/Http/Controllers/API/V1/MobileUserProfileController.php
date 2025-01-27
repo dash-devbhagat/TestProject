@@ -36,17 +36,24 @@ class MobileUserProfileController extends Controller
             'phone' => $user->phone,
             'gender' => $user->gender,
             'birthdate' => $user->birthdate,
+            'is_profile_complete' => $user->is_profile_complete,
             'profilePicture' => $user->profilepic,
             'referral_code' => $user->referral_code,
-            'address' => [
-                'address_line' => $user->address->address_line,
-                'city_id' => $user->address->city ? $user->address->city->id : null,
-                'city' => $user->address->city ? $user->address->city->name : null,
-                  // Assuming 'name' is the city name
-                  'state_id' => $user->address->state ? $user->address->state->id : null, 
-                'state' => $user->address->state ? $user->address->state->name : null,  // Assuming 'name' is the state name
-                'zip_code' => $user->address->zip_code,
-            ],
+'address' => $user->address ? [
+    'addressLine' => $user->address->address_line ?? 'null',
+    'city' => $user->address->city ? $user->address->city->name : 'null',
+    'city_id' => $user->address->city ? $user->address->city->id : 'null',
+    'state' => $user->address->state ? $user->address->state->name : 'null',
+    'state_id' => $user->address->state ? $user->address->state->id : 'null',
+    'zipCode' => $user->address->zip_code ?? 'null',
+] : [
+    'addressLine' => 'null',
+    'city' => 'null',
+    'city_id' => 'null',
+    'state' => 'null',
+    'state_id' => 'null',
+    'zipCode' => 'null',
+],
         ];
 
 
@@ -139,12 +146,21 @@ class MobileUserProfileController extends Controller
             'birthDate' => $user->birthdate,
             'is_profile_complete' => $user->is_profile_complete,
             'referralCode' => $user->referral_code,
-            'address' => $user->address ? [
-                'addressLine' => $user->address->address_line,
-                'city' => $user->address->city ? $user->address->city->name : null,
-                'state' => $user->address->state ? $user->address->state->name : null,
-                'zipCode' => $user->address->zip_code,
-            ] : null,
+'address' => $user->address ? [
+    'addressLine' => $user->address->address_line ?? 'null',
+    'city' => $user->address->city ? $user->address->city->name : 'null',
+    'city_id' => $user->address->city ? $user->address->city->id : 'null',
+    'state' => $user->address->state ? $user->address->state->name : 'null',
+    'state_id' => $user->address->state ? $user->address->state->id : 'null',
+    'zipCode' => $user->address->zip_code ?? 'null',
+] : [
+    'addressLine' => 'null',
+    'city' => 'null',
+    'city_id' => 'null',
+    'state' => 'null',
+    'state_id' => 'null',
+    'zipCode' => 'null',
+],
         ],
             ],
             'meta' => [
@@ -243,12 +259,21 @@ class MobileUserProfileController extends Controller
             'birthDate' => $user->birthdate,
             'is_profile_complete' => $user->is_profile_complete,
             'referralCode' => $user->referral_code,
-            'address' => $user->address ? [
-                'addressLine' => $user->address->address_line,
-                'city' => $user->address->city ? $user->address->city->name : null,
-                'state' => $user->address->state ? $user->address->state->name : null,
-                'zipCode' => $user->address->zip_code,
-            ] : null,
+'address' => $user->address ? [
+    'addressLine' => $user->address->address_line ?? 'null',
+    'city' => $user->address->city ? $user->address->city->name : 'null',
+    'city_id' => $user->address->city ? $user->address->city->id : 'null',
+    'state' => $user->address->state ? $user->address->state->name : 'null',
+    'state_id' => $user->address->state ? $user->address->state->id : 'null',
+    'zipCode' => $user->address->zip_code ?? 'null',
+] : [
+    'addressLine' => 'null',
+    'city' => 'null',
+    'city_id' => 'null',
+    'state' => 'null',
+    'state_id' => 'null',
+    'zipCode' => 'null',
+],
         ],
             ],
             'meta' => [
