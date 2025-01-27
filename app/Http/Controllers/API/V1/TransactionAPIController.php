@@ -232,6 +232,7 @@ public function viewBonus(Request $request)
         // Apply bonus to cart total
         $oldCartTotal = $cartTotal;
         $newCartTotal = $cartTotal - $totalBonusUsed;
+        $discount = $oldCartTotal - $newCartTotal;
 
         // Update cart total in the database
         $cart->cart_total = number_format($newCartTotal, 2, '.', '');
@@ -241,6 +242,7 @@ public function viewBonus(Request $request)
                 'cart_id' => $cart->id,
                 'old_cart_total' => number_format($oldCartTotal, 2, '.', ''),
                 'new_cart_total' => number_format($newCartTotal, 2, '.', ''),
+                'discount' => number_format($discount, 2, '.', ''),
                 'total_bonus_used' => number_format($totalBonusUsed, 2, '.', ''),
                 'remaining_total_bonus' => number_format($totalRemainingBonusAmount, 2, '.', ''), // Add this line
                 'bonus_details' => $bonusDetails,
@@ -358,6 +360,7 @@ public function applyBonus(Request $request)
         // Apply bonus to cart total
         $oldCartTotal = $cartTotal;
         $newCartTotal = $cartTotal - $totalBonusUsed;
+        $discount = $oldCartTotal - $newCartTotal;
 
         // Update cart total in the database
         $cart->cart_total = number_format($newCartTotal, 2, '.', '');
@@ -368,6 +371,7 @@ public function applyBonus(Request $request)
                 'cart_id' => $cart->id,
                 'old_cart_total' => number_format($oldCartTotal, 2, '.', ''),
                 'new_cart_total' => number_format($newCartTotal, 2, '.', ''),
+                'discount' => number_format($discount, 2, '.', ''),
                 'total_bonus_used' => number_format($totalBonusUsed, 2, '.', ''),
                 'remaining_total_bonus' => number_format($totalRemainingBonusAmount, 2, '.', ''), // Add this line
                 'bonus_details' => $bonusDetails,

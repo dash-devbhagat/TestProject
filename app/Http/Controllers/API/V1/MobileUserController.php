@@ -174,15 +174,15 @@ class MobileUserController extends Controller
 
             return response()->json([
                 'data' => [
-                    'access_token' => $authToken,
-                    'token_type' => 'Bearer',
                     'user' => [
+            'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'phone' => $user->phone,
             'gender' => $user->gender,
             'profilePicture' => $user->profilepic,
             'birthDate' => $user->birthdate,
+            'is_profile_complete' => $user->is_profile_complete,
             'referralCode' => $user->referral_code,
             'address' => $user->address ? [
                 'addressLine' => $user->address->address_line,
@@ -193,6 +193,8 @@ class MobileUserController extends Controller
         ],
                 ],
                 'meta' => [
+                    'access_token' => $authToken,
+                    'token_type' => 'Bearer',
                     'success' => true,
                     'message' => 'Your profile is incomplete. Please complete your profile.'
                 ],
@@ -212,16 +214,17 @@ class MobileUserController extends Controller
 
             // Return response with token and message
            return response()->json([
-    'data' => [
-        'accessToken' => $authToken,
-        'tokenType' => 'Bearer',
+        'data' => [
+
         'user' => [
+            'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'phone' => $user->phone,
             'gender' => $user->gender,
             'profilePicture' => $user->profilepic,
             'birthDate' => $user->birthdate,
+            'is_profile_complete' => $user->is_profile_complete,
             'referralCode' => $user->referral_code,
             'address' => $user->address ? [
                 'addressLine' => $user->address->address_line,
@@ -230,14 +233,16 @@ class MobileUserController extends Controller
                 'zipCode' => $user->address->zip_code,
             ] : null,
         ],
-    ],
-    'meta' => [
+        ],
+        'meta' => [
+        'accessToken' => $authToken,
+        'tokenType' => 'Bearer',
         'status' => 200,
         'success' => true,
         'message' => 'Logged in successfully.',
-    ],
-], 200);
- // 200 OK status
+        ],
+        ], 200);
+        // 200 OK status
         }
     }
 

@@ -130,16 +130,22 @@ class MobileUserProfileController extends Controller
         return response()->json([
             'data' => [
                 'user' => [
-                'user_id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'phone' => $user->phone,
-                'gender' => $user->gender,
-                'birthdate' => $user->birthdate,
-                'referral_code' => $user->referral_code,
-                'address' => $address,
-                'is_profile_complete' => $user->is_profile_complete
-                ],
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+            'gender' => $user->gender,
+            'profilePicture' => $user->profilepic,
+            'birthDate' => $user->birthdate,
+            'is_profile_complete' => $user->is_profile_complete,
+            'referralCode' => $user->referral_code,
+            'address' => $user->address ? [
+                'addressLine' => $user->address->address_line,
+                'city' => $user->address->city ? $user->address->city->name : null,
+                'state' => $user->address->state ? $user->address->state->name : null,
+                'zipCode' => $user->address->zip_code,
+            ] : null,
+        ],
             ],
             'meta' => [
                 'success' => true,
@@ -228,15 +234,22 @@ class MobileUserProfileController extends Controller
         return response()->json([
             'data' => [
                 'user' => [
-                'user_id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'phone' => $user->phone,
-                'gender' => $user->gender,
-                'birthdate' => $user->birthdate,
-                'profilePicture' => $user->profilepic,
-                'address' => $address,
-                ],
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+            'gender' => $user->gender,
+            'profilePicture' => $user->profilepic,
+            'birthDate' => $user->birthdate,
+            'is_profile_complete' => $user->is_profile_complete,
+            'referralCode' => $user->referral_code,
+            'address' => $user->address ? [
+                'addressLine' => $user->address->address_line,
+                'city' => $user->address->city ? $user->address->city->name : null,
+                'state' => $user->address->state ? $user->address->state->name : null,
+                'zipCode' => $user->address->zip_code,
+            ] : null,
+        ],
             ],
             'meta' => [
                 'success' => true,
