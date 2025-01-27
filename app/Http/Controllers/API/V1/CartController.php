@@ -17,104 +17,116 @@ use App\Http\Controllers\Controller;
 class CartController extends Controller
 {
     // Add Product to Cart
-    public function addToCart(Request $request)
-    {
-        // Validation
-        $validator = Validator::make($request->all(), [
-            'product_id' => 'required|exists:products,id',
-            'product_variant_id' => 'required|exists:product_varients,id',
-            'quantity' => 'required|integer|min:1',
-        ]);
+public function addToCart(Request $request)
+{
+    // Validation
+    $validator = Validator::make($request->all(), [
+        'product_id' => 'required|exists:products,id',
+        'product_variant_id' => 'required|exists:product_varients,id',
+        'quantity' => 'required|integer|min:1',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'data' => json_decode('{}'),
-                'meta' => [
-                    'success' => false,
-                    'message' => $validator->errors()->first(),
-                ],
-            ], 200);
-        }
-
-        $user = Auth::user();
-        $cart = Cart::firstOrCreate(['user_id' => $user->id]);
-
-        // Product and Variant
-        $product = Product::find($request->product_id);
-        $variant = ProductVarient::find($request->product_variant_id);
-
-        // Ensure Variant Belongs to Product
-        if ($variant->product_id !== $product->id) {
-            return response()->json([
-                'data' => json_decode('{}'),
-                'meta' => [
-                    'success' => false,
-                    'message' => 'The selected product variant does not belong to the specified product.',
-                ],
-            ], 200);
-        }
-
-        // Check if Product is Already in Cart
-        $cartItem = CartItem::where('cart_id', $cart->id)
-            ->where('product_id', $product->id)
-            ->where('product_variant_id', $variant->id)
-            ->first();
-
-        if ($cartItem) {
-            $cartItem->quantity += $request->quantity;
-            $cartItem->save();
-        } else {
-             $cartItem = CartItem::create([
-                'cart_id' => $cart->id,
-                'product_id' => $product->id,
-                'product_variant_id' => $variant->id,
-                'quantity' => $request->quantity,
-            ]);
-        }
-
+    if ($validator->fails()) {
         return response()->json([
-            'data' => [
-                'cart_id' => $cart->id,
-                'cart_item_id' => $cartItem->id,
-                'items' => [
-                'product_id' => $product->id,
-                'product_name' => $product->name,
-            'product_variant_id' => $variant->id, 
-            'variant' => $variant->unit,
-            'price' => number_format($variant->price, 2, '.', ''),
-            'quantity' => $cartItem->quantity,
-                ],
-            'total_price' => number_format($variant->price * $cartItem->quantity, 2, '.', ''),
-            ],
+            'data' => json_decode('{}'),
             'meta' => [
-                'success' => true,
-                'message' => 'Product added to cart successfully.',
+                'success' => false,
+                'message' => $validator->errors()->first(),
             ],
         ], 200);
     }
+
+    $user = Auth::user();
+    $cart = Cart::firstOrCreate(['user_id' => $user->id]);
+
+    // Product and Variant
+    $product = Product::find($request->product_id);
+    $variant = ProductVarient::find($request->product_variant_id);
+
+    // Ensure Variant Belongs to Product
+    if ($variant->product_id !== $product->id) {
+        return response()->json([
+            'data' => json_decode('{}'),
+            'meta' => [
+                'success' => false,
+                'message' => 'The selected product variant does not belong to the specified product.',
+            ],
+        ], 200);
+    }
+
+    // Check if Product is Already in Cart
+    $cartItem = CartItem::where('cart_id', $cart->id)
+        ->where('product_id', $product->id)
+        ->where('product_variant_id', $variant->id)
+        ->first();
+
+    if ($cartItem) {
+        $cartItem->quantity += $request->quantity;
+        $cartItem->save();
+    } else {
+        $cartItem = CartItem::create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_variant_id' => $variant->id,
+            'quantity' => $request->quantity,
+        ]);
+    }
+
+    // Calculate the cart total
+    $cartTotal = $cart->items->sum(function ($item) {
+        $variant = $item->productVariant;
+        return $variant->price * $item->quantity;
+    });
+
+    // Update cart total in the database
+    $cart->cart_total = number_format($cartTotal, 2, '.', '');
+    $cart->save();
+
+    return response()->json([
+        'data' => [
+            'cart_id' => $cart->id,
+            'cart_item_id' => $cartItem->id,
+            'items' => [
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'product_variant_id' => $variant->id,
+                'variant' => $variant->unit,
+                'price' => number_format($variant->price, 2, '.', ''),
+                'quantity' => $cartItem->quantity,
+            ],
+            'total_price' => number_format($variant->price * $cartItem->quantity, 2, '.', ''),
+            'cart_total' => $cart->cart_total, // Include the updated cart total
+        ],
+        'meta' => [
+            'success' => true,
+            'message' => 'Product added to cart successfully.',
+        ],
+    ], 200);
+}
+
 
 
 
 
     // View Cart
-    public function viewCart()
-    {
-        $user = Auth::user();
-        $cart = Cart::where('user_id', $user->id)->first();
+public function viewCart()
+{
+    $user = Auth::user();
+    $cart = Cart::where('user_id', $user->id)->first();
 
-        if (!$cart) {
-            return response()->json([
-                'data' => json_decode('{}'),
-                'meta' => [
-                    'success' => false,
-                    'message' => 'Cart is empty.',
-                ],
-            ], 200);
-        }
+    if (!$cart) {
+        return response()->json([
+            'data' => json_decode('{}'),
+            'meta' => [
+                'success' => false,
+                'message' => 'Cart is empty.',
+            ],
+        ], 200);
+    }
 
-        $cartItems = $cart->items;
+    $cartItems = $cart->items;
 
-        if ($cartItems->isEmpty()) {
+    if ($cartItems->isEmpty()) {
         return response()->json([
             'data' => null,
             'meta' => [
@@ -122,42 +134,37 @@ class CartController extends Controller
                 'message' => 'Cart is empty.',
             ],
         ], 200);
-       }
-        $cartTotal = $cartItems->sum(function ($item) {
-        $variant = $item->productVariant;
-        return $variant->price * $item->quantity; // Calculate total dynamically
-        });
-
-        $cart->cart_total = number_format($cartTotal, 2, '.', '');
-        $cart->save();
-
-
-        $items = $cartItems->map(function ($item) {
-            $variant = $item->productVariant;
-            return [
-                'cart_item_id' => $item->id,
-                'product_id' => $item->product->id,
-                'product_name' => $item->product->name,
-                'product_variant_id' => $variant->id,
-                'variant' => $variant->unit,
-                'price' => number_format($variant->price, 2, '.', ''),  // Fetch the price dynamically from product_varients
-                'quantity' => $item->quantity,
-                'total_price' => number_format($variant->price * $item->quantity, 2, '.', ''),
-            ];
-        });
-
-        return response()->json([
-            'data' => [
-                'cart_id' => $cart->id,
-                'items' => $items,
-                'cart_total' => $cartTotal,
-            ],
-            'meta' => [
-                'success' => true,
-                'message' => 'Cart items fetched successfully.',
-            ],
-        ], 200);
     }
+
+    // Use the saved cart total from the database
+    $cartTotal = $cart->cart_total;
+
+    $items = $cartItems->map(function ($item) {
+        $variant = $item->productVariant;
+        return [
+            'cart_item_id' => $item->id,
+            'product_id' => $item->product->id,
+            'product_name' => $item->product->name,
+            'product_variant_id' => $variant->id,
+            'variant' => $variant->unit,
+            'price' => number_format($variant->price, 2, '.', ''),  // Fetch the price dynamically from product_varients
+            'quantity' => $item->quantity,
+            'total_price' => number_format($variant->price * $item->quantity, 2, '.', ''),
+        ];
+    });
+
+    return response()->json([
+        'data' => [
+            'cart_id' => $cart->id,
+            'items' => $items,
+            'cart_total' => $cartTotal, // Fetch cart total directly from the database
+        ],
+        'meta' => [
+            'success' => true,
+            'message' => 'Cart items fetched successfully.',
+        ],
+    ], 200);
+}
 
 
 
@@ -217,6 +224,8 @@ class CartController extends Controller
             return $variant->price * $item->quantity;  // Fetch the price dynamically from product_varients
         });
         $cartTotal = number_format($cartTotal, 2, '.', '');
+            $cart->cart_total = $cartTotal; // Store the cart total in the database
+    $cart->save();
 
         return response()->json([
             'data' => [
@@ -242,59 +251,84 @@ class CartController extends Controller
 
 
     // Remove Item from Cart
-    public function removeFromCart(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'cart_item_id' => 'required|exists:cart_items,id',
-        ]);
+public function removeFromCart(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'cart_item_id' => 'required|exists:cart_items,id',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'data' => json_decode('{}'),
-                'meta' => [
-                    'success' => false,
-                    'message' => $validator->errors()->first(),
-                ],
-            ], 200);
-        }
-
-        $cartItem = CartItem::find($request->cart_item_id);
-        $cartItem->delete();
-
-        return response()->json([
-            'data' => json_decode('{}'),
-            'meta' => [
-                'success' => true,
-                'message' => 'Cart item removed successfully.',
-            ],
-        ], 200);
-    }
-
-    // Clear Cart
-    public function clearCart()
-    {
-        $user = Auth::user();
-        $cart = Cart::where('user_id', $user->id)->first();
-
-        if ($cart) {
-            $cart->items()->delete();
-            return response()->json([
-                'data' => [],
-                'meta' => [
-                    'success' => true,
-                    'message' => 'Cart cleared successfully.',
-                ],
-            ], 200);
-        }
-
+    if ($validator->fails()) {
         return response()->json([
             'data' => json_decode('{}'),
             'meta' => [
                 'success' => false,
-                'message' => 'Cart is empty.',
+                'message' => $validator->errors()->first(),
             ],
         ], 200);
     }
+
+    $cartItem = CartItem::find($request->cart_item_id);
+    
+    // Get the cart associated with the item
+    $cart = $cartItem->cart;
+
+    // Remove the cart item
+    $cartItem->delete();
+
+    // Recalculate the cart total after removing the item
+    $cartTotal = $cart->items->sum(function ($item) {
+        $variant = $item->productVariant;
+        return $variant->price * $item->quantity;
+    });
+
+    // Update the cart total in the database
+    $cart->cart_total = number_format($cartTotal, 2, '.', '');
+    $cart->save();
+
+    return response()->json([
+        'data' => json_decode('{}'),
+        'meta' => [
+            'success' => true,
+            'message' => 'Cart item removed successfully.',
+            'cart_total' => $cart->cart_total, // Include the updated cart total
+        ],
+    ], 200);
+}
+
+
+
+    // Clear Cart
+public function clearCart()
+{
+    $user = Auth::user();
+    $cart = Cart::where('user_id', $user->id)->first();
+
+    if ($cart) {
+        // Delete all items from the cart
+        $cart->items()->delete();
+        
+        // Set the cart total to 0
+        $cart->cart_total = 0;
+        $cart->save();
+
+        return response()->json([
+            'data' => [],
+            'meta' => [
+                'success' => true,
+                'message' => 'Cart cleared successfully.',
+            ],
+        ], 200);
+    }
+
+    return response()->json([
+        'data' => json_decode('{}'),
+        'meta' => [
+            'success' => false,
+            'message' => 'Cart is empty.',
+        ],
+    ], 200);
+}
+
 
 public function checkout()
 {
