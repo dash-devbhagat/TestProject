@@ -475,9 +475,10 @@ public function forgotPassword(Request $request)
     \Log::info("Generated OTP for {$user->email}: {$otp}");
 
     // Send OTP email
-    Mail::raw("Your OTP for password reset is: $otp", function ($message) use ($user) {
+   // Send the email using the new view path
+    Mail::send('emails.API.password-reset', ['user' => $user, 'otp' => $otp], function ($message) use ($user) {
         $message->to($user->email)
-            ->subject('Password Reset OTP');
+            ->subject('Password Reset Request');
     });
 
     return response()->json([
@@ -528,6 +529,18 @@ public function forgotPassword(Request $request)
             'otp' => null, // Clear the OTP
             'otp_expires_at' => null, // Clear the expiry time
         ]);
+
+        // Ensure the database is actually being updated to NULL
+        \DB::table('mobile_users')->where('email', $request->email)->update([
+            'otp' => null,
+            'otp_expires_at' => null,
+        ]);
+
+            // Send success email notification
+        Mail::send('emails.API.password-reset-success', ['user' => $user], function ($message) use ($user) {
+            $message->to($user->email)
+                ->subject('Password Reset Successfully');
+        });
 
         return response()->json([
             'data' => json_decode('{}'),
