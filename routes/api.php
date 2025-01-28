@@ -24,6 +24,10 @@ Route::middleware('custom.auth')->post('v1/user/profile/complete', [MobileUserPr
 // Email Verification
 Route::get('v1/auth/verify/{token}', [MobileUserController::class, 'verifyEmail'])->name('api.verifyEmail');
 
+Route::post('v1/auth/forgot-password', [MobileUserController::class, 'forgotPassword']);
+Route::post('v1/auth/reset-password', [MobileUserController::class, 'resetPassword']);
+
+
 Route::get('v1/categories', [CategoryAPIController::class, 'getAllCategories']);
 Route::post('v1/subcategories', [SubCategoryAPIController::class, 'getSubCategoriesByCategoryId']);
 Route::get('v1/states', [StateAPIController::class, 'getAllStates']);

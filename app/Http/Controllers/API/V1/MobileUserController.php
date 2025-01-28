@@ -13,6 +13,8 @@ use Illuminate\Support\Str;
 use App\Mail\EmailVerification;
 use App\Models\Bonus;
 use App\Models\Payment;
+use Carbon\Carbon;
+
 
 
 class MobileUserController extends Controller
@@ -438,80 +440,101 @@ class MobileUserController extends Controller
             200
         );
     }
+
+public function forgotPassword(Request $request)
+{
+    // Validate email
+    $validator = Validator::make($request->all(), [
+        'email' => 'required|email|exists:mobile_users,email',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'data' => json_decode('{}'),
+            'meta' => [
+                'success' => false,
+                'message' => $validator->errors()->first(),
+            ],
+        ], 200);
+    }
+
+    $user = MobileUser::where('email', $request->email)->first();
+
+    // Generate OTP and expiry time
+    $otp = rand(100000, 999999); // 6-digit OTP
+    $otpExpiry = Carbon::now()->addMinutes(2); // OTP valid for 2 minutes
+
+    // Update OTP and OTP expiry time
+    $user->otp = (string) $otp;  // Ensure OTP is stored as a string
+    $user->otp_expires_at = $otpExpiry;
+
+    // Save the changes
+    $user->save();
+
+    // Log the OTP for debugging (remove in production)
+    \Log::info("Generated OTP for {$user->email}: {$otp}");
+
+    // Send OTP email
+    Mail::raw("Your OTP for password reset is: $otp", function ($message) use ($user) {
+        $message->to($user->email)
+            ->subject('Password Reset OTP');
+    });
+
+    return response()->json([
+        'data' => json_decode('{}'),
+        'meta' => [
+            'success' => true,
+            'message' => 'An OTP has been sent to your email.',
+        ],
+    ], 200);
 }
 
+ public function resetPassword(Request $request)
+    {
+        // Validate OTP and new password
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:mobile_users,email',
+            'otp' => 'required|digits:6',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => $validator->errors()->first(),
+                ],
+            ], 200);
+        }
 
+        // Fetch the user
+        $user = MobileUser::where('email', $request->email)->first();
 
-    // public function verifyEmail($token)
-    // {
-    //     // Find the user by the verification token
-    //     $user = MobileUser::where('email_verification_token', $token)->first();
+        // Verify OTP and its expiry
+        if ((string) $user->otp !== (string) $request->otp || Carbon::now()->greaterThan($user->otp_expires_at)) {
+            return response()->json([
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => 'The OTP is invalid or expired.',
+                ],
+            ], 200);
+        }
 
-    //     if (!$user) {
-    //         return response()->json([
-    //             'data' => json_decode('{}'),
-    //             'meta' => [
-    //                 'success' => false,
-    //                 'message' => 'The verification link is invalid or has expired. Please try requesting a new verification email.',
-    //             ],
-    //         ], 200); // 200 Bad Request status
-    //     }
+        // Reset the password
+        $user->update([
+            'password' => Hash::make($request->new_password), // Encrypt the new password
+            'otp' => null, // Clear the OTP
+            'otp_expires_at' => null, // Clear the expiry time
+        ]);
 
-    //     // Check if the user's email is already verified
-    //     if ($user->email_verified_at) {
-    //         return response()->json([
-    //             'data' => json_decode('{}'),
-    //             'meta' => [
-    //                 'success' => true,
-    //                 'message' => 'Your email has already been verified. You can now log in.',
-    //             ],
-    //         ], 200); // 200 OK status
-    //     }
-
-    //     // Verify the user's email by setting the email_verified_at field
-    //     $user->email_verified_at = now();
-    //     $user->email_verification_token = null; // Clear the token after successful verification
-
-    //     // Generate a unique referral code for the user
-    //     $user->referral_code = Str::random(8); // Adjust length as needed, 8 chars here
-    //     $user->save();
-
-    //     // Assign signup bonus
-    //     $signupBonus = Bonus::where('type', 'signup')->first();
-
-    //     if ($signupBonus) {
-    //         // Create a payment record for the signup bonus
-    //         Payment::create([
-    //             'user_id' => $user->id,
-    //             'bonus_id' => $signupBonus->id,
-    //             'amount' => $signupBonus->amount,
-    //             'payment_status' => 'completed',
-    //             'parent_id' => $user->referred_by,
-    //         ]);
-    //     }
-
-    //     // Handle referral bonus if the user was referred
-    //     if ($user->referred_by) {
-    //         $referralBonus = Bonus::where('type', 'referral')->first();
-
-    //         if ($referralBonus) {
-    //             // Create a payment record for the referrer
-    //             Payment::create([
-    //                 'user_id' => $user->referred_by, // The referring user's ID
-    //                 'bonus_id' => $referralBonus->id,
-    //                 'amount' => $referralBonus->amount,
-    //                 'payment_status' => 'completed',
-    //                 'child_id' => $user->id, // Reference the referred user's ID
-    //             ]);
-    //         }
-    //     }
-
-    //     return response()->json([
-    //         'data' => json_decode('{}'),
-    //         'meta' => [
-    //             'success' => true,
-    //             'message' => 'Congratulations! Your email has been verified successfully.',
-    //         ],
-    //     ], 200); // 200 OK status
-    // }
+        return response()->json([
+            'data' => json_decode('{}'),
+            'meta' => [
+                'success' => true,
+                'message' => 'Password reset successfully.',
+            ],
+        ], 200);
+    }
+}
