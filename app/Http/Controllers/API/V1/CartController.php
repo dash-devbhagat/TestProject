@@ -333,107 +333,6 @@ public function clearCart()
 }
 
 
-// public function checkout()
-// {
-//     $user = Auth::user();
-//     $cart = Cart::where('user_id', $user->id)->first();
-
-//     if (!$cart || $cart->items->isEmpty()) {
-//         return response()->json([
-//             'data' => json_decode('{}'),
-//             'meta' => [
-//                 'success' => false,
-//                 'message' => 'Your cart is empty.',
-//             ],
-//         ], 200);
-//     }
-
-//     // Use cart_total directly from the database
-//     $cartTotal = $cart->cart_total;
-
-//     // Format cart total
-//     $cartTotal = number_format($cartTotal, 2, '.', '');
-
-//     // Fetch Additional Charges
-//     $charges = Charge::where('is_active', 1)->get();
-
-//     $additionalCharges = [];
-//     $totalAdditionalCharges = 0;
-
-//     foreach ($charges as $charge) {
-//         if ($charge->type === 'percentage') {
-//             $chargeAmount = ($cartTotal * $charge->value) / 100;
-//         } else { // Rupees
-//             $chargeAmount = $charge->value;
-//         }
-
-//         $chargeAmount = number_format($chargeAmount, 2, '.', '');
-//         $additionalCharges[] = [
-//             'name' => $charge->name,
-//             'type' => $charge->type,
-//             'value' => $charge->value,
-//             'amount' => $chargeAmount,
-//         ];
-//         $totalAdditionalCharges += $chargeAmount;
-//     }
-
-//     // Grand Total
-//     $grandTotal = $cartTotal + $totalAdditionalCharges;
-//     $grandTotal = number_format($grandTotal, 2, '.', '');
-
-//         // Save total_charges and grand_total to the cart table
-//     $cart->total_charges = $totalAdditionalCharges;
-//     $cart->grand_total = $grandTotal;
-//     $cart->save();
-
-//     // Prepare Items for Response
-//     $items = [];
-
-//     foreach ($cart->items as $cartItem) {
-//         $product = Product::find($cartItem->product_id);
-//         $variant = ProductVarient::find($cartItem->product_variant_id);
-
-//         // Fetch category and sub-category names
-//         $category = Category::find($product->category_id);
-//         $subCategory = SubCategory::find($product->sub_category_id);
-
-
-//         $items[] = [
-//             'cart_item_id' => $cartItem->id,
-//             'product_id' => $product->id,
-//             'product_name' => $product->name,
-//             'product_variant_id' => $variant->id,
-//             'variant' => $variant->unit,
-//             'price' => number_format($variant->price, 2, '.', ''),
-//             'quantity' => $cartItem->quantity,
-//             'sku' => $product->sku,
-//             'image' => $product->image,
-//             'details' => $product->details,
-//             'category_id' => $product->category_id,
-//             'category_name' => $category ? $category->name : null, // Include category name
-//             'sub_category_id' => $product->sub_category_id,
-//             'sub_category_name' => $subCategory ? $subCategory->name : null, // Added sub_category_id
-//             'total_price' => number_format($variant->price * $cartItem->quantity, 2, '.', ''),
-//         ];
-//     }
-
-//     // Return response without creating an order entry
-//     return response()->json([
-//         'data' => [
-//             'cart_id' => $cart->id,
-//             'new_cart_total' => $cartTotal,
-//             'additional_charges' => $additionalCharges,
-//             'total_charges' => number_format($totalAdditionalCharges, 2, '.', ''), // Added charges total here
-//             'grand_total' => $grandTotal,
-//         ],
-//         'items' => $items,
-//         'meta' => [
-//             'success' => true,
-//             'message' => 'Checkout successful',
-//         ],
-//     ], 200);
-// }
-
 public function checkout()
 {
     $user = Auth::user();
@@ -449,65 +348,25 @@ public function checkout()
         ], 200);
     }
 
+    // Use cart_total directly from the database
     $cartTotal = $cart->cart_total;
+
+    // Format cart total
     $cartTotal = number_format($cartTotal, 2, '.', '');
 
-    // Apply Bonus
-    $totalBonusUsed = 0;
-    $bonusDetails = [];
-    $bonusTypes = [];
-    $totalRemainingBonusAmount = 0;
-
-    foreach ($user->payments as $payment) {
-        $bonus = Bonus::find($payment->bonus_id);
-
-        if ($bonus && $bonus->is_active) {
-            $bonusUsage = ($payment->remaining_amount * $bonus->percentage) / 100;
-            $totalBonusUsed += $bonusUsage;
-            $payment->remaining_amount -= $bonusUsage;
-
-            if (!isset($bonusTypes[$bonus->type])) {
-                $bonusTypes[$bonus->type] = [
-                    'total_available' => 0,
-                    'total_used' => 0,
-                    'remaining_bonus' => 0,
-                    'percentage' => $bonus->percentage,
-                ];
-            }
-
-            $bonusTypes[$bonus->type]['total_available'] += $payment->remaining_amount + $bonusUsage;
-            $bonusTypes[$bonus->type]['total_used'] += $bonusUsage;
-            $bonusTypes[$bonus->type]['remaining_bonus'] = $bonusTypes[$bonus->type]['total_available'] - $bonusTypes[$bonus->type]['total_used'];
-
-            $totalRemainingBonusAmount += $payment->remaining_amount;
-        }
-    }
-
-    if ($totalBonusUsed > 0 && $cartTotal > $totalBonusUsed) {
-        foreach ($bonusTypes as $type => $details) {
-            $bonusDetails[] = [
-                'bonus_type' => $type,
-                'percentage' => number_format($details['percentage'], 2, '.', ''),
-                'total_available' => number_format($details['total_available'], 2, '.', ''),
-                'bonus_used' => number_format($details['total_used'], 2, '.', ''),
-                'remaining_bonus_amount' => number_format($details['remaining_bonus'], 2, '.', ''),
-            ];
-        }
-
-        $oldCartTotal = $cartTotal;
-        $cartTotal -= $totalBonusUsed;
-    }
-
-    $cart->cart_total = number_format($cartTotal, 2, '.', '');
-    $cart->save();
-
-    // Calculate Additional Charges
+    // Fetch Additional Charges
     $charges = Charge::where('is_active', 1)->get();
+
     $additionalCharges = [];
     $totalAdditionalCharges = 0;
 
     foreach ($charges as $charge) {
-        $chargeAmount = ($charge->type === 'percentage') ? ($cartTotal * $charge->value) / 100 : $charge->value;
+        if ($charge->type === 'percentage') {
+            $chargeAmount = ($cartTotal * $charge->value) / 100;
+        } else { // Rupees
+            $chargeAmount = $charge->value;
+        }
+
         $chargeAmount = number_format($chargeAmount, 2, '.', '');
         $additionalCharges[] = [
             'name' => $charge->name,
@@ -518,18 +377,26 @@ public function checkout()
         $totalAdditionalCharges += $chargeAmount;
     }
 
+    // Grand Total
     $grandTotal = $cartTotal + $totalAdditionalCharges;
     $grandTotal = number_format($grandTotal, 2, '.', '');
+
+        // Save total_charges and grand_total to the cart table
     $cart->total_charges = $totalAdditionalCharges;
     $cart->grand_total = $grandTotal;
     $cart->save();
 
+    // Prepare Items for Response
     $items = [];
+
     foreach ($cart->items as $cartItem) {
         $product = Product::find($cartItem->product_id);
         $variant = ProductVarient::find($cartItem->product_variant_id);
+
+        // Fetch category and sub-category names
         $category = Category::find($product->category_id);
         $subCategory = SubCategory::find($product->sub_category_id);
+
 
         $items[] = [
             'cart_item_id' => $cartItem->id,
@@ -543,29 +410,26 @@ public function checkout()
             'image' => $product->image,
             'details' => $product->details,
             'category_id' => $product->category_id,
-            'category_name' => $category ? $category->name : null,
+            'category_name' => $category ? $category->name : null, // Include category name
             'sub_category_id' => $product->sub_category_id,
-            'sub_category_name' => $subCategory ? $subCategory->name : null,
+            'sub_category_name' => $subCategory ? $subCategory->name : null, // Added sub_category_id
             'total_price' => number_format($variant->price * $cartItem->quantity, 2, '.', ''),
         ];
     }
 
+    // Return response without creating an order entry
     return response()->json([
         'data' => [
             'cart_id' => $cart->id,
-            'old_cart_total' => number_format($oldCartTotal, 2, '.', ''),
-            'new_cart_total' => number_format($cartTotal, 2, '.', ''),
-            'total_bonus_used' => number_format($totalBonusUsed, 2, '.', ''),
-            'remaining_total_bonus' => number_format($totalRemainingBonusAmount, 2, '.', ''),
-            'bonus_details' => $bonusDetails,
+            'new_cart_total' => $cartTotal,
             'additional_charges' => $additionalCharges,
-            'total_charges' => number_format($totalAdditionalCharges, 2, '.', ''),
+            'total_charges' => number_format($totalAdditionalCharges, 2, '.', ''), // Added charges total here
             'grand_total' => $grandTotal,
         ],
         'items' => $items,
         'meta' => [
             'success' => true,
-            'message' => 'Checkout successful with applied bonuses.',
+            'message' => 'Checkout successful',
         ],
     ], 200);
 }
