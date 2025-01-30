@@ -50,6 +50,42 @@
 
             @if (Auth::user()->role === 'admin')
                 <li class="nav-item">
+                    <a href="{{ route('charge.index') }}"
+                        class="nav-link {{ request()->routeIs('charge.index') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-hand-holding-usd"></i>
+                        <p>
+                            Charge Management
+                        </p>
+                    </a>
+                </li>
+            @endif
+
+            @if (Auth::user()->role === 'admin')
+                <li class="nav-item">
+                    <a href="{{ route('state.index') }}"
+                        class="nav-link {{ request()->routeIs('state.index') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-globe"></i>
+                        <p>
+                            State Management
+                        </p>
+                    </a>
+                </li>
+            @endif
+
+            @if (Auth::user()->role === 'admin')
+                <li class="nav-item">
+                    <a href="{{ route('city.index') }}"
+                        class="nav-link {{ request()->routeIs('city.index') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-city"></i>
+                        <p>
+                            City Management
+                        </p>
+                    </a>
+                </li>
+            @endif
+
+            @if (Auth::user()->role === 'admin')
+                <li class="nav-item">
                     <a href="{{ route('category.index') }}"
                         class="nav-link {{ request()->routeIs('category.index') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-clipboard"></i>
@@ -67,18 +103,6 @@
                         <i class="nav-icon fas fa-box"></i>
                         <p>
                             Product Management
-                        </p>
-                    </a>
-                </li>
-            @endif
-
-            @if (Auth::user()->role === 'admin')
-                <li class="nav-item">
-                    <a href="{{ route('charge.index') }}"
-                        class="nav-link {{ request()->routeIs('charge.index') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-hand-holding-usd"></i>
-                        <p>
-                            Charges Management
                         </p>
                     </a>
                 </li>

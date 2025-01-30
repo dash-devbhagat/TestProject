@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'Category Management')
+@section('title', 'State Management')
 
 @section('content')
     <div class="content-wrapper">
@@ -9,16 +9,13 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1>Manage Categories and Subcategories</h1>
+                        <h1>Manage States</h1>
                     </div>
                     <!-- Add User Button on the right side -->
-                    <div class="col-sm-6 text-right">
-                        {{-- <button type="button" class="btn btn-success" data-toggle="modal"
-                            data-target="#addSubcategoryModal">Add Sub
-                            Categories</button> --}}
+                    {{-- <div class="col-sm-6 text-right">
                         <a href="{{ route('sub-category.index') }}" class="btn btn-success">Add Sub
                             Categories</a>
-                    </div>
+                    </div> --}}
 
                     {{-- Bootstrap Alert --}}
                     @if (session('success'))
@@ -37,35 +34,33 @@
 
                 </div>
 
-                <form action="{{ route('category.store') }}" method="POST" enctype="multipart/form-data"
-                    class="form-horizontal mt-4">
+                <form action="{{ route('state.store') }}" method="POST" enctype="multipart/form-data" class="form-horizontal mt-4">
                     @csrf
                     <div class="card-body">
+                        <!-- Input Field -->
                         <div class="form-group row">
-
-                            <div class="col-sm-6">
-                                <label for="category_name">Category Name</label>
-                                <input type="text" class="form-control @error('category_name') is-invalid @enderror"
-                                    id="category_name" name="category_name" placeholder="Enter Category Name">
-                                @error('category_name')
+                            <div class="col-sm-4">
+                                <label for="name">State Name</label>
+                                <input type="text" class="form-control @error('name') is-invalid @enderror"
+                                    id="name" name="name" placeholder="Enter State Name">
+                                @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-
-                            <div class="col-sm-6">
-                                <label for="category_image">Category Image</label>
-                                <input type="file" class="form-control" id="category_image" name="category_image"
-                                    accept="image/*">
+                        </div>
+                
+                        <!-- Save Button -->
+                        <div class="form-group row mt-3">
+                            <div class="col-sm-4">
+                                <button type="submit" id="saveCatBtn" class="btn btn-primary">Save</button>
                             </div>
-
                         </div>
                     </div>
-                    <!-- /.card-body -->
-                    <div class="card-footer">
-                        <button type="submit" id="saveCatBtn" class="btn btn-primary float-right">Save</button>
-                    </div>
-                    <!-- /.card-footer -->
                 </form>
+                
+                
+                
+                
 
 
             </div><!-- /.container-fluid -->
@@ -83,9 +78,7 @@
                         <thead>
                             <tr>
                                 <th>Sr</th>
-                                <th>Category Name</th>
-                                <th>Category Image</th>
-                                <th>SubCategories</th>
+                                <th>Name</th>
                                 <th>Active Status</th>
                                 <th>Action</th>
                             </tr>
@@ -94,39 +87,29 @@
                             @php
                                 $i = 1;
                             @endphp
-                            @foreach ($categories as $category)
+
+                            @foreach ($states as $state)
                                 <tr>
                                     <td>{{ $i }}</td>
-                                    <td>{{ $category->name }}</td>
-                                    {{-- <td>{{ $category->image ?? 'N/A' }}</td> --}}
-                                    <td class="text-center">
-                                        @if ($category->image)
-                                            <img src="{{ asset('storage/' . $category->image) }}" alt="Category Image"
-                                                width="80" height="50">
-                                        @else
-                                            N/A
-                                        @endif
-                                    </td>
-                                    <td>{{ $category->subCategories->count() }}</td>
+                                    <td>{{ $state->name }}</td>
                                     <td class="text-center">
                                         <!-- Active/Inactive Toggle Icon -->
-                                        <a href="javascript:void(0);" id="toggleStatusBtn{{ $category->id }}"
-                                            data-id="{{ $category->id }}" class="text-center" data-toggle="tooltip"
-                                            title="{{ $category->is_active ? 'Deactivate' : 'Activate' }}">
+                                        <a href="javascript:void(0);" id="toggleStatusBtn{{ $state->id }}"
+                                            data-id="{{ $state->id }}" class="text-center" data-toggle="tooltip"
+                                            title="{{ $state->is_active ? 'Deactivate' : 'Activate' }}">
                                             <i
-                                                class="fas {{ $category->is_active ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-2x"></i>
+                                                class="fas {{ $state->is_active ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-2x"></i>
                                         </a>
                                     </td>
                                     <td class="text-center">
                                         <!-- Edit Icon -->
-                                        <a href="#javascript" class="text-primary" data-toggle="modal"
-                                            data-target="#exampleModal" data-bs-toggle="tooltip" title="Edit">
-                                            <i class="fa fa-edit editCatBtn" data-id="{{ $category->id }}"></i>
+                                        <a href="#javascript" class="text-primary" data-bs-toggle="tooltip" title="Edit">
+                                            <i class="fa fa-edit editStateBtn" data-id="{{ $state->id }}"></i>
                                         </a>
                                         <!-- Delete Icon -->
-                                        <form action="{{ route('category.destroy', $category->id) }}" method="POST"
+                                        <form action="{{ route('state.destroy', $state->id) }}" method="POST"
                                             style="display:inline;"
-                                            onsubmit="return confirm('Are you sure you want to delete this category?');">
+                                            onsubmit="return confirm('Are you sure you want to delete this state?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-link text-danger p-0 m-0"
@@ -136,10 +119,9 @@
                                         </form>
                                     </td>
                                 </tr>
-                                @php
-                                    $i++;
-                                @endphp
                             @endforeach
+
+
                         </tbody>
                     </table>
                 </div>
@@ -152,38 +134,36 @@
     </div>
 
 
-    <!-- Edit Category Modal -->
-    <div class="modal fade" id="editCategoryModal" tabindex="-1" role="dialog" aria-labelledby="editCategoryModalLabel"
+    <!-- Edit Charge Modal -->
+    <div class="modal fade" id="editStateModal" tabindex="-1" role="dialog" aria-labelledby="editStateModalLabel"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editCategoryModalLabel">Edit Category</h5>
+                    <h5 class="modal-title" id="editStateModalLabel">Edit State</h5>
                     <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="editCategoryForm" method="POST" action="" enctype="multipart/form-data">
+                    <form id="editStateForm" method="POST" action="">
                         @csrf
                         @method('PUT')
-                        <input type="hidden" id="editCategoryId" name="id">
+                        <input type="hidden" id="editStateId" name="id">
                         <div class="form-group">
-                            <label for="editCategoryName">Category Name</label>
-                            <input type="text" class="form-control" id="editCategoryName" name="category_name"
-                                required>
+                            <label for="editStateName">State Name</label>
+                            <input type="text" class="form-control" id="editStateName" name="name">
                         </div>
-                        <div class="form-group">
-                            <label for="editCategoryImage">Category Image</label>
-                            <input type="file" class="form-control" id="editCategoryImage" name="category_image"
-                                accept="image/*">
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" id="updateStateBtn" class="btn btn-primary">Save changes</button>
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
+                {{-- <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" id="updateCategoryBtn" class="btn btn-primary">Save changes</button>
-                </div>
+                    <button type="button" id="updateStateBtn" class="btn btn-primary">Save changes</button>
+                </div> --}}
             </div>
         </div>
     </div>
@@ -203,17 +183,21 @@
             });
 
             // Open the Edit Modal and Populate Data
-            $('.editCatBtn').on('click', function() {
-                const categoryId = $(this).data('id');
+            $('.editStateBtn').on('click', function() {
+                const stateId = $(this).data('id');
+                // console.log(stateId);
 
                 $.ajax({
-                    url: '/category/' + categoryId + '/edit', // Fetch category data
+                    url: '/state/' + stateId + '/edit',
                     type: "GET",
                     success: function(response) {
-                        const category = response.category;
-                        $('#editCategoryName').val(category.name);
-                        $('#editCategoryId').val(category.id);
-                        $('#editCategoryModal').modal('show');
+                        // console.log(response);
+                        const state = response.state;
+                        $('#editStateName').val(state.name);
+                        $('#editStateId').val(state.id);
+                        $('#editStateForm').attr('action', '/state/' + state
+                            .id); // Set form action
+                        $('#editStateModal').modal('show');
                     },
                     error: function() {
                         alert('Error fetching category data.');
@@ -221,24 +205,24 @@
                 });
             });
 
-            // Update the Category
-            $('#updateCategoryBtn').on('click', function() {
-                const formData = new FormData($('#editCategoryForm')[0]);
+            // Update the state
+            $('#updateStateBtn').on('click', function() {
+                const formData = new FormData($('#editStateForm')[0]);
                 formData.append('_method', 'PUT'); // Add method override for PUT
 
                 $.ajax({
-                    url: '/category/' + $('#editCategoryId')
-                        .val(), // PUT request to update category
+                    url: '/state/' + $('#editStateId')
+                        .val(), 
                     type: "POST", // Use POST since we're using _method override for PUT
                     data: formData,
                     contentType: false, // Necessary for file uploads
                     processData: false, // Prevents jQuery from processing the data
                     success: function(response) {
-                        $('#editCategoryModal').modal('hide');
-                        location.reload(); // Reload the page or update dynamically
+                        $('#editStateModal').modal('hide');
+                        location.reload(); 
                     },
                     error: function() {
-                        alert('Error updating category data. Please try again.');
+                        alert('Error updating data. Please try again.');
                     }
                 });
             });
@@ -246,10 +230,10 @@
 
             // Toggle Status
             $(document).on('click', '[id^="toggleStatusBtn"]', function() {
-                var categoryId = $(this).data('id');
+                var stateId = $(this).data('id');
 
                 $.ajax({
-                    url: '/category/' + categoryId +
+                    url: '/state/' + stateId +
                         '/toggle-status', // Use the route for toggling status
                     method: 'POST',
                     data: {

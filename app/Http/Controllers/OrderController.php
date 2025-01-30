@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\OrderStatusUpdated;
+use App\Models\Charge;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -14,7 +15,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-     return redirect('dashboard');
+        return redirect('dashboard');
     }
 
     /**
@@ -37,10 +38,12 @@ class OrderController extends Controller
      * Display the specified resource.
      */
     public function show(string $id)
-    { 
+    {
         $order = Order::with(['user', 'address', 'items', 'transactions'])->findOrFail($id);
         // return $order;
-        return view('admin.order.view_order', compact('order'));
+        $charges = Charge::where('is_active', 1)->get();
+
+        return view('admin.order.view_order', compact('order','charges'));
     }
 
     /**
@@ -70,7 +73,11 @@ class OrderController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $order = Order::findOrFail($id);
+        if (!$order) {
+            return response()->json(['success' => false, 'message' => 'Order not found'], 404);
+        }
         $order->status = $request->status;
+        // dd($order->status);
         $order->save();
 
         $additionalMessages = [
@@ -79,13 +86,13 @@ class OrderController extends Controller
             'delivered' => 'Great news! Your order has been delivered. We hope you enjoy your purchase. Please let us know if you need any assistance.',
             'cancelled' => 'We regret to inform you that your order has been cancelled. If this was not your intention or if you have any concerns, please contact our support team.',
         ];
-    
+
         $additionalMessage = $additionalMessages[$order->status] ?? '';
-    
+
         // Send email to the user
         Mail::to($order->user->email)->queue(new OrderStatusUpdated($order, $additionalMessage));
 
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true, 'message' => 'Order status updated successfully']);
     }
 
     public function cancelledOrders()
@@ -102,6 +109,4 @@ class OrderController extends Controller
 
         return view('admin.order.table_format', compact('orders', 'status'));
     }
-
-
 }

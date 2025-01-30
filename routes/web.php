@@ -6,12 +6,14 @@ use App\Http\Controllers\BonusPaymentHistoryController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\ChargeController;
+use App\Http\Controllers\CityController;
 use App\Http\Controllers\MobileUserController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderPaymentHistoryController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentHistoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\StateController;
 use App\Http\Controllers\SubCategoryController;
 use App\Http\Controllers\UserController;
 use App\Models\SubCategory;
@@ -67,13 +69,19 @@ Route::middleware(['auth', 'check.active'])->group(function () {
     Route::post('/mobileUser/{id}/toggle-status', [MobileUserController::class, 'toggleStatus']);
 
     Route::resource('order',OrderController::class);
-    Route::post('/order/update-status/{id}', [OrderController::class, 'updateStatus'])->name('order.updateStatus');
+    Route::post('/order/updatestatus/{id}', [OrderController::class, 'updateStatus'])->name('order.updateStatus');
     Route::get('/cancelled-orders', [OrderController::class, 'cancelledOrders'])->name('cancelled-orders');
     Route::get('/orders/table', [OrderController::class, 'table'])->name('orders.table');
 
     Route::resource('bonus', BonusController::class);
     Route::post('/bonus/{id}/toggle-status', [BonusController::class, 'toggleStatus']);
     Route::get('bonus-history', [BonusController::class, 'bonusHistory'])->name('bonusHistory');
+
+    Route::resource('state', StateController::class);
+    Route::post('/state/{id}/toggle-status', [StateController::class, 'toggleStatus']);
+
+    Route::resource('city', CityController::class);
+    Route::post('/city/{id}/toggle-status', [CityController::class, 'toggleStatus']);
 
     Route::resource('category', CategoryController::class);
     Route::post('/category/{id}/toggle-status', [CategoryController::class, 'toggleStatus']);

@@ -92,7 +92,6 @@
                 <!-- /.card-header -->
 
                 <div class="card-body">
-                    <h3>Manage Value</h3>
                     <table id="usersTable" class="table table-bordered table-hover">
                         <thead>
                             <tr>

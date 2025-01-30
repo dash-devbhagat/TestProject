@@ -94,7 +94,6 @@
                 <!-- /.card-header -->
 
                 <div class="card-body">
-                    <h3>Manage Categories</h3>
                     <table id="usersTable" class="table table-bordered table-hover">
                         <thead>
                             <tr>
