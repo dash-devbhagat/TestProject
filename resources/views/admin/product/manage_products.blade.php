@@ -13,11 +13,11 @@
                     </div>
                     <!-- Add User Button on the right side -->
                     <div class="col-sm-6 text-right">
-                        {{-- <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addUserModal">Add
-                            User</button> --}}
+                         <!-- <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addUserModal">Add
+                            User</button>  -->
                     </div>
 
-                    {{-- Bootstrap Alert --}}
+                    <!-- {{-- Bootstrap Alert --}} -->
                     @if (session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ session('success') }}
@@ -34,7 +34,6 @@
 
                 </div>
 
-                {{-- <form method="POST" enctype="multipart/form-data" class="mt-4"> --}}
                     <form action="{{ route('product.store') }}" method="POST" enctype="multipart/form-data"
                     class="form-horizontal mt-4">
                     @csrf

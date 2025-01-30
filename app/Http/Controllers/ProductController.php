@@ -19,8 +19,7 @@ class ProductController extends Controller
         // $products = Product::with('productVarients')->get();
         $products = Product::with(['productVarients', 'category', 'subCategory'])->get();
         $categories = Category::where('is_active', 1)->get();
-        // return $products;
-        // return $categories;
+       
         return view('admin.product.manage_products', compact('products','categories'));
     }
 
@@ -89,9 +88,6 @@ class ProductController extends Controller
         }
 
         return redirect()->route('product.index')->with('success', 'Product Created Successfully.');
-        // session()->flash('success', 'Product Created Successfully.');
-
-        // return response()->json(['success' => true]);
     }
 
     /**
@@ -100,23 +96,13 @@ class ProductController extends Controller
     public function show(string $id)
     {
         $product = Product::with(['productVarients', 'category', 'subCategory'])->findOrFail($id);
-        // return $product;
+       
         return view('admin.product.view_product', compact('product'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    // public function edit(string $id)
-    // {
-    //     $product = Product::with('productVarients')->find($id);
-    //     return view('admin.product.edit_product', compact('product'));
-    //     // return $product;
-    //     return response()->json([
-    //         'product' => $product,
-    //         // 'productVariants' => $product->productVariants,
-    //     ]);
-    // }
     public function edit($id)
     {
         $product = Product::with('productVarients')->find($id);
@@ -183,9 +169,6 @@ class ProductController extends Controller
             }
 
         return redirect()->route('product.index')->with('success', 'Product Updated Successfully.');
-        // session()->flash('success', 'Product Updated Successfully.');
-
-        // return response()->json(['success' => true, 'product' => $product]);
     }
 
     /**
@@ -193,8 +176,12 @@ class ProductController extends Controller
      */
     public function destroy(string $id)
     {
-        Product::where('id',$id)->delete();
+        $product = Product::where('id',$id)->delete();
         ProductVarient::where('product_id', $id)->delete();
+
+        if ($product->image) {
+            Storage::disk('public')->delete($product->image);
+        }
 
         return redirect()->route('product.index')->with('success', 'Product Deleted Successfully.');
     }

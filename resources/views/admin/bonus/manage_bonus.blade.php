@@ -41,9 +41,9 @@
                         <div class="form-group row">
                             <!-- Column 1: Bonus Type -->
                             <div class="col-sm-4">
-                                <label for="bonusType" class="col-form-label">Bonus Type</label>
+                                <label for="bonusType" class="col-form-label">Bonus Name</label>
                                 <input type="text" class="form-control @error('type') is-invalid @enderror"
-                                    id="bonusType" name="type" placeholder="Enter Bonus Type">
+                                    id="bonusType" name="type" placeholder="Enter Bonus Name">
                                 @error('type')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -115,15 +115,6 @@
                                     <td>{{ $bonus->type }}</td>
                                     <td>₹{{ $bonus->amount }}</td>
                                     <td>{{ $bonus->percentage }}%</td>
-                                    {{-- <td class="text-center">
-                                        <!-- Active/Inactive Toggle Icon -->
-                                        <a href="javascript:void(0);" id="toggleStatusBtn{{ $bonus->id }}"
-                                            data-id="{{ $bonus->id }}" class="text-center" data-toggle="tooltip"
-                                            title="{{ $bonus->is_active ? 'Deactivate' : 'Activate' }}">
-                                            <i
-                                                class="fas {{ $bonus->is_active ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-2x"></i>
-                                        </a>
-                                    </td> --}}
                                     <td class="text-center">
                                         <!-- Active/Inactive Toggle Icon -->
                                         <a href="javascript:void(0);" id="toggleStatusBtn{{ $bonus->id }}"
