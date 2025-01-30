@@ -149,25 +149,25 @@ class MobileUserController extends Controller
 
         $user->load('address');
 
-        // Fetch all active bonuses except signup and referral
-                $activeBonuses = Bonus::whereNotIn('type', ['signup', 'referral'])
-                ->where('is_active', true)
-                ->get();
+        // // Fetch all active bonuses except signup and referral
+        //         $activeBonuses = Bonus::whereNotIn('type', ['signup', 'referral'])
+        //         ->where('is_active', true)
+        //         ->get();
 
-                foreach ($activeBonuses as $bonus) {
-                    Payment::updateOrCreate(
-                        [
-                            'user_id' => $user->id,
-                            'bonus_id' => $bonus->id,
-                        ],
-                        [
-                            // Dynamically fetch the latest amount
-                            'amount' => $bonus->amount, 
-                            'remaining_amount' => $bonus->amount, 
-                            'payment_status' => 'completed',
-                        ]
-                    );
-                }
+        //         foreach ($activeBonuses as $bonus) {
+        //             Payment::updateOrCreate(
+        //                 [
+        //                     'user_id' => $user->id,
+        //                     'bonus_id' => $bonus->id,
+        //                 ],
+        //                 [
+        //                     // Dynamically fetch the latest amount
+        //                     'amount' => $bonus->amount, 
+        //                     'remaining_amount' => $bonus->amount, 
+        //                     'payment_status' => 'completed',
+        //                 ]
+        //             );
+        //         }
 
         // Check if profile is complete (based on phone, gender, and birthdate)
         if (empty($user->phone) || empty($user->gender) || empty($user->birthdate) || empty($user->address_id)) {
