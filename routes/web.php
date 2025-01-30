@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\ChargeController;
 use App\Http\Controllers\CityController;
+use App\Http\Controllers\CouponController;
 use App\Http\Controllers\MobileUserController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderPaymentHistoryController;
@@ -95,6 +96,9 @@ Route::middleware(['auth', 'check.active'])->group(function () {
 
     Route::resource('charge', ChargeController::class);
     Route::post('/charge/{id}/toggle-status', [ChargeController::class, 'toggleStatus']);
+
+    Route::resource('coupon', CouponController::class);
+    Route::post('/coupon/{id}/toggle-status', [CouponController::class, 'toggleStatus']);
 
     Route::get('/bonus-payment-history', [BonusPaymentHistoryController::class, 'index'])->name('ph.index');
 

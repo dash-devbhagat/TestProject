@@ -117,8 +117,8 @@
                                     {{-- <td>{{ $subcategory->image ?? 'N/A' }}</td> --}}
                                     <td class="text-center">
                                         @if ($subcategory->image)
-                                            <img src="{{ asset('storage/' . $subcategory->image) }}" alt="Category Image"
-                                                width="80" height="50">
+                                            <img src="{{ asset('storage/' . $subcategory->image) }}" alt="SubCategory Image"
+                                                width="80" height="50" onerror="this.onerror=null; this.src='{{ asset('adminlte/dist/img/inf.png') }}';">
                                         @else
                                             N/A
                                         @endif
