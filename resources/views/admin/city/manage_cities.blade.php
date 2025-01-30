@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'Category Management')
+@section('title', 'City Management')
 
 @section('content')
     <div class="content-wrapper">
@@ -9,16 +9,13 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1>Manage Categories and Subcategories</h1>
+                        <h1>Manage Cities</h1>
                     </div>
                     <!-- Add User Button on the right side -->
-                    <div class="col-sm-6 text-right">
-                        {{-- <button type="button" class="btn btn-success" data-toggle="modal"
-                            data-target="#addSubcategoryModal">Add Sub
-                            Categories</button> --}}
+                    {{-- <div class="col-sm-6 text-right">
                         <a href="{{ route('sub-category.index') }}" class="btn btn-success">Add Sub
                             Categories</a>
-                    </div>
+                    </div> --}}
 
                     {{-- Bootstrap Alert --}}
                     @if (session('success'))
@@ -37,35 +34,50 @@
 
                 </div>
 
-                <form action="{{ route('category.store') }}" method="POST" enctype="multipart/form-data"
+                <form action="{{ route('city.store') }}" method="POST" enctype="multipart/form-data"
                     class="form-horizontal mt-4">
                     @csrf
                     <div class="card-body">
+                        <!-- Input Field -->
                         <div class="form-group row">
 
                             <div class="col-sm-6">
-                                <label for="category_name">Category Name</label>
-                                <input type="text" class="form-control @error('category_name') is-invalid @enderror"
-                                    id="category_name" name="category_name" placeholder="Enter Category Name">
-                                @error('category_name')
+                                <label for="stateCity">Select State</label>
+                                <select class="form-control @error('state_id') is-invalid @enderror" id="stateCity"
+                                    name="state_id">
+                                    <option value="" disabled selected>Select State</option>
+                                    @foreach ($states as $state)
+                                        @if ($state->is_active == '1')
+                                            <option value="{{ $state->id }}">{{ $state->name }}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                                @error('state_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-sm-6">
-                                <label for="category_image">Category Image</label>
-                                <input type="file" class="form-control" id="category_image" name="category_image"
-                                    accept="image/*">
+                                <label for="city_name">City Name</label>
+                                <input type="text" class="form-control @error('city_name') is-invalid @enderror"
+                                    id="city_name" name="city_name" placeholder="Enter City Name">
+                                @error('city_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                         </div>
+
+                        <!-- Save Button -->
+                        <div class="card-footer">
+                            <button type="submit" id="saveCatBtn" class="btn btn-primary float-right">Save</button>
+                        </div>
                     </div>
-                    <!-- /.card-body -->
-                    <div class="card-footer">
-                        <button type="submit" id="saveCatBtn" class="btn btn-primary float-right">Save</button>
-                    </div>
-                    <!-- /.card-footer -->
                 </form>
+
+
+
+
 
 
             </div><!-- /.container-fluid -->
@@ -83,9 +95,8 @@
                         <thead>
                             <tr>
                                 <th>Sr</th>
-                                <th>Category Name</th>
-                                <th>Category Image</th>
-                                <th>SubCategories</th>
+                                <th>City Name</th>
+                                <th>State Name</th>
                                 <th>Active Status</th>
                                 <th>Action</th>
                             </tr>
@@ -94,39 +105,30 @@
                             @php
                                 $i = 1;
                             @endphp
-                            @foreach ($categories as $category)
+
+                            @foreach ($cities as $city)
                                 <tr>
                                     <td>{{ $i }}</td>
-                                    <td>{{ $category->name }}</td>
-                                    {{-- <td>{{ $category->image ?? 'N/A' }}</td> --}}
-                                    <td class="text-center">
-                                        @if ($category->image)
-                                            <img src="{{ asset('storage/' . $category->image) }}" alt="Category Image"
-                                                width="80" height="50">
-                                        @else
-                                            N/A
-                                        @endif
-                                    </td>
-                                    <td>{{ $category->subCategories->count() }}</td>
+                                    <td>{{ $city->name }}</td>
+                                    <td>{{ $city->state->name }}</td>
                                     <td class="text-center">
                                         <!-- Active/Inactive Toggle Icon -->
-                                        <a href="javascript:void(0);" id="toggleStatusBtn{{ $category->id }}"
-                                            data-id="{{ $category->id }}" class="text-center" data-toggle="tooltip"
-                                            title="{{ $category->is_active ? 'Deactivate' : 'Activate' }}">
+                                        <a href="javascript:void(0);" id="toggleStatusBtn{{ $city->id }}"
+                                            data-id="{{ $city->id }}" class="text-center" data-toggle="tooltip"
+                                            title="{{ $city->is_active ? 'Deactivate' : 'Activate' }}">
                                             <i
-                                                class="fas {{ $category->is_active ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-2x"></i>
+                                                class="fas {{ $city->is_active ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-2x"></i>
                                         </a>
                                     </td>
                                     <td class="text-center">
                                         <!-- Edit Icon -->
-                                        <a href="#javascript" class="text-primary" data-toggle="modal"
-                                            data-target="#exampleModal" data-bs-toggle="tooltip" title="Edit">
-                                            <i class="fa fa-edit editCatBtn" data-id="{{ $category->id }}"></i>
+                                        <a href="#javascript" class="text-primary" data-bs-toggle="tooltip" title="Edit">
+                                            <i class="fa fa-edit editCityBtn" data-id="{{ $city->id }}"></i>
                                         </a>
                                         <!-- Delete Icon -->
-                                        <form action="{{ route('category.destroy', $category->id) }}" method="POST"
+                                        <form action="{{ route('city.destroy', $city->id) }}" method="POST"
                                             style="display:inline;"
-                                            onsubmit="return confirm('Are you sure you want to delete this category?');">
+                                            onsubmit="return confirm('Are you sure you want to delete this city?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-link text-danger p-0 m-0"
@@ -136,10 +138,9 @@
                                         </form>
                                     </td>
                                 </tr>
-                                @php
-                                    $i++;
-                                @endphp
                             @endforeach
+
+
                         </tbody>
                     </table>
                 </div>
@@ -152,38 +153,43 @@
     </div>
 
 
-    <!-- Edit Category Modal -->
-    <div class="modal fade" id="editCategoryModal" tabindex="-1" role="dialog" aria-labelledby="editCategoryModalLabel"
+    <!-- Edit Charge Modal -->
+    <div class="modal fade" id="editCityModal" tabindex="-1" role="dialog" aria-labelledby="editCityModalLabel"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editCategoryModalLabel">Edit Category</h5>
+                    <h5 class="modal-title" id="editCityModalLabel">Edit State</h5>
                     <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="editCategoryForm" method="POST" action="" enctype="multipart/form-data">
+                    <form id="editCityForm" method="POST" action="">
                         @csrf
-                        @method('PUT')
-                        <input type="hidden" id="editCategoryId" name="id">
+                        {{-- @method('PUT') --}}
+                        <input type="hidden" id="editCityId" name="id">
                         <div class="form-group">
-                            <label for="editCategoryName">Category Name</label>
-                            <input type="text" class="form-control" id="editCategoryName" name="category_name"
-                                required>
+                            <label for="editCityState">Select State</label>
+                            <select class="form-control" id="editCityState" name="state_id" required>
+                                <option value="" disabled>Select State</option>
+                                <!-- States will be populated dynamically -->
+                            </select>
                         </div>
                         <div class="form-group">
-                            <label for="editCategoryImage">Category Image</label>
-                            <input type="file" class="form-control" id="editCategoryImage" name="category_image"
-                                accept="image/*">
+                            <label for="editCityName">City Name</label>
+                            <input type="text" class="form-control" id="editCityName" name="name">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" id="updateCityBtn" class="btn btn-primary">Save changes</button>
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
+                {{-- <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" id="updateCategoryBtn" class="btn btn-primary">Save changes</button>
-                </div>
+                    <button type="button" id="updateCityBtn" class="btn btn-primary">Save changes</button>
+                </div> --}}
             </div>
         </div>
     </div>
@@ -203,42 +209,56 @@
             });
 
             // Open the Edit Modal and Populate Data
-            $('.editCatBtn').on('click', function() {
-                const categoryId = $(this).data('id');
+            $('.editCityBtn').on('click', function() {
+                const cityId = $(this).data('id');
 
                 $.ajax({
-                    url: '/category/' + categoryId + '/edit', // Fetch category data
+                    url: '/city/' + cityId + '/edit', // Fetch subcategory data
                     type: "GET",
                     success: function(response) {
-                        const category = response.category;
-                        $('#editCategoryName').val(category.name);
-                        $('#editCategoryId').val(category.id);
-                        $('#editCategoryModal').modal('show');
+                        const city = response.city;
+                        const states = response.states;
+
+                        $('#editCityName').val(city.name);
+                        $('#editCityId').val(city.id);
+
+                        // Populate categories dropdown
+                        const stateSelect = $('#editCityState');
+                        stateSelect.empty();
+                        states.forEach(state => {
+                            const isSelected = state.id === city.state_id ?
+                                'selected' : '';
+                            stateSelect.append(
+                                `<option value="${state.id}" ${isSelected}>${state.name}</option>`
+                            );
+                        });
+
+                        $('#editCityModal').modal('show');
                     },
                     error: function() {
-                        alert('Error fetching category data.');
+                        alert('Error fetching subcategory data.');
                     }
                 });
             });
 
-            // Update the Category
-            $('#updateCategoryBtn').on('click', function() {
-                const formData = new FormData($('#editCategoryForm')[0]);
+            // Update the city
+            $('#updateCityBtn').on('click', function() {
+                const formData = new FormData($('#editCityForm')[0]);
                 formData.append('_method', 'PUT'); // Add method override for PUT
 
                 $.ajax({
-                    url: '/category/' + $('#editCategoryId')
-                        .val(), // PUT request to update category
+                    url: '/city/' + $('#editCityId')
+                        .val(), 
                     type: "POST", // Use POST since we're using _method override for PUT
                     data: formData,
                     contentType: false, // Necessary for file uploads
                     processData: false, // Prevents jQuery from processing the data
                     success: function(response) {
-                        $('#editCategoryModal').modal('hide');
-                        location.reload(); // Reload the page or update dynamically
+                        $('#editCityModal').modal('hide');
+                        location.reload(); 
                     },
                     error: function() {
-                        alert('Error updating category data. Please try again.');
+                        alert('Error updating data. Please try again.');
                     }
                 });
             });
@@ -246,10 +266,10 @@
 
             // Toggle Status
             $(document).on('click', '[id^="toggleStatusBtn"]', function() {
-                var categoryId = $(this).data('id');
+                var cityId = $(this).data('id');
 
                 $.ajax({
-                    url: '/category/' + categoryId +
+                    url: '/city/' + cityId +
                         '/toggle-status', // Use the route for toggling status
                     method: 'POST',
                     data: {
