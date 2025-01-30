@@ -79,7 +79,7 @@
                                         <td>
                                             @if ($user->logo)
                                                 <img src="{{ asset('storage/' . $user->logo) }}" alt="Logo"
-                                                    width="200" height="200">
+                                                    width="200" height="200" onerror="this.onerror=null; this.src='{{ asset('adminlte/dist/img/inf.png') }}';">
                                             @else
                                                 No Image Available
                                             @endif

@@ -59,7 +59,7 @@
                                         <td class="text-center">
                                             @if ($item->product->image)
                                             <img src="{{ asset('storage/' . $item->product->image) }}"
-                                                alt="Product Image" width="80">
+                                                alt="Product Image" width="80" onerror="this.onerror=null; this.src='{{ asset('adminlte/dist/img/inf.png') }}';">
                                             @else
                                             N/A
                                             @endif

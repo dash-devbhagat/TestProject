@@ -200,7 +200,7 @@ class BonusController extends Controller
 
     public function bonusHistory(){
 
-        $bonuses = Bonus::where('is_active',false)->get();
+        $bonuses = Bonus::where('is_active',false)->orderBy('created_at', 'desc')->get();
 
         return view('admin.bonus.bonus_history', compact('bonuses'));
     }
