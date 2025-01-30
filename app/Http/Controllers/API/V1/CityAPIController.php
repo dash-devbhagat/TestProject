@@ -55,7 +55,7 @@ class CityAPIController extends Controller
 
         // Return the cities data in the required format
         return response()->json([
-            'data' => (object) ['Cities' => $cities->map(function ($city) use ($state) {
+            'data' => (object) ['cities' => $cities->map(function ($city) use ($state) {
             return [
                 'id' => $city->id,
                 'name' => $city->name,

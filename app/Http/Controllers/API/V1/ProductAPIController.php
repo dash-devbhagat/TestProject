@@ -53,7 +53,11 @@ public function getActiveProducts(Request $request)
             })
                 ->orWhereNull('sub_category_id'); // Include products without a subcategory
         })
-        ->with(['productVarients:product_id,unit,price,id'])
+        ->with([
+            'productVarients:product_id,unit,price,id',
+            'category:id,name', // Include category name
+            'subCategory:id,name' // Include sub-category name
+        ])
         ->select('id', 'name', 'sku', 'image', 'details', 'category_id', 'sub_category_id');
 
     // Filter by category_id if provided
@@ -85,16 +89,18 @@ public function getActiveProducts(Request $request)
     // Format the response
     $response = $products->map(function ($product) {
         return [
-            'id' => $product->id,
+            'product_id' => $product->id,
             'name' => $product->name,
             'sku' => $product->sku,
             'image' => $product->image,
             'details' => $product->details,
-            'category_id' => $product->category_id,  // Added category_id
-            'sub_category_id' => $product->sub_category_id,  // Added sub_category_id
+            'category_id' => $product->category_id,
+            'category_name' => $product->category->name ?? null, // Include category name
+            'sub_category_id' => $product->sub_category_id,
+            'sub_category_name' => $product->subCategory->name ?? null, // Include sub-category name
             'variants' => $product->productVarients->map(function ($variant) {
                 return [
-                    'id' => $variant->id,  // Added product_variant_id
+                    'variants_id' => $variant->id, // Added product_variant_id
                     'unit' => $variant->unit,
                     'price' => $variant->price,
                 ];
@@ -110,5 +116,6 @@ public function getActiveProducts(Request $request)
         ],
     ]);
 }
+
 
 }

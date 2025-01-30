@@ -27,7 +27,7 @@ class CategoryAPIController extends Controller
         // Format the response as required
         return response()->json([
             'data' => [
-                'Categories' => $categories,
+                'categories' => $categories,
             ],
             'meta' => [
                 'success' => true,

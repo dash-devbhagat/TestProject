@@ -20,11 +20,12 @@ class CustomAuth
 
         if (!$token) {
             return response()->json([
+                'data' => json_decode('{}'),
                 'meta' => [
                     'success' => false,
                     'message' => 'Unauthorized. Token is missing.',
                 ],
-                'data' => json_decode('{}'),
+                
             ], 401);
         }
 
