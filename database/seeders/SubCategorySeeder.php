@@ -17,28 +17,28 @@ class SubCategorySeeder extends Seeder
         SubCategory::create([
             'category_id' => 1, // Category ID for Electronics
             'name' => 'Mobiles',
-            'image' => 'path_to_subcategory_image',
+            'image' => null,
             'is_active' => true
         ]);
 
         SubCategory::create([
             'category_id' => 1, // Category ID for Electronics
             'name' => 'Laptops',
-            'image' => 'path_to_subcategory_image',
+            'image' => null,
             'is_active' => true
         ]);
 
         SubCategory::create([
             'category_id' => 2, // Category ID for Clothing
             'name' => 'Men\'s Clothing',
-            'image' => 'path_to_subcategory_image',
+            'image' => null,
             'is_active' => true
         ]);
 
         SubCategory::create([
             'category_id' => 2, // Category ID for Clothing
             'name' => 'Women\'s Clothing',
-            'image' => 'path_to_subcategory_image',
+            'image' => null,
             'is_active' => true
         ]);
     }
