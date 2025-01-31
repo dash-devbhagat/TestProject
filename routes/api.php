@@ -14,6 +14,7 @@ use App\Http\Controllers\API\V1\ProductAPIController;
 use App\Http\Controllers\API\V1\CartController;
 use App\Http\Controllers\API\V1\TransactionAPIController;
 use App\Http\Controllers\API\V1\OrderAPIController;
+use App\Http\Controllers\API\V1\CouponAPIController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,6 +64,6 @@ Route::middleware(['custom.auth', 'mob.check.profile'])->group(function () {
     // Route::post('v1/order/viewbonus', [TransactionAPIController::class, 'viewBonus']);
     Route::post('v1/order/applybonus', [TransactionAPIController::class, 'applyBonus']);
     Route::get('v1/user/bonus/details', [MobileUserProfileController::class, 'showBonusDetails']);
-    Route::post('v1/cart/apply-coupon', [CartController::class, 'applyCoupon']);
+    Route::post('v1/cart/apply-coupon', [CouponAPIController::class, 'applyCoupon']);
 
 });
