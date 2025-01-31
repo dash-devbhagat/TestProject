@@ -30,11 +30,12 @@ class CouponController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
     public function store(Request $request)
     {
         // Validate input data
         $validated = $request->validate([
-            'coupon_name' => 'required|string|max:255',
+            'coupon_name' => 'required|string|max:255|unique:coupons,name',
             'coupon_amount' => 'required|numeric|min:0',
             'coupon_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'coupon_details' => 'nullable|string',
@@ -49,8 +50,21 @@ class CouponController extends Controller
             $path = null;
         }
 
-        // Generate a 6-character coupon code with only uppercase letters and numbers
-        $coupon_code = strtoupper(Str::random(6));
+        // Generate the coupon code based on the coupon name
+        $coupon_name = strtoupper($request->coupon_name); // Convert the coupon name to uppercase
+        $prefix = substr($coupon_name, 0, 4); // Take the first 4 characters of the coupon name
+
+        // Generate random digits to append to the coupon code
+        $random_digits = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT); // 4 random digits, padded with zeros
+
+        // Combine the prefix with the random digits
+        $coupon_code = $prefix . $random_digits;
+
+        // Ensure the coupon code is unique
+        while (Coupon::where('coupon_code', $coupon_code)->exists()) {
+            $random_digits = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT); // Regenerate random digits if the code exists
+            $coupon_code = $prefix . $random_digits;
+        }
 
         // Create the new Coupon
         $coupon = Coupon::create([
@@ -63,6 +77,7 @@ class CouponController extends Controller
 
         return redirect()->route('coupon.index')->with('success', 'Coupon Created Successfully.');
     }
+
 
     /**
      * Display the specified resource.
@@ -91,14 +106,16 @@ class CouponController extends Controller
         $coupon = Coupon::findOrFail($id);
 
         $validated = $request->validate([
-            'coupon_name' => 'required|string|max:255',
+            'coupon_name' => 'required|string|max:255|unique:coupons,name,' . $coupon->id,  // Exclude the current coupon's name
             'coupon_amount' => 'required|numeric|min:0',
+            'coupon_code' => 'required|string|max:255|unique:coupons,coupon_code,' . $coupon->id,  // Exclude the current coupon's coupon_code
             'coupon_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'coupon_details' => 'nullable|string',
         ]);
 
         $coupon->name = $validated['coupon_name'];
         $coupon->amount = $validated['coupon_amount'];
+        $coupon->coupon_code = $validated['coupon_code'];
         $coupon->description = $validated['coupon_details'];
 
         // Handle Image Upload

@@ -184,6 +184,10 @@
                         <input type="number" class="form-control" id="editCouponAmount" name="coupon_amount" required>
                     </div>
                     <div class="form-group">
+                        <label for="editCouponCode">Coupon Code</label>
+                        <input type="text" class="form-control" id="editCouponCode" name="coupon_code" required>
+                    </div>
+                    <div class="form-group">
                         <label for="editCouponDetails">Coupon Details</label>
                         <textarea class="form-control" id="editCouponDetails" name="coupon_details"></textarea>
                     </div>
@@ -227,6 +231,7 @@
                     $('#editCouponId').val(coupon.id);
                     $('#editCouponName').val(coupon.name);
                     $('#editCouponAmount').val(coupon.amount);
+                    $('#editCouponCode').val(coupon.coupon_code);
                     $('#editCouponDetails').val(coupon.description);
                     $('#editCouponModal').modal('show');
                 },

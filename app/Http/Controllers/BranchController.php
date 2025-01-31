@@ -42,8 +42,8 @@ class BranchController extends Controller
             'latitude' => 'required|numeric',
         ]);
 
-         // Check if an image was uploaded
-         if ($request->hasFile('logo')) {
+        // Check if an image was uploaded
+        if ($request->hasFile('logo')) {
             // Store the image in the public storage folder and get the path
             $path = $request->file('logo')->store('images/branches', 'public');
         } else {
@@ -62,7 +62,7 @@ class BranchController extends Controller
 
         $branch->save();
 
-        return redirect()->route('branch.index')->with('success', 'Branch created successfully!');
+        return redirect()->route('branch.index')->with('success', 'Branch Created Successfully!');
     }
 
     /**
@@ -71,9 +71,14 @@ class BranchController extends Controller
     public function show(string $id)
     {
         $branch = Branch::with('timings')->findOrFail($id);
-        // return $branch;
-        return view('admin.branch.view_branch', compact('branch'));
+
+        // Get existing timings from the database for the branch
+        $existingTimings = $branch->timings->pluck('day')->toArray();
+        $daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        return view('admin.branch.view_branch', compact('branch', 'existingTimings', 'daysOfWeek'));
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -84,7 +89,7 @@ class BranchController extends Controller
         return response()->json([
             'branch' => $branch
         ]);
-    }   
+    }
 
     /**
      * Update the specified resource in storage.
@@ -125,7 +130,6 @@ class BranchController extends Controller
         session()->flash('success', 'Branch Updated Successfully.');
 
         return response()->json(['success' => true, 'branch' => $branch]);
-
     }
 
     /**
@@ -149,7 +153,7 @@ class BranchController extends Controller
     public function toggleStatus($id)
     {
         $branch = Branch::findOrFail($id);
-        
+
         $branch->is_active = !$branch->is_active;
         $branch->save();
 

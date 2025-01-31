@@ -28,17 +28,25 @@ class TimingController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
-
         $request->validate([
             'branch_id' => 'required|exists:branches,id',
             'timings' => 'required|array',
             'timings.*.day' => 'required|string',
             'timings.*.opening_time' => 'required|date_format:H:i',
             'timings.*.closing_time' => 'required|date_format:H:i|after:timings.*.opening_time',
+        ], [
+            'timings.*.day.required' => 'Day selection is required.',
+            'timings.*.day.unique' => 'A timing entry for this day already exists.',
         ]);
 
+        $existingDays = Timing::where('branch_id', $request->branch_id)
+            ->pluck('day')->toArray();
+
         foreach ($request->timings as $timing) {
+            if (in_array($timing['day'], $existingDays)) {
+                return redirect()->back()->with('error', 'Duplicate day entry: ' . $timing['day']);
+            }
+
             Timing::create([
                 'branch_id' => $request->branch_id,
                 'day' => $timing['day'],
@@ -49,6 +57,7 @@ class TimingController extends Controller
 
         return redirect()->back()->with('success', 'Timings Created Successfully');
     }
+
 
     /**
      * Display the specified resource.

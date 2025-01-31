@@ -4,8 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>@yield('title', 'Test Project')</title>
-
+    <title>@yield('title', 'SystemHub')</title>
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet"
@@ -44,9 +43,9 @@
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
             <a href="{{ route('dashboard') }}" class="brand-link text-decoration-none">
-                <img src="adminlte/dist/img/Logo.jpg" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
+                <img src="adminlte/dist/img/SH.jpg" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
                     style="opacity: .8">
-                <span class="brand-text font-weight-light">TestProject</span>
+                <span class="brand-text font-weight-light">SystemHub</span>
             </a>
 
             <!-- Sidebar -->
@@ -59,7 +58,7 @@
             @yield('content')
         </div>
 
-     
+
         <!-- /.content-wrapper -->
 
         <!-- Control Sidebar -->
@@ -125,8 +124,8 @@
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
     </script>
-       {{-- section to add js --}}
-        @yield('scripts')
+    {{-- section to add js --}}
+    @yield('scripts')
 
 </body>
 

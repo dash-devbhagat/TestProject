@@ -6,7 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Test Project')</title>
+    <title>@yield('title', 'SystemHub')</title>
+
+     <!-- Favicon -->
+     <link rel="icon" href="{{ asset('adminlte/dist/img/SH.jpg') }}" type="image/x-icon">
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet"
@@ -21,7 +24,7 @@
     <!-- Theme style -->
     <link rel="stylesheet" href="{{ asset('adminlte/dist/css/adminlte.min.css') }}">
 
-    {{-- Datatable CSS --}}
+    <!-- {{-- Datatable CSS --}} -->
     <link rel="stylesheet" href="{{ asset('adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
     <link rel="stylesheet"
         href="{{ asset('adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
@@ -40,9 +43,9 @@
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
             <a href="{{ route('dashboard') }}" class="brand-link text-decoration-none">
-                <img src="{{ asset('adminlte/dist/img/Logo.jpg') }}" alt="AdminLTE Logo"
+                <img src="{{ asset('adminlte/dist/img/SH.jpg') }}" alt="AdminLTE Logo"
                     class="brand-image img-circle elevation-3" style="opacity: .8">
-                <span class="brand-text font-weight-light">TestProject</span>
+                <span class="brand-text font-weight-light">SystemHub</span>
             </a>
 
             <!-- Sidebar -->

@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>TestProject</title>
+    <title>SystemHub</title>
     <style>
         .button {
             background-color: yellow;

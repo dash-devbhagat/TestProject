@@ -4,62 +4,72 @@
 
 @section('content')
 <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
     <section class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
-                <!-- Heading on the left -->
                 <div class="col-sm-6">
                     <h1>Branch Details</h1>
                 </div>
-                <!-- Back button on the right -->
                 <div class="col-sm-6 text-right">
                     <a href="{{ route('branch.index') }}" class="btn btn-secondary text-light">
                         <i class="fas fa-arrow-left"></i> Back
                     </a>
                 </div>
             </div>
-        </div><!-- /.container-fluid -->
+
+
+            @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+
+            @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+        </div>
     </section>
 
-    <!-- Main content -->
     <section class="content">
-        <!-- Default box -->
         <div class="card">
             <div class="card-body">
                 <div class="row">
-                    <!-- Branch Details Table -->
                     <div class="col-md-12">
                         <h3 class="text-primary">Branch Details</h3>
                         <div class="table-responsive">
-                            <table class="table ">
+                            <table class="table" style="table-layout: fixed; width: 100%;"> <!-- Fixed table layout -->
                                 <tbody>
                                     <tr>
-                                        <th class="w-25">Branch Name</th> <!-- Adjust the width as needed -->
+                                        <th style="width: 20%;">Branch Name</th> <!-- Set width for consistency -->
                                         <td>{{ $branch->name }}</td>
                                     </tr>
                                     <tr>
-                                        <th class="w-25">Branch Address</th>
+                                        <th style="width: 20%;">Branch Address</th> <!-- Set width for consistency -->
                                         <td>{{ $branch->address }}</td>
                                     </tr>
                                     <tr>
-                                        <th class="w-25">Branch Description</th>
-                                        <td>{{ $branch->description ?? 'No Description Available' }}</td>
+                                        <th style="width: 20%;">Description</th> <!-- Set width for consistency -->
+                                        <td style="word-wrap: break-word; max-width: 500px;"> <!-- Prevent overflow -->
+                                            {{ $branch->description ?? 'No Description Available' }}
+                                        </td>
                                     </tr>
                                     <tr>
-                                        <th class="w-25">Latitude</th>
+                                        <th style="width: 20%;">Latitude</th> <!-- Set width for consistency -->
                                         <td>{{ $branch->latitude }}</td>
                                     </tr>
                                     <tr>
-                                        <th class="w-25">Longitude</th>
+                                        <th style="width: 20%;">Longitude</th> <!-- Set width for consistency -->
                                         <td>{{ $branch->longtitude }}</td>
                                     </tr>
                                     <tr>
-                                        <th class="w-25">Branch Logo</th>
+                                        <th style="width: 20%;">Branch Logo</th> <!-- Set width for consistency -->
                                         <td>
                                             @if ($branch->logo)
-                                            <img src="{{ asset('storage/' . $branch->logo) }}" alt="Branch Logo" width="200" height="200"
-                                                onerror="this.onerror=null; this.src='{{ asset('adminlte/dist/img/inf.png') }}';">
+                                            <img src="{{ asset('storage/' . $branch->logo) }}" width="200" height="200">
                                             @else
                                             No Image Available
                                             @endif
@@ -69,34 +79,16 @@
                             </table>
                         </div>
                     </div>
-
                 </div>
 
-                <!-- Branch Timings Section -->
+
                 <div class="row mt-4">
                     <div class="col-md-12">
                         <div class="d-flex justify-content-between align-items-center">
                             <h3 class="text-primary">Branch Timings</h3>
-
-                            <!-- Add Timing Button -->
-                            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addTimingModal">
-                                Add Timing
-                            </button>
+                            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addTimingModal">Add Timing</button>
                         </div>
 
-                        @if (session('success'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                        @endif
-
-                        @if (session('error'))
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            {{ session('error') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                        @endif
 
                         <table class="table table-bordered">
                             <thead>
@@ -104,7 +96,7 @@
                                     <th>Day</th>
                                     <th>Opening Time</th>
                                     <th>Closing Time</th>
-                                    <th>Active Status</th>
+                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -115,24 +107,13 @@
                                     <td>{{ $timing->opening_time }}</td>
                                     <td>{{ $timing->closing_time }}</td>
                                     <td class="text-center">
-                                        <!-- Active/Inactive Toggle Icon -->
-                                        <a href="javascript:void(0);" id="toggleStatusBtn{{ $timing->id }}"
-                                            data-id="{{ $timing->id }}" class="text-center" data-toggle="tooltip"
-                                            title="{{ $timing->is_active ? 'Deactivate' : 'Activate' }}">
-                                            <i
-                                                class="fas {{ $timing->is_active ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-2x"></i>
+                                        <a href="javascript:void(0);" data-id="{{ $timing->id }}" class="toggle-status">
+                                            <i class="fas {{ $timing->is_active ? 'fa-toggle-on text-success' : 'fa-toggle-off text-muted' }} fa-2x"></i>
                                         </a>
                                     </td>
                                     <td class="text-center">
-                                        <!-- Edit Icon -->
-                                        <a href="javascript:void(0);" class="text-primary" data-bs-toggle="modal"
-                                            data-bs-target="#editTimingModal" data-bs-toggle="tooltip" title="Edit">
-                                            <i class="fa fa-edit editTimingBtn"
-                                                data-id="{{ $timing->id }}"
-                                                data-branch-id="{{ $branch->id }}"
-                                                data-day="{{ $timing->day }}"
-                                                data-opening="{{ $timing->opening_time }}"
-                                                data-closing="{{ $timing->closing_time }}"></i>
+                                        <a href="javascript:void(0);" class="text-primary editTimingBtn" data-id="{{ $timing->id }}" data-day="{{ $timing->day }}" data-opening="{{ $timing->opening_time }}" data-closing="{{ $timing->closing_time }}" data-bs-toggle="modal" data-bs-target="#editTimingModal">
+                                            <i class="fa fa-edit"></i>
                                         </a>
                                         <!-- Delete Icon -->
                                         <form action="{{ route('timing.destroy', $timing->id) }}" method="POST"
@@ -152,51 +133,84 @@
                         </table>
                     </div>
                 </div>
-
-            </div>
-            <!-- /.card-body -->
-            <div class="card-footer">
             </div>
         </div>
     </section>
-    <!-- /.content -->
 </div>
 
 <!-- Add Timing Modal -->
+<!-- <div class="modal fade" id="addTimingModal" tabindex="-1" aria-labelledby="addTimingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Timing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('timing.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="branch_id" value="{{ $branch->id }}">
+                <div id="timingFields">
+                    <div class="timing-entry row mb-4">
+                        <div class="col-12 mb-3">
+                            <label>Day</label>
+                            <select name="timings[0][day]" class="form-control day-select">
+                                <option value="">Select Day</option>
+                                @foreach(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as $day)
+                                <option value="{{ $day }}" {{ in_array($day, $existingTimings) ? 'disabled' : '' }}>{{ $day }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label>Opening Time</label>
+                            <input type="time" class="form-control" name="timings[0][opening_time]" required>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label>Closing Time</label>
+                            <input type="time" class="form-control" name="timings[0][closing_time]" required>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-success mt-2" id="addMoreTimings">Add More</button>
+                <div class="modal-footer mt-3">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> -->
 <div class="modal fade" id="addTimingModal" tabindex="-1" aria-labelledby="addTimingModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Add Timing</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ route('timing.store') }}" method="POST">
                 @csrf
-                <div class="modal-body">
-                    <input type="hidden" name="branch_id" value="{{ $branch->id }}">
-
-                    <div id="timingFields">
-                        <div class="timing-entry">
-                            <label>Day</label>
-                            <select name="timings[0][day]" class="form-control">
-                                <option value="Monday">Monday</option>
-                                <option value="Tuesday">Tuesday</option>
-                                <option value="Wednesday">Wednesday</option>
-                                <option value="Thursday">Thursday</option>
-                                <option value="Friday">Friday</option>
-                                <option value="Saturday">Saturday</option>
-                                <option value="Sunday">Sunday</option>
+                <input type="hidden" name="branch_id" value="{{ $branch->id }}">
+                <div id="timingFields" class="px-4 py-3"> <!-- Added padding to the content -->
+                    <div class="timing-entry row mb-4">
+                        <div class="col-12 mb-3">
+                            <label for="day" class="form-label">Day</label> <!-- Added form-label class for proper spacing -->
+                            <select name="timings[0][day]" class="form-control day-select" id="day" required>
+                                <option value="">Select Day</option>
+                                @foreach(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as $day)
+                                <option value="{{ $day }}" {{ in_array($day, $existingTimings) ? 'disabled' : '' }}>{{ $day }}</option>
+                                @endforeach
                             </select>
-                            <label>Opening Time</label>
-                            <input type="time" class="form-control" name="timings[0][opening_time]" required>
-                            <label>Closing Time</label>
-                            <input type="time" class="form-control" name="timings[0][closing_time]" required>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="opening_time" class="form-label">Opening Time</label> <!-- Added form-label class for proper spacing -->
+                            <input type="time" class="form-control" name="timings[0][opening_time]" id="opening_time" required>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <label for="closing_time" class="form-label">Closing Time</label> <!-- Added form-label class for proper spacing -->
+                            <input type="time" class="form-control" name="timings[0][closing_time]" id="closing_time" required>
                         </div>
                     </div>
-
-                    <button type="button" class="btn btn-success mt-2" id="addMoreTimings">Add More</button>
                 </div>
-                <div class="modal-footer">
+                <button type="button" class="btn btn-success ml-4" id="addMoreTimings">Add More</button>
+                <div class="modal-footer mt-3">
                     <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
@@ -211,7 +225,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Edit Timing</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form id="editTimingForm" method="POST">
                 @csrf
@@ -222,80 +236,81 @@
                 <div class="modal-body">
                     <label>Day</label>
                     <input type="text" class="form-control" id="editDay" name="day" readonly>
-
                     <label>Opening Time</label>
                     <input type="time" class="form-control" id="editOpeningTime" name="opening_time" required>
-
                     <label>Closing Time</label>
                     <input type="time" class="form-control" id="editClosingTime" name="closing_time" required>
-
                 </div>
-
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-warning">Update</button>
+                    <button type="submit" class="btn btn-success">Update</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-
 @endsection
 
 @section('scripts')
 <script>
     $(document).ready(function() {
-
-        // JavaScript to Dynamically Add More Timing Fields 
+        // Add more timing fields
         let timingIndex = 1;
-
         $('#addMoreTimings').on('click', function() {
             $('#timingFields').append(`
-        <div class="timing-entry mt-3">
-            <label>Day</label>
-            <select name="timings[${timingIndex}][day]" class="form-control">
-                <option value="Monday">Monday</option>
-                <option value="Tuesday">Tuesday</option>
-                <option value="Wednesday">Wednesday</option>
-                <option value="Thursday">Thursday</option>
-                <option value="Friday">Friday</option>
-                <option value="Saturday">Saturday</option>
-                <option value="Sunday">Sunday</option>
-            </select>
-            <label>Opening Time</label>
-            <input type="time" class="form-control" name="timings[${timingIndex}][opening_time]" required>
-            <label>Closing Time</label>
-            <input type="time" class="form-control" name="timings[${timingIndex}][closing_time]" required>
-        </div>
-    `);
+                <div class="timing-entry mt-3">
+                    <label>Day</label>
+                    <select name="timings[${timingIndex}][day]" class="form-control day-select">
+                        <option value="">Select Day</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday">Sunday</option>
+                    </select>
+                    <label>Opening Time</label>
+                    <input type="time" class="form-control" name="timings[${timingIndex}][opening_time]" required>
+                    <label>Closing Time</label>
+                    <input type="time" class="form-control" name="timings[${timingIndex}][closing_time]" required>
+                </div>
+            `);
             timingIndex++;
         });
 
-        // JavaScript to populate modal on edit click
+        // Prevent duplicate days selection
+        $(document).on('change', '.day-select', function() {
+            let selectedDays = [];
+            $('.day-select').each(function() {
+                selectedDays.push($(this).val());
+            });
+            let uniqueDays = [...new Set(selectedDays)];
+            if (uniqueDays.length !== selectedDays.length) {
+                alert('This day is already selected. Please choose a different day.');
+                $(this).val('');
+            }
+        });
+
+        // Populate the Edit Modal with data
         $('.editTimingBtn').on('click', function() {
-            // Get the data attributes from the clicked button
             let timingId = $(this).data('id');
             let branchId = $(this).data('branch-id');
             let day = $(this).data('day');
             let openingTime = $(this).data('opening');
             let closingTime = $(this).data('closing');
 
-            // Ensure the values are in HH:mm format (ensure they're strings in the correct format)
             openingTime = openingTime ? openingTime.slice(0, 5) : '';
             closingTime = closingTime ? closingTime.slice(0, 5) : '';
 
-            // Populate the modal fields with the selected timing data
             $('#editTimingId').val(timingId);
             $('#editBranchId').val(branchId);
             $('#editDay').val(day);
             $('#editOpeningTime').val(openingTime);
             $('#editClosingTime').val(closingTime);
 
-            // Set the form action to the correct route with the timing ID
-            $('#editTimingForm').attr('action', `/timing/${timingId}`);
+            $('#editTimingForm').attr('action', '/timing/' + timingId);
         });
-
-
 
         // Update the Timing using AJAX
         $('#editTimingForm').on('submit', function(e) {
@@ -320,28 +335,23 @@
             });
         });
 
-
-
         // Toggle Status
-        $(document).on('click', '[id^="toggleStatusBtn"]', function() {
+        $(document).on('click', '.toggle-status', function() {
             var timingId = $(this).data('id');
-
             $.ajax({
-                url: '/timing/' + timingId +
-                    '/toggle-status', // Use the route for toggling status
+                url: '/timing/' + timingId + '/toggle-status',
                 method: 'POST',
                 data: {
-                    _token: $('input[name="_token"]').val(), // CSRF token
+                    _token: $('input[name="_token"]').val(),
                 },
                 success: function(response) {
                     location.reload();
                 },
                 error: function() {
-                    alert('An error occurred while toggling timing status.');
+                    alert('An error occurred while toggling status.');
                 }
             });
         });
     });
 </script>
-
 @endsection

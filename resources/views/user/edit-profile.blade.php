@@ -1,16 +1,26 @@
 @extends('layouts.master')
 
+@section('title', 'Edit Profile')
+
 @section('content')
   <div class="content-wrapper">
+
     <section class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1>Edit Your Profile</h1>
-          </div>
-        </div>
-      </div>
-    </section>
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <!-- Heading on the left -->
+                    <div class="col-sm-6">
+                        <h1>Edit Your Profile</h1>
+                    </div>
+                    <!-- Back button on the right -->
+                    <div class="col-sm-6 text-right">
+                        <a href="{{ route('dashboard') }}" class="btn btn-secondary text-light">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                    </div>
+                </div>
+            </div><!-- /.container-fluid -->
+        </section>
 
     <section class="content">
       <div class="card">
@@ -81,7 +91,7 @@
               <label for="logo">Logo (100x100 pixels max)</label>
               @if(Auth::user()->logo)
         <div>
-            <img src="{{ Storage::url(Auth::user()->logo) }}" alt="Current Logo" style="width: 100px; height: 100px;">
+            <img src="{{ Storage::url(Auth::user()->logo) }}" alt="Current Logo" style="width: 100px; height: 100px;" onerror="this.onerror=null; this.src='{{ asset('adminlte/dist/img/inf.png') }}';">
         </div>
     @else
         <!-- If no logo is available, show a message prompting to upload an image -->
