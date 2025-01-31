@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
 use App\Models\Bonus;
+use App\Models\Branch;
+use App\Models\Timing;
 use App\Models\UserCouponUsage;
 
 class CartController extends Controller
@@ -335,7 +337,7 @@ public function clearCart()
 }
 
 
-public function checkout()
+public function checkout(Request $request)
 {
     $user = Auth::user();
     $cart = Cart::where('user_id', $user->id)->first();
@@ -349,6 +351,36 @@ public function checkout()
             ],
         ], 200);
     }
+
+        // Validate the branch ID
+    $validator = Validator::make($request->all(), [
+        'branch_id' => 'required|exists:branches,id',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'data' => json_decode('{}'),
+            'meta' => [
+                'success' => false,
+                'message' => $validator->errors()->first(),
+            ],
+        ], 200);
+    }
+
+    $branch = Branch::find($request->branch_id);
+    if (!$branch->is_active) {
+        return response()->json([
+            'data' => json_decode('{}'),
+            'meta' => [
+                'success' => false,
+                'message' => 'Selected branch is not available.',
+            ],
+        ], 200);
+    }
+
+    // Save selected branch to cart
+    $cart->branch_id = $branch->id;
+    $cart->save();
 
     // Use cart_total directly from the database
     $cartTotal = $cart->cart_total;
@@ -447,6 +479,12 @@ public function checkout()
             'total_charges' => number_format($totalAdditionalCharges, 2, '.', ''), // Added charges total here
             'grand_total' => $grandTotal,
             'coupon_details' => $couponDetails, // Include coupon details if applied
+            'selected_branch' => [
+                'id' => $branch->id,
+                'name' => $branch->name,
+                'address' => $branch->address,
+                'logo' => $branch->logo,
+            ],
         ],
         'items' => $items,
         'meta' => [

@@ -152,6 +152,7 @@ public function processPayment(Request $request)
     $cart->cart_total = 0;
     $cart->total_charges = 0;
     $cart->grand_total = 0;
+    $cart->branch_id = null;
     $cart->save();
 
     return response()->json([
