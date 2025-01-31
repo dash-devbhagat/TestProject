@@ -21,6 +21,41 @@ use App\Models\UserCouponUsage;
 
 class CouponAPIController extends Controller
 {
+    public function getActiveCoupons(Request $request)
+{
+    // Fetch active coupons from the database
+    $coupons = Coupon::where('is_active', 1)->get();
+
+    if ($coupons->isEmpty()) {
+        return response()->json([
+            'meta' => [
+                'success' => false,
+                'message' => 'No active coupons available.',
+            ],
+        ], 200);
+    }
+
+    // Return the active coupons
+    return response()->json([
+        'data' => (object)[
+            'coupons_details' => $coupons->map(function ($coupon) {
+                return [
+                    'coupon_id' => $coupon->id,
+                    'coupon_code' => $coupon->coupon_code,
+                    'coupon_name' => $coupon->name,
+                    'coupon_description' => $coupon->description,
+                    'coupon_image' => $coupon->image,
+                    'amount' => $coupon->amount,
+                ];
+            })
+        ],
+        'meta' => [
+            'success' => true,
+            'message' => 'Active coupons fetched successfully.',
+        ],
+    ], 200);
+}
+
 
 public function applyCoupon(Request $request)
 {

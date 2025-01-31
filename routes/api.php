@@ -44,7 +44,8 @@ Route::get('v1/categories', [CategoryAPIController::class, 'getAllCategories']);
 Route::post('v1/subcategories', [SubCategoryAPIController::class, 'getSubCategoriesByCategoryId']);
 Route::get('v1/states', [StateAPIController::class, 'getAllStates']);
 Route::post('v1/cities', [CityAPIController::class, 'getCitiesByStateId']);
-Route::post('v1/products', [ProductAPIController::class, 'getActiveProducts']);    
+Route::post('v1/products', [ProductAPIController::class, 'getActiveProducts']);
+Route::get('v1/coupons', [CouponAPIController::class, 'getActiveCoupons']);    
 
 // Profile Routes
 Route::middleware(['custom.auth', 'mob.check.profile'])->group(function () {
