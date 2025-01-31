@@ -76,7 +76,7 @@
                           <button type="submit" class="btn btn-default btn-flat">Sign out</button>
                       </form>
                   </li>
-                  <li class="text-center mb-2">
+                  <li class="user-footer text-center mb-2">
                       <a class="btn btn-default btn-flat" href="{{ route('user.edit-profile') }}" role="button">
                           Update Profile</a>
                   </li>
