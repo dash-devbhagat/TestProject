@@ -72,27 +72,31 @@ class TimingController extends Controller
     public function update(Request $request, $id)
     {
         // dd($request->all());
-        
+
         // Validate the request
         $request->validate([
             'day' => 'required|string',
             'opening_time' => 'required|date_format:H:i',
-            'closing_time' => 'required|date_format:H:i|after:opening_time',
+            'closing_time' => 'required|date_format:H:i',
+            // 'closing_time' => 'required|date_format:H:i|after:opening_time',
         ]);
 
         // Find the timing entry by ID
         $timing = Timing::findOrFail($id);
 
-        // Update the timing details
-        $timing->update([
-            'day' => $request->day,
-            'opening_time' => $request->opening_time,
-            'closing_time' => $request->closing_time,
-        ]);
 
-        // Redirect back with success message
-        return redirect()->back()->with('success', 'Timing updated successfully');
+        $timing->day = $request->day;
+        $timing->opening_time = $request->opening_time;
+        $timing->closing_time = $request->closing_time;
+
+        $timing->save();
+
+        session()->flash('success', 'Timing Updated Successfully.');
+
+        return response()->json(['success' => true, 'timing' => $timing]);
     }
+
+
 
 
     /**
@@ -100,13 +104,20 @@ class TimingController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $timing = Timing::findOrFail($id);
+
+        $branchId = $timing->branch_id;
+
+        $timing->delete();
+
+        return redirect()->route('branch.show', ['branch' => $branchId])->with('success', 'Timing Deleted Successfully.');
     }
+
 
     public function toggleStatus($id)
     {
         $timing = Timing::findOrFail($id);
-        
+
         $timing->is_active = !$timing->is_active;
         $timing->save();
 

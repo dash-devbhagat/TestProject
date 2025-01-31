@@ -31,43 +31,45 @@
                     <!-- Branch Details Table -->
                     <div class="col-md-12">
                         <h3 class="text-primary">Branch Details</h3>
-                        <table class="table table-bordered">
-                            <tbody>
-                                <tr>
-                                    <th>Branch Name</th>
-                                    <td>{{ $branch->name }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Branch Address</th>
-                                    <td>{{ $branch->address }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Branch Description</th>
-                                    <td>{{ $branch->description ?? 'No Description Available' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Latitude</th>
-                                    <td>{{ $branch->latitude }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Longtitude</th>
-                                    <td>{{ $branch->longtitude }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Branch Logo</th>
-                                    <td>
-                                        @if ($branch->logo)
-                                        <img src="{{ asset('storage/' . $branch->logo) }}" alt="Branch Logo"
-                                            width="200" height="200"
-                                            onerror="this.onerror=null; this.src='{{ asset('adminlte/dist/img/inf.png') }}';">
-                                        @else
-                                        No Image Available
-                                        @endif
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="table ">
+                                <tbody>
+                                    <tr>
+                                        <th class="w-25">Branch Name</th> <!-- Adjust the width as needed -->
+                                        <td>{{ $branch->name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="w-25">Branch Address</th>
+                                        <td>{{ $branch->address }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="w-25">Branch Description</th>
+                                        <td>{{ $branch->description ?? 'No Description Available' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="w-25">Latitude</th>
+                                        <td>{{ $branch->latitude }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="w-25">Longitude</th>
+                                        <td>{{ $branch->longtitude }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="w-25">Branch Logo</th>
+                                        <td>
+                                            @if ($branch->logo)
+                                            <img src="{{ asset('storage/' . $branch->logo) }}" alt="Branch Logo" width="200" height="200"
+                                                onerror="this.onerror=null; this.src='{{ asset('adminlte/dist/img/inf.png') }}';">
+                                            @else
+                                            No Image Available
+                                            @endif
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+
                 </div>
 
                 <!-- Branch Timings Section -->
@@ -124,13 +126,14 @@
                                     <td class="text-center">
                                         <!-- Edit Icon -->
                                         <a href="javascript:void(0);" class="text-primary" data-bs-toggle="modal"
-                                            data-bs-target="#editTimingModal" title="Edit">
-                                            <i class="fa fa-edit editTimingBtn" data-id="{{ $timing->id }}"
+                                            data-bs-target="#editTimingModal" data-bs-toggle="tooltip" title="Edit">
+                                            <i class="fa fa-edit editTimingBtn"
+                                                data-id="{{ $timing->id }}"
+                                                data-branch-id="{{ $branch->id }}"
                                                 data-day="{{ $timing->day }}"
                                                 data-opening="{{ $timing->opening_time }}"
                                                 data-closing="{{ $timing->closing_time }}"></i>
                                         </a>
-
                                         <!-- Delete Icon -->
                                         <form action="{{ route('timing.destroy', $timing->id) }}" method="POST"
                                             style="display:inline;"
@@ -142,7 +145,6 @@
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </form>
-
                                     </td>
                                 </tr>
                                 @endforeach
@@ -214,15 +216,21 @@
             <form id="editTimingForm" method="POST">
                 @csrf
                 @method('PUT')
+                <input type="hidden" id="editBranchId" name="branch_id">
+                <input type="hidden" id="editTimingId" name="timing_id">
+
                 <div class="modal-body">
-                    <input type="hidden" id="editTimingId" name="timing_id">
                     <label>Day</label>
                     <input type="text" class="form-control" id="editDay" name="day" readonly>
+
                     <label>Opening Time</label>
                     <input type="time" class="form-control" id="editOpeningTime" name="opening_time" required>
+
                     <label>Closing Time</label>
                     <input type="time" class="form-control" id="editClosingTime" name="closing_time" required>
+
                 </div>
+
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-warning">Update</button>
                 </div>
@@ -230,6 +238,8 @@
         </div>
     </div>
 </div>
+
+
 @endsection
 
 @section('scripts')
@@ -261,26 +271,63 @@
             timingIndex++;
         });
 
-        // Edit Timing
+        // JavaScript to populate modal on edit click
         $('.editTimingBtn').on('click', function() {
-            let id = $(this).data('id');
+            // Get the data attributes from the clicked button
+            let timingId = $(this).data('id');
+            let branchId = $(this).data('branch-id');
             let day = $(this).data('day');
-            let opening = $(this).data('opening');
-            let closing = $(this).data('closing');
+            let openingTime = $(this).data('opening');
+            let closingTime = $(this).data('closing');
 
-            $('#editTimingId').val(id);
+            // Ensure the values are in HH:mm format (ensure they're strings in the correct format)
+            openingTime = openingTime ? openingTime.slice(0, 5) : '';
+            closingTime = closingTime ? closingTime.slice(0, 5) : '';
+
+            // Populate the modal fields with the selected timing data
+            $('#editTimingId').val(timingId);
+            $('#editBranchId').val(branchId);
             $('#editDay').val(day);
-            $('#editOpeningTime').val(opening);
-            $('#editClosingTime').val(closing);
-            $('#editTimingForm').attr('action', `/timing/${id}`);
+            $('#editOpeningTime').val(openingTime);
+            $('#editClosingTime').val(closingTime);
+
+            // Set the form action to the correct route with the timing ID
+            $('#editTimingForm').attr('action', `/timing/${timingId}`);
         });
+
+
+
+        // Update the Timing using AJAX
+        $('#editTimingForm').on('submit', function(e) {
+            e.preventDefault(); // Prevent the default form submission
+
+            const formData = new FormData(this);
+
+            $.ajax({
+                url: $('#editTimingForm').attr('action'), // The action URL of the form (e.g., /timing/{id})
+                type: 'POST', // Use POST since we're overriding the method to PUT
+                data: formData,
+                contentType: false, // Prevent jQuery from setting content-type header automatically
+                processData: false, // Prevent jQuery from processing the data
+                success: function(response) {
+                    // On success, hide the modal and reload the page or update the table
+                    $('#editTimingModal').modal('hide');
+                    location.reload(); // Reload the page to reflect the updated timing
+                },
+                error: function() {
+                    alert('An error occurred while updating the timing.');
+                }
+            });
+        });
+
+
 
         // Toggle Status
         $(document).on('click', '[id^="toggleStatusBtn"]', function() {
-            var Id = $(this).data('id');
+            var timingId = $(this).data('id');
 
             $.ajax({
-                url: '/timing/' + Id +
+                url: '/timing/' + timingId +
                     '/toggle-status', // Use the route for toggling status
                 method: 'POST',
                 data: {
@@ -294,7 +341,6 @@
                 }
             });
         });
-
     });
 </script>
 
