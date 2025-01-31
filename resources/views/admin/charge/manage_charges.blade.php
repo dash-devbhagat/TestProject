@@ -43,16 +43,16 @@
                             <div class="col-sm-4">
                                 <label for="name">Charge Name</label>
                                 <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                    id="name" name="name" placeholder="Enter Charge Name">
+                                    id="name" name="name" placeholder="Enter Charge Name" value="{{ old('name') }}">
                                 @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-sm-4">
-                                <label for="type">Type</label>
-                                <select class="form-control @error('name') is-invalid @enderror" id="type"
-                                    name="type">
+                                <label for="type">Charge Type</label>
+                                <select class="form-control @error('type') is-invalid @enderror" id="type"
+                                    name="type" value="{{ old('type') }}">
                                     <option value="" disabled selected>Select Type</option>
                                     <option value="percentage">Percentage</option>
                                     <option value="fixed">Fixed Amount</option>
@@ -63,9 +63,9 @@
                             </div>
 
                             <div class="col-sm-4">
-                                <label for="value">Value</label>
+                                <label for="value">Charge Value</label>
                                 <input type="number" class="form-control @error('value') is-invalid @enderror"
-                                    id="value" name="value" placeholder="Enter Value">
+                                    id="value" name="value" placeholder="Enter Value" value="{{ old('value') }}">
                                 @error('value')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

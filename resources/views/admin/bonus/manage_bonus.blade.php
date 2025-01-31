@@ -43,7 +43,7 @@
                             <div class="col-sm-4">
                                 <label for="bonusType" class="col-form-label">Bonus Name</label>
                                 <input type="text" class="form-control @error('type') is-invalid @enderror"
-                                    id="bonusType" name="type" placeholder="Enter Bonus Name">
+                                    id="bonusType" name="type" placeholder="Enter Bonus Name" value="{{ old('type') }}">
                                 @error('type')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -53,7 +53,7 @@
                             <div class="col-sm-4">
                                 <label for="bonusAmount" class="col-form-label">Bonus Amount</label>
                                 <input type="number" class="form-control @error('amount') is-invalid @enderror"
-                                    id="bonusAmount" name="amount" placeholder="Enter Bonus Amount" step="0.01">
+                                    id="bonusAmount" name="amount" placeholder="Enter Bonus Amount" step="0.01" value="{{ old('amount') }}">
                                 @error('amount')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -64,7 +64,7 @@
                                 <label for="bonusPercentage" class="col-form-label">Bonus Percentage</label>
                                 <input type="number" class="form-control @error('percentage') is-invalid @enderror"
                                     id="bonusPercentage" name="percentage" placeholder="Enter Bonus Percentage"
-                                    step="0.01">
+                                    step="0.01" value="{{ old('percentage') }}">
                                 @error('percentage')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

@@ -44,8 +44,8 @@
 
                             <div class="col-sm-4">
                                 <label for="subcategoryCategory">Select Category</label>
-                                <select class="form-control @error('sub_category_name') is-invalid @enderror"
-                                    id="subcategoryCategory" name="category_id">
+                                <select class="form-control @error('category_id') is-invalid @enderror"
+                                    id="subcategoryCategory" name="category_id" value="{{ old('category_id') }}">
                                     <option value="" disabled selected>Select Category</option>
                                     @foreach ($categories as $category)
                                         @if ($category->is_active == '1')
@@ -61,7 +61,7 @@
                             <div class="col-sm-4">
                                 <label for="sub_category_name">SubCategory Name</label>
                                 <input type="text" class="form-control @error('sub_category_name') is-invalid @enderror"
-                                    id="sub_category_name" name="sub_category_name" placeholder="Enter Category Name">
+                                    id="sub_category_name" name="sub_category_name" placeholder="Enter Category Name"  value="{{ old('sub_category_name') }}">
                                 @error('sub_category_name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

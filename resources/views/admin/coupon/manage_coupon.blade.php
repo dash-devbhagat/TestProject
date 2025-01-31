@@ -36,7 +36,7 @@
                     <div class="col-sm-4">
                         <label for="coupon_name">Coupon Name</label>
                         <input type="text" class="form-control @error('coupon_name') is-invalid @enderror"
-                            name="coupon_name" id="coupon_name" placeholder="Enter Coupon Name">
+                            name="coupon_name" id="coupon_name" placeholder="Enter Coupon Name" value="{{ old('coupon_name') }}">
                         @error('coupon_name')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -44,7 +44,7 @@
                     <div class="col-sm-4">
                         <label for="coupon_amount">Coupon Amount</label>
                         <input type="text" class="form-control @error('coupon_amount') is-invalid @enderror"
-                            name="coupon_amount" id="coupon_amount" placeholder="Enter Coupon Amount">
+                            name="coupon_amount" id="coupon_amount" placeholder="Enter Coupon Amount" value="{{ old('coupon_amount') }}">
                         @error('coupon_amount')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror

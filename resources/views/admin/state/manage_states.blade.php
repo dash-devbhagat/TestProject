@@ -42,7 +42,7 @@
                             <div class="col-sm-4">
                                 <label for="name">State Name</label>
                                 <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                    id="name" name="name" placeholder="Enter State Name">
+                                    id="name" name="name" placeholder="Enter State Name" value="{{ old('name') }}">
                                 @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -245,7 +245,7 @@
                         location.reload();
                     },
                     error: function() {
-                        alert('An error occurred while toggling user status.');
+                        alert('An error occurred while toggling state status.');
                     }
                 });
             });

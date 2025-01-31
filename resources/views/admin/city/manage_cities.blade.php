@@ -44,7 +44,7 @@
                             <div class="col-sm-6">
                                 <label for="stateCity">Select State</label>
                                 <select class="form-control @error('state_id') is-invalid @enderror" id="stateCity"
-                                    name="state_id">
+                                    name="state_id" value="{{ old('state_id') }}">
                                     <option value="" disabled selected>Select State</option>
                                     @foreach ($states as $state)
                                         @if ($state->is_active == '1')
@@ -60,7 +60,7 @@
                             <div class="col-sm-6">
                                 <label for="city_name">City Name</label>
                                 <input type="text" class="form-control @error('city_name') is-invalid @enderror"
-                                    id="city_name" name="city_name" placeholder="Enter City Name">
+                                    id="city_name" name="city_name" placeholder="Enter City Name" value="{{ old('city_name') }}">
                                 @error('city_name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
