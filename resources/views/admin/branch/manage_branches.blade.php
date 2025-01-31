@@ -79,42 +79,6 @@
                     </div>
                 </div>
 
-                <!-- Timings Section -->
-                <!-- <h6 class="mt-2 fw-bold">Branch Timings</h6>
-                <div class="container">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Day</th>
-                                <th>Opening Time</th>
-                                <th>Closing Time</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                            $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                            @endphp
-                            @foreach ($days as $day)
-                            <tr>
-                                <td>{{ $day }}</td>
-                                <td>
-                                    <input type="time" class="form-control @error('timings.'.$day.'.opening_time') is-invalid @enderror" name="timings[{{ $day }}][opening_time]" value="{{ old('timings.' . $day . '.opening_time') }}">
-                                    @error('timings.'.$day.'.opening_time')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </td>
-                                <td>
-                                    <input type="time" class="form-control @error('timings.'.$day.'.closing_time') is-invalid @enderror" name="timings[{{ $day }}][closing_time]" value="{{ old('timings.' . $day . '.closing_time') }}">
-                                    @error('timings.'.$day.'.closing_time')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div> -->
-
                 <div class="card-footer">
                     <button type="submit" class="btn btn-primary float-right">Save</button>
                 </div>

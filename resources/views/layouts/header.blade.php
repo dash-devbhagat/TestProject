@@ -38,13 +38,13 @@
           <li class="nav-item dropdown user-menu">
               <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
                   {{-- <img src="adminlte/dist/img/{{ Auth::user()->logo }}" class="user-image img-circle elevation-2"
-                      alt="User Image" onerror="this.onerror=null; this.src='adminlte/dist/img/user.png';"> --}}
+                  alt="User Image" onerror="this.onerror=null; this.src='adminlte/dist/img/user.png';"> --}}
                   @if (Auth::user()->logo && file_exists(public_path('storage/' . Auth::user()->logo)))
-                      <img src="{{ asset('storage/' . Auth::user()->logo) }}" class="user-image img-circle elevation-2"
-                          alt="User Image">
+                  <img src="{{ asset('storage/' . Auth::user()->logo) }}" class="user-image img-circle elevation-2"
+                      alt="User Image">
                   @else
-                      <img src="{{ asset('adminlte/dist/img/user.png') }}" class="user-image img-circle elevation-2"
-                          alt="Default User Image">
+                  <img src="{{ asset('adminlte/dist/img/user.png') }}" class="user-image img-circle elevation-2"
+                      alt="Default User Image">
                   @endif
 
                   <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
@@ -54,11 +54,11 @@
                   <li class="user-header bg-primary">
                       {{-- <img src="adminlte/dist/img/{{ Auth::user()->logo }}" class="img-circle elevation-2" alt="User Image" onerror="this.onerror=null; this.src='adminlte/dist/img/user.png';"> --}}
                       @if (Auth::user()->logo && file_exists(public_path('storage/' . Auth::user()->logo)))
-                          <img src="{{ asset('storage/' . Auth::user()->logo) }}"
-                              class="user-image img-circle elevation-2 mt-3" alt="User Image">
+                      <img src="{{ asset('storage/' . Auth::user()->logo) }}"
+                          class="user-image img-circle elevation-2 mt-3" alt="User Image">
                       @else
-                          <img src="{{ asset('adminlte/dist/img/user.png') }}" class="user-image img-circle elevation-2 mt-3"
-                              alt="Default User Image">
+                      <img src="{{ asset('adminlte/dist/img/user.png') }}" class="user-image img-circle elevation-2 mt-3"
+                          alt="Default User Image">
                       @endif
                       <p>
                           Email: {{ Auth::user()->email }}
@@ -75,6 +75,10 @@
                           @csrf
                           <button type="submit" class="btn btn-default btn-flat">Sign out</button>
                       </form>
+                  </li>
+                  <li class="user-footer text-center mb-2">
+                      <a class="btn btn-default btn-flat" href="{{ route('user.edit-profile') }}" role="button">
+                          Update Profile</a>
                   </li>
 
               </ul>

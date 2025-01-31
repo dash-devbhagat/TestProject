@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TestProject - Reset Password</title>
+    <title>SystemHub - Reset Password</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -15,18 +15,18 @@
     <div class="d-flex justify-content-center align-items-center" style="min-height: 100vh;">
         <div class="card border-danger" style="width: 400px;">
             <div class="card-header text-center bg-danger text-white">
-                <h1><b>Test</b>Project</h1>
+                <h1><b>System</b>Hub</h1>
             </div>
 
             <div class="card-body">
                 <h1 class="text-danger">Error!</h1>
                 <p>The reset password token has expired. Please try again to receive a new token.</p>
             </div>
-                            <div class="d-flex justify-content-between mt-3">
-                    <p class="mb-1">
-                        <a href="{{ route('login.page') }}">Back to Login</a>
-                    </p>
-                </div>
+            <div class="d-flex justify-content-between mt-3">
+                <p class="mb-1">
+                    <a href="{{ route('login.page') }}">Back to Login</a>
+                </p>
+            </div>
         </div>
     </div>
 

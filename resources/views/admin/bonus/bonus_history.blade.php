@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title',' Orders')
+@section('title',' Bonus History')
 
 @section('content')
     <div class="content-wrapper">

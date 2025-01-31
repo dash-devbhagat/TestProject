@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TestProject - Reset Password</title>
+    <title>SystemHub - Reset Password</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -15,7 +15,7 @@
     <div class="d-flex justify-content-center align-items-center" style="min-height: 100vh;">
         <div class="card" style="width: 400px;">
             <div class="card-header text-center">
-                <h1><b>Test</b>Project</h1>
+                <h1><b>System</b>Hub</h1>
             </div>
 
             <div class="card-body">
@@ -24,12 +24,12 @@
                 <form method="POST" action="{{ route('password.update') }}">
                     @csrf
                     <input type="hidden" name="token" value="{{ $token }}">
-                    
+
                     <div class="mb-3">
                         <label for="password" class="form-label">New Password</label>
                         <input type="password" name="password" id="password" class="form-control" required>
                         @error('password')
-                            <small class="text-danger">{{ $message }}</small>
+                        <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
 

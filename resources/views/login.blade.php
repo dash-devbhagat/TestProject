@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TestProject - Login</title>
+    <title>SystemHub - Login</title>
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet"
@@ -26,7 +26,7 @@
         <!-- /.login-logo -->
         <div class="card card-outline card-primary">
             <div class="card-header text-center">
-                <h1><b>Test</b>Project</h1>
+            <h1><b>System</b>Hub</h1>
             </div>
 
             {{-- Bootstrap Alert --}}
