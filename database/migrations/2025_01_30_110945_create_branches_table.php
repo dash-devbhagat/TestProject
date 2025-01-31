@@ -17,8 +17,8 @@ return new class extends Migration
             $table->text('address');
             $table->string('logo')->nullable();
             $table->text('description')->nullable();
-            $table->decimal('longtitude', 10, 7);
             $table->decimal('latitude', 10, 7);
+            $table->decimal('longitude', 10, 7);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

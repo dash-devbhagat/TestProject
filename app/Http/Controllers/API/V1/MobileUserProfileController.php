@@ -46,6 +46,8 @@ class MobileUserProfileController extends Controller
     'state' => $user->address->state ? $user->address->state->name : 'null',
     'state_id' => $user->address->state ? $user->address->state->id : 'null',
     'zipCode' => $user->address->zip_code ?? 'null',
+    'latitude' => $user->address->latitude ?? 'null',
+    'longitude' => $user->address->longitude ?? 'null',
 ] : [
     'addressLine' => 'null',
     'city' => 'null',
@@ -53,6 +55,8 @@ class MobileUserProfileController extends Controller
     'state' => 'null',
     'state_id' => 'null',
     'zipCode' => 'null',
+    'latitude' => 'null',
+    'longitude' => 'null',
 ],
         ];
 
@@ -79,6 +83,8 @@ class MobileUserProfileController extends Controller
             'city_id' => 'required|exists:cities,id',
             'state_id' => 'required|exists:states,id',
             'zip_code' => 'required|string|max:20',
+            'latitude' => 'required|nullable|numeric',
+            'longitude' => 'required|nullable|numeric',
         ]);
 
         $validator->after(function ($validator) use ($request) {
@@ -116,6 +122,8 @@ class MobileUserProfileController extends Controller
             'city_id' => $request->city_id,
             'state_id' => $request->state_id,
             'zip_code' => $request->zip_code,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
         ]);
 
         // Mark the profile as complete
@@ -131,6 +139,8 @@ class MobileUserProfileController extends Controller
             'state_id' => $user->address->state ? $user->address->state->id : null, 
             'state' => $user->address->state ? $user->address->state->name : null,
             'zip_code' => $user->address->zip_code,
+            'latitude' => $user->address->latitude,
+            'longitude' => $user->address->longitude,
         ] : null;
 
         // Return a successful response
@@ -153,6 +163,8 @@ class MobileUserProfileController extends Controller
     'state' => $user->address->state ? $user->address->state->name : 'null',
     'state_id' => $user->address->state ? $user->address->state->id : 'null',
     'zipCode' => $user->address->zip_code ?? 'null',
+    'latitude' => $user->address->latitude ?? 'null',
+    'longitude' => $user->address->longitude ?? 'null',
 ] : [
     'addressLine' => 'null',
     'city' => 'null',
@@ -160,6 +172,8 @@ class MobileUserProfileController extends Controller
     'state' => 'null',
     'state_id' => 'null',
     'zipCode' => 'null',
+    'latitude' => 'null',
+    'longitude' => 'null',
 ],
         ],
             ],
@@ -183,6 +197,8 @@ class MobileUserProfileController extends Controller
             'city_id' => 'required|exists:cities,id',
             'state_id' => 'required|exists:states,id',
             'zip_code' => 'required|string|max:20',
+            'latitude' => 'required|nullable|numeric',
+            'longitude' => 'required|nullable|numeric',
         ]);
 
         $validator->after(function ($validator) use ($request) {
@@ -218,12 +234,14 @@ class MobileUserProfileController extends Controller
         $user->birthdate = $request->birthdate;
 
         // If address-related fields are provided, update the address
-        if ($request->has('address_line') || $request->has('city_id') || $request->has('state_id') || $request->has('zip_code')) {
+        if ($request->has('address_line') || $request->has('city_id') || $request->has('state_id') || $request->has('zip_code') || $request->has('latitude') || $request->has('longitude')) {
             $addressData = [
                 'address_line' => $request->address_line,
                 'city_id' => $request->city_id,
                 'state_id' => $request->state_id,
                 'zip_code' => $request->zip_code,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
             ];
 
             // Update the user's address or create a new one if none exists
@@ -244,6 +262,8 @@ class MobileUserProfileController extends Controller
             'state_id' => $user->address->state ? $user->address->state->id : null, 
             'state' => $user->address->state ? $user->address->state->name : null,
             'zip_code' => $user->address->zip_code,
+            'latitude' => $user->address->latitude,
+            'longitude' => $user->address->longitude,
         ] : null;
 
         // Return the successful response with the updated profile and address
@@ -266,6 +286,8 @@ class MobileUserProfileController extends Controller
     'state' => $user->address->state ? $user->address->state->name : 'null',
     'state_id' => $user->address->state ? $user->address->state->id : 'null',
     'zipCode' => $user->address->zip_code ?? 'null',
+    'latitude' => $user->address->latitude ?? 'null',
+    'longitude' => $user->address->longitude ?? 'null',
 ] : [
     'addressLine' => 'null',
     'city' => 'null',
@@ -273,6 +295,8 @@ class MobileUserProfileController extends Controller
     'state' => 'null',
     'state_id' => 'null',
     'zipCode' => 'null',
+    'latitude' => 'null',
+    'longitude' => 'null',
 ],
         ],
             ],

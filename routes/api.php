@@ -15,6 +15,7 @@ use App\Http\Controllers\API\V1\CartController;
 use App\Http\Controllers\API\V1\TransactionAPIController;
 use App\Http\Controllers\API\V1\OrderAPIController;
 use App\Http\Controllers\API\V1\CouponAPIController;
+use App\Http\Controllers\API\V1\BranchAPIController;
 
 /*
 |--------------------------------------------------------------------------
@@ -66,5 +67,7 @@ Route::middleware(['custom.auth', 'mob.check.profile'])->group(function () {
     Route::post('v1/order/applybonus', [TransactionAPIController::class, 'applyBonus']);
     Route::get('v1/user/bonus/details', [MobileUserProfileController::class, 'showBonusDetails']);
     Route::post('v1/cart/apply-coupon', [CouponAPIController::class, 'applyCoupon']);
+
+    Route::get('v1/branches/nearby', [BranchAPIController::class, 'nearbyBranches']);
 
 });

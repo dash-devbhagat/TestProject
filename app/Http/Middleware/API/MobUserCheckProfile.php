@@ -55,6 +55,8 @@ class MobUserCheckProfile
     'state' => $user->address->state ? $user->address->state->name : 'null',
     'state_id' => $user->address->state ? $user->address->state->id : 'null',
     'zipCode' => $user->address->zip_code ?? 'null',
+    'latitude' => $user->address->latitude ?? 'null',
+    'longitude' => $user->address->longitude ?? 'null',
 ] : [
     'addressLine' => 'null',
     'city' => 'null',
@@ -62,6 +64,8 @@ class MobUserCheckProfile
     'state' => 'null',
     'state_id' => 'null',
     'zipCode' => 'null',
+    'latitude' => 'null',
+    'longitude' => 'null',
 ],
         ],
             ],
