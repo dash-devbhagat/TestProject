@@ -52,5 +52,6 @@ Route::middleware(['custom.auth', 'mob.check.profile'])->group(function () {
     // Route::post('v1/order/viewbonus', [TransactionAPIController::class, 'viewBonus']);
     Route::post('v1/order/applybonus', [TransactionAPIController::class, 'applyBonus']);
     Route::get('v1/user/bonus/details', [MobileUserProfileController::class, 'showBonusDetails']);
+    Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
 
 });
