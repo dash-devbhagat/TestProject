@@ -42,7 +42,7 @@
                         <div class="col-sm-5">
                             <label for="category_id">Category</label>
                             <select class="form-control @error('category_id') is-invalid @enderror" name="category_id"
-                                id="category_id">
+                                id="category_id" value="{{ old('category_id') }}">
                                 <option value="" disabled selected>Select Category</option>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -69,7 +69,7 @@
                         <div class="col-sm-5">
                             <label for="product_name">Product Name</label>
                             <input type="text" class="form-control @error('product_name') is-invalid @enderror"
-                                name="product_name" id="product_name" placeholder="Enter Product Name">
+                                name="product_name" id="product_name" placeholder="Enter Product Name" value="{{ old('product_name') }}">
                             @error('product_name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -104,7 +105,6 @@ class CategoryController extends Controller
 
         $category->save();
 
-        // return redirect()->route('category.index')->with('success', 'Category Updated Successfully.');
         session()->flash('success', 'Category Updated Successfully.');
 
         return response()->json(['success' => true, 'category' => $category]);
@@ -117,6 +117,8 @@ class CategoryController extends Controller
     {
         $category = Category::findOrFail($id);
 
+        SubCategory::where('category_id',$category->id)->delete();
+        
         if ($category->image) {
             Storage::disk('public')->delete($category->image);
         }

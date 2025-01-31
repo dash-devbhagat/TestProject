@@ -121,8 +121,6 @@ class ProductController extends Controller
     public function update(Request $request, string $id)
     {
         // dd($request->all());
-
-        // print_r($request->name);exit;
         $product = Product::findOrFail($id);
 
         $validated = $request->validate([
@@ -135,7 +133,6 @@ class ProductController extends Controller
             'product_varients.*.price' => 'numeric',
         ]);
 
-        // $product->name = $request->name;
         $product->name = $request->product_name;
         $product->details = $request->product_details;
         $product->category_id = $request->category_id;

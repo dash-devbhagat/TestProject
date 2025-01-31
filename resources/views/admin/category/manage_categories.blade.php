@@ -46,7 +46,7 @@
                         <div class="col-sm-6">
                             <label for="category_name">Category Name</label>
                             <input type="text" class="form-control @error('category_name') is-invalid @enderror"
-                                id="category_name" name="category_name" placeholder="Enter Category Name">
+                                id="category_name" name="category_name" placeholder="Enter Category Name" value="{{ old('category_name') }}">
                             @error('category_name')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

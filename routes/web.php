@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BonusController;
 use App\Http\Controllers\BonusPaymentHistoryController;
+use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\ChargeController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\PaymentHistoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StateController;
 use App\Http\Controllers\SubCategoryController;
+use App\Http\Controllers\TimingController;
 use App\Http\Controllers\UserController;
 use App\Models\SubCategory;
 use Illuminate\Support\Facades\Auth;
@@ -96,6 +98,12 @@ Route::middleware(['auth', 'check.active'])->group(function () {
 
     Route::resource('charge', ChargeController::class);
     Route::post('/charge/{id}/toggle-status', [ChargeController::class, 'toggleStatus']);
+
+    Route::resource('branch', BranchController::class);
+    Route::post('/branch/{id}/toggle-status', [BranchController::class, 'toggleStatus']);
+
+    Route::resource('timing', TimingController::class);
+    Route::post('/timing/{id}/toggle-status', [TimingController::class, 'toggleStatus']);
 
     Route::resource('coupon', CouponController::class);
     Route::post('/coupon/{id}/toggle-status', [CouponController::class, 'toggleStatus']);
