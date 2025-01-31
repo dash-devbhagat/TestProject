@@ -17,6 +17,7 @@ class Order extends Model
         'charges_total',
         'grand_total',
         'address_id',
+        'branch_id',
         'transaction_id',
         'transaction_status',
     ];
@@ -40,4 +41,9 @@ class Order extends Model
     {
         return $this->hasMany(Transaction::class);
     }
+
+    public function branch()
+{
+    return $this->belongsTo(Branch::class);
+}
 }

@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Charge;
+use App\Models\UserCouponUsage;
+use App\Models\Coupon;
 
 class OrderAPIController extends Controller
 {
@@ -25,10 +27,29 @@ public function getAllOrders(Request $request)
     // Fetch active charges
     $charges = Charge::where('is_active', 1)->get();
 
+    // Fetch user coupon usages
+    $userCouponUsages = UserCouponUsage::where('user_id', $user->id)->get();
+
     // Transform data to include only relevant details
-    $ordersData = $orders->map(function ($order) use ($charges) {
+    $ordersData = $orders->map(function ($order) use ($charges, $userCouponUsages) {
         $additionalCharges = [];
         $totalAdditionalCharges = 0;
+        $couponDetails = null;
+
+        // Check if a coupon was used for this order
+        $couponUsage = $userCouponUsages->firstWhere('order_id', $order->id);
+        if ($couponUsage) {
+            $coupon = Coupon::find($couponUsage->coupon_id);
+            if ($coupon && $coupon->is_active) {
+                $couponDetails = [
+                    'coupon_name' => $coupon->name,
+                    'coupon_code' => $coupon->coupon_code,
+                    'description' => $coupon->description,
+                    'amount' => number_format($coupon->amount, 2, '.', ''),
+                    'image' => $coupon->image,
+                ];
+            }
+        }
 
         foreach ($charges as $charge) {
             if ($charge->type === 'percentage') {
@@ -75,6 +96,14 @@ public function getAllOrders(Request $request)
                 ];
             }),
             'order_at' => $order->created_at->format('Y-m-d H:i:s'),
+            'coupon_details' => $couponDetails, // Add coupon details
+            'branch_details' => $order->branch ? [
+                'branch_id' => $order->branch->id,
+                'branch_name' => $order->branch->name,
+                'branch_address' => $order->branch->address,
+                'branch_logo' => $order->branch->logo,
+                'description' => $order->branch->description,
+            ] : null, // Add branch details
         ];
     });
 
@@ -88,6 +117,7 @@ public function getAllOrders(Request $request)
         ],
     ], 200);
 }
+
 
 
 public function getOrderDetails(Request $request)
@@ -110,10 +140,10 @@ public function getOrderDetails(Request $request)
     $orderId = $request->order_id;
     $user = Auth::user();
 
-    // Fetch the specific order for the authenticated user
+    // Fetch the specific order for the authenticated user with branch details
     $order = Order::where('user_id', $user->id)
         ->where('id', $orderId)
-        ->with(['items.product', 'items.productVariant', 'transactions']) // Include related models
+        ->with(['items.product', 'items.productVariant', 'transactions', 'branch']) // Include branch relationship
         ->first();
 
     if (!$order) {
@@ -135,7 +165,7 @@ public function getOrderDetails(Request $request)
     foreach ($charges as $charge) {
         if ($charge->type === 'percentage') {
             $chargeAmount = ($order->sub_total * $charge->value) / 100;
-        } else { // Rupees
+        } else { // Fixed amount
             $chargeAmount = $charge->value;
         }
 
@@ -149,13 +179,33 @@ public function getOrderDetails(Request $request)
         $totalAdditionalCharges += $chargeAmount;
     }
 
+    // Coupon details initialization
+    $couponDetails = null;
+
+    // Check if coupon was applied to this order
+    $userCouponUsage = UserCouponUsage::where('user_id', $user->id)
+                                      ->where('order_id', $order->id)
+                                      ->first();
+
+    if ($userCouponUsage) {
+        $coupon = Coupon::find($userCouponUsage->coupon_id);
+        if ($coupon) {
+            $couponDetails = [
+                'coupon_code' => $coupon->coupon_code,
+                'coupon_name' => $coupon->name,
+                'coupon_description' => $coupon->description,
+                'coupon_image' => $coupon->image,
+                'discount' => number_format($coupon->amount, 2, '.', ''),
+            ];
+        }
+    }
+
     // Transform order data to include only relevant details
     $orderData = [
         'order_id' => $order->id,
         'order_number' => $order->order_number,
         'status' => $order->status,
         'sub_total' => number_format($order->sub_total, 2, '.', ''),
-        
         'grand_total' => number_format($order->grand_total, 2, '.', ''),
         'transaction_status' => $order->transaction_status,
         'items' => $order->items->map(function ($item) {
@@ -179,8 +229,15 @@ public function getOrderDetails(Request $request)
                 'payment_status' => $transaction->payment_status,
             ];
         }),
+        'coupon_details' => $couponDetails, // Include coupon details if applied
         'order_date' => $order->created_at->format('Y-m-d H:i:s'),
-        
+        'branch_details' => [
+            'branch_id' => $order->branch->id ?? null,
+            'branch_name' => $order->branch->name ?? null,
+            'branch_address' => $order->branch->address ?? null,
+            'branch_logo' => $order->branch->logo ?? null,
+            'branch_description' => $order->branch->description ?? null,
+        ],
     ];
 
     return response()->json([
@@ -193,6 +250,7 @@ public function getOrderDetails(Request $request)
         ],
     ], 200);
 }
+
 
     public function cancelOrder(Request $request)
     {

@@ -76,6 +76,7 @@ public function processPayment(Request $request)
         'charges_total' => $totalAdditionalCharges,
         'grand_total' => $grandTotal,
         'address_id' => $user->address_id,
+        'branch_id' => $cart->branch_id,
         'transaction_status' => 'pending',
         'order_number' => 'OR-' . date('Y') . '-' . strtoupper(uniqid()),
     ]);
