@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
 use App\Models\Bonus;
+use App\Models\UserCouponUsage;
 
 class CartController extends Controller
 {
@@ -473,6 +474,33 @@ public function applyCoupon(Request $request)
         ], 200);
     }
 
+    // Check if the coupon has already been used for this user
+    $userCouponUsage = UserCouponUsage::where('user_id', $user->id)
+                                      ->where('coupon_id', $coupon->id)
+                                      ->whereNotNull('order_id') // If order_id is not null, coupon has been used
+                                      ->first();
+
+    if ($userCouponUsage) {
+        return response()->json([
+            'meta' => [
+                'success' => false,
+                'message' => 'Coupon has already been used.',
+            ],
+        ], 200);
+    }
+
+    // Check if coupon was used and hasn't been linked to an order (i.e., payment not done)
+    $userCouponUsage = UserCouponUsage::where('user_id', $user->id)
+                                      ->where('coupon_id', $coupon->id)
+                                      ->whereNull('order_id') // Ensures it's not yet linked to an order
+                                      ->first();
+
+    if ($userCouponUsage) {
+        // If coupon has already been applied but payment not done, remove old entry
+        $userCouponUsage->delete();
+    }
+
+    // Apply coupon to cart
     $discountAmount = $coupon->amount;
     $cartTotal = $cart->cart_total;
 
@@ -490,6 +518,13 @@ public function applyCoupon(Request $request)
 
     $cart->cart_total = $cartTotal - $discountAmount;
     $cart->save();
+
+    // Log coupon usage (does not have order_id yet)
+    UserCouponUsage::create([
+        'user_id' => $user->id,
+        'coupon_id' => $coupon->id,
+        'used_at' => now(),
+    ]);
 
     return response()->json([
         'data' => [

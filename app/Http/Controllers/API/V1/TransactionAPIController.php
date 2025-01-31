@@ -18,6 +18,7 @@ use App\Models\ProductVarient;
 use App\Models\OrderItem;
 use App\Models\Category;
 use App\Models\SubCategory;
+use App\Models\UserCouponUsage;
 
 class TransactionAPIController extends Controller
 {
@@ -104,13 +105,24 @@ public function processPayment(Request $request)
 
     // Update Order based on payment status
     $message = '';
-    if ($request->payment_status === 'success') {
+    if ($request->payment_status === 'success') 
+    {
+        $userCouponUsage = UserCouponUsage::where('user_id', $user->id)
+                                          ->whereNull('order_id') // Check if it hasn't already been linked
+                                          ->latest()
+                                          ->first();
+        if ($userCouponUsage) {
+            $userCouponUsage->order_id = $order->id;
+            $userCouponUsage->save();
+        }                                  
+
         $order->status = 'pending';  // COD orders stay 'pending'
         $order->transaction_status = 'success';
         $message = 'Payment was successful , order placed.';
         
         // Update the payments table's remaining amount after successful payment
-        foreach ($user->payments as $payment) {
+        foreach ($user->payments as $payment) 
+        {
             // Calculate the remaining bonus after payment
             if ($payment->bonus_id) {
                 $bonus = Bonus::find($payment->bonus_id);
@@ -122,10 +134,12 @@ public function processPayment(Request $request)
             }
         }
         
-    } elseif ($request->payment_status === 'pending') {
+    } elseif ($request->payment_status === 'pending') 
+    {
         $order->transaction_status = 'pending';
         $message = 'Payment is pending. Please try again later.';
-    } else {
+    } else 
+    {
         $order->transaction_status = 'failed';
         $message = 'Payment failed. Please try again.';
     }

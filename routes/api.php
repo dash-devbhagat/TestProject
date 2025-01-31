@@ -25,124 +25,44 @@ use App\Http\Controllers\API\V1\OrderAPIController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
 // Authentication Routes
-Route::prefix('v1/auth')->group(function () {
-    Route::post('signup', [MobileUserController::class, 'signup']);
-    Route::post('signin', [MobileUserController::class, 'signin']);
-    Route::middleware('custom.auth')->post('signout', [MobileUserController::class, 'signout']);
-    Route::middleware('custom.auth')->post('change-password', [MobileUserController::class, 'changePassword']);
-    Route::get('verify/{token}', [MobileUserController::class, 'verifyEmail'])->name('api.verifyEmail');
-    Route::post('forgot-password', [MobileUserController::class, 'forgotPassword']);
-    Route::post('reset-password', [MobileUserController::class, 'resetPassword']);
-});
+Route::post('v1/auth/signup', [MobileUserController::class, 'signup']);
+Route::post('v1/auth/signin', [MobileUserController::class, 'signin']);
+Route::middleware('custom.auth')->post('v1/auth/signout', [MobileUserController::class, 'signout']);
+Route::middleware(['custom.auth'])->post('v1/auth/change-password', [MobileUserController::class, 'changePassword']);
+Route::middleware('custom.auth')->post('v1/user/profile/complete', [MobileUserProfileController::class, 'completeprofile']);
+
+// Email Verification
+Route::get('v1/auth/verify/{token}', [MobileUserController::class, 'verifyEmail'])->name('api.verifyEmail');
+
+Route::post('v1/auth/forgot-password', [MobileUserController::class, 'forgotPassword']);
+Route::post('v1/auth/reset-password', [MobileUserController::class, 'resetPassword']);
+
+
+Route::get('v1/categories', [CategoryAPIController::class, 'getAllCategories']);
+Route::post('v1/subcategories', [SubCategoryAPIController::class, 'getSubCategoriesByCategoryId']);
+Route::get('v1/states', [StateAPIController::class, 'getAllStates']);
+Route::post('v1/cities', [CityAPIController::class, 'getCitiesByStateId']);
+Route::post('v1/products', [ProductAPIController::class, 'getActiveProducts']);    
 
 // Profile Routes
-Route::prefix('v1/user/profile')->middleware(['custom.auth', 'mob.check.profile'])->group(function () {
-    Route::get('/', [MobileUserProfileController::class, 'show']);
-    Route::post('update', [MobileUserProfileController::class, 'updateProfile']);
-    Route::post('picture', [MobileUserProfileController::class, 'updateProfilePic']);
-    Route::post('complete', [MobileUserProfileController::class, 'completeprofile']);
-    Route::get('bonus/details', [MobileUserProfileController::class, 'showBonusDetails']);
+Route::middleware(['custom.auth', 'mob.check.profile'])->group(function () {
+    Route::get('v1/user/profile', [MobileUserProfileController::class, 'show']);
+    Route::post('v1/user/profile/update', [MobileUserProfileController::class, 'updateProfile']);
+    Route::post('v1/user/profile/picture', [MobileUserProfileController::class, 'updateProfilePic']);
+    Route::post('v1/cart/add', [CartController::class, 'addToCart']);
+    Route::get('v1/cart', [CartController::class, 'viewCart']);
+    Route::post('v1/cart/update', [CartController::class, 'updateCartItem']);
+    Route::post('v1/cart/remove', [CartController::class, 'removeFromCart']);
+    Route::post('v1/cart/clear', [CartController::class, 'clearCart']);
+    Route::get('v1/cart/checkout', [CartController::class, 'checkout']);
+    Route::post('v1/order/payment', [TransactionAPIController::class, 'processPayment']);
+    Route::post('v1/order/cancel', [OrderAPIController::class, 'cancelOrder']);
+    Route::get('v1/orders', [OrderAPIController::class, 'getAllOrders']);
+    Route::post('v1/order/details', [OrderAPIController::class, 'getOrderDetails']);
+    // Route::post('v1/order/viewbonus', [TransactionAPIController::class, 'viewBonus']);
+    Route::post('v1/order/applybonus', [TransactionAPIController::class, 'applyBonus']);
+    Route::get('v1/user/bonus/details', [MobileUserProfileController::class, 'showBonusDetails']);
+    Route::post('v1/cart/apply-coupon', [CartController::class, 'applyCoupon']);
+
 });
-
-// Category & Subcategory Routes
-Route::prefix('v1')->group(function () {
-    Route::get('categories', [CategoryAPIController::class, 'getAllCategories']);
-    Route::post('subcategories', [SubCategoryAPIController::class, 'getSubCategoriesByCategoryId']);
-});
-
-// State & City Routes
-Route::prefix('v1')->group(function () {
-    Route::get('states', [StateAPIController::class, 'getAllStates']);
-    Route::post('cities', [CityAPIController::class, 'getCitiesByStateId']);
-});
-
-// Product Routes
-Route::prefix('v1')->group(function () {
-    Route::post('products', [ProductAPIController::class, 'getActiveProducts']);
-});
-
-
-// Order & Payment Routes
-Route::prefix('v1/order')->middleware(['custom.auth', 'mob.check.profile'])->group(function () {
-    Route::post('payment', [TransactionAPIController::class, 'processPayment']);
-    Route::post('cancel', [OrderAPIController::class, 'cancelOrder']);
-    Route::get('/', [OrderAPIController::class, 'getAllOrders']);
-    Route::post('details', [OrderAPIController::class, 'getOrderDetails']);
-    Route::post('applybonus', [TransactionAPIController::class, 'applyBonus']);
-});
-
-// Cart Routes
-Route::prefix('v1/cart')->middleware(['custom.auth', 'mob.check.profile'])->group(function () {
-    Route::post('add', [CartController::class, 'addToCart']);
-    Route::get('/', [CartController::class, 'viewCart']);
-    Route::post('update', [CartController::class, 'updateCartItem']);
-    Route::post('remove', [CartController::class, 'removeFromCart']);
-    Route::post('clear', [CartController::class, 'clearCart']);
-    Route::get('checkout', [CartController::class, 'checkout']);
-    Route::post('apply-coupon', [CartController::class, 'applyCoupon']);
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // Authentication Routes
-// Route::post('v1/auth/signup', [MobileUserController::class, 'signup']);
-// Route::post('v1/auth/signin', [MobileUserController::class, 'signin']);
-// Route::middleware('custom.auth')->post('v1/auth/signout', [MobileUserController::class, 'signout']);
-// Route::middleware(['custom.auth'])->post('v1/auth/change-password', [MobileUserController::class, 'changePassword']);
-// Route::middleware('custom.auth')->post('v1/user/profile/complete', [MobileUserProfileController::class, 'completeprofile']);
-
-// // Email Verification
-// Route::get('v1/auth/verify/{token}', [MobileUserController::class, 'verifyEmail'])->name('api.verifyEmail');
-
-// Route::post('v1/auth/forgot-password', [MobileUserController::class, 'forgotPassword']);
-// Route::post('v1/auth/reset-password', [MobileUserController::class, 'resetPassword']);
-
-
-// Route::get('v1/categories', [CategoryAPIController::class, 'getAllCategories']);
-// Route::post('v1/subcategories', [SubCategoryAPIController::class, 'getSubCategoriesByCategoryId']);
-// Route::get('v1/states', [StateAPIController::class, 'getAllStates']);
-// Route::post('v1/cities', [CityAPIController::class, 'getCitiesByStateId']);
-// Route::post('v1/products', [ProductAPIController::class, 'getActiveProducts']);    
-
-// // Profile Routes
-// Route::middleware(['custom.auth', 'mob.check.profile'])->group(function () {
-//     Route::get('v1/user/profile', [MobileUserProfileController::class, 'show']);
-//     Route::post('v1/user/profile/update', [MobileUserProfileController::class, 'updateProfile']);
-//     Route::post('v1/user/profile/picture', [MobileUserProfileController::class, 'updateProfilePic']);
-//     Route::post('v1/cart/add', [CartController::class, 'addToCart']);
-//     Route::get('v1/cart', [CartController::class, 'viewCart']);
-//     Route::post('v1/cart/update', [CartController::class, 'updateCartItem']);
-//     Route::post('v1/cart/remove', [CartController::class, 'removeFromCart']);
-//     Route::post('v1/cart/clear', [CartController::class, 'clearCart']);
-//     Route::get('v1/cart/checkout', [CartController::class, 'checkout']);
-//     Route::post('v1/order/payment', [TransactionAPIController::class, 'processPayment']);
-//     Route::post('v1/order/cancel', [OrderAPIController::class, 'cancelOrder']);
-//     Route::get('v1/orders', [OrderAPIController::class, 'getAllOrders']);
-//     Route::post('v1/order/details', [OrderAPIController::class, 'getOrderDetails']);
-//     // Route::post('v1/order/viewbonus', [TransactionAPIController::class, 'viewBonus']);
-//     Route::post('v1/order/applybonus', [TransactionAPIController::class, 'applyBonus']);
-//     Route::get('v1/user/bonus/details', [MobileUserProfileController::class, 'showBonusDetails']);
-//     Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
-
-// });
