@@ -352,7 +352,7 @@ public function checkout(Request $request)
         ], 200);
     }
 
-        // Validate the branch ID
+    // Validate the branch ID
     $validator = Validator::make($request->all(), [
         'branch_id' => 'required|exists:branches,id',
     ]);
@@ -382,47 +382,100 @@ public function checkout(Request $request)
     $cart->branch_id = $branch->id;
     $cart->save();
 
-    // Use cart_total directly from the database
-    $cartTotal = $cart->cart_total;
+    // Use cart_total directly from the database and ensure a proper number format
+    $cartTotal = (float) $cart->cart_total;
+    $formattedCartTotal = number_format($cartTotal, 2, '.', '');
 
-    // Format cart total
-    $cartTotal = number_format($cartTotal, 2, '.', '');
+    /*
+     * BONUS DEDUCTION LOGIC:
+     *
+     * For each bonus payment (i.e. records from the payments table where a bonus is attached),
+     * we calculate a potential deduction as:
+     *
+     *    deduction = remaining_amount * (bonus_percentage / 100)
+     *
+     * The total bonus deduction is the sum across all active bonus payments.
+     * However, if the total bonus deduction exceeds the cart total, then we do not apply any bonus.
+     */
+    $totalBonusDeduction = 0;
+    $bonusDeductionsDetails = []; // to keep per-bonus info
 
-    // Fetch Additional Charges
+    // Assuming the user model has a relationship "payments" for bonus-related records
+    foreach ($user->payments as $payment) {
+        // Find the bonus configuration for this payment record
+        $bonus = Bonus::find($payment->bonus_id);
+        if ($bonus && $bonus->is_active) {
+            // Use the current remaining bonus amount for calculation.
+            // (The available bonus for deduction is what remains.)
+            $availableBonus = (float) $payment->remaining_amount;
+            // Compute the potential deduction for this bonus record
+            $deduction = $availableBonus * ((float) $bonus->percentage / 100);
+            $totalBonusDeduction += $deduction;
+            $bonusDeductionsDetails[] = [
+                'bonus_payment_id'   => $payment->id,
+                'bonus_type'         => $bonus->type,
+                'available_bonus'    => number_format($availableBonus, 2, '.', ''),
+                'percentage'         => number_format($bonus->percentage, 2, '.', ''),
+                'potential_deduction'=> number_format($deduction, 2, '.', ''),
+            ];
+        }
+    }
+
+    // Determine if bonus deduction is applicable.
+    // (Bonus is applied only if the total bonus deduction does not exceed the cart total.)
+    if ($totalBonusDeduction > $cartTotal) {
+        // Do not apply bonus deduction if bonus > cart total.
+        $appliedBonusDeduction = 0;
+        $bonusDeductionsDetails = []; // clear details if bonus not applied
+    } else {
+        $appliedBonusDeduction = $totalBonusDeduction;
+    }
+
+    // If bonus details array is empty, set it to null.
+    if (empty($bonusDeductionsDetails)) {
+        $bonusDeductionsDetails = null;
+    }
+
+    // New cart total after bonus (if any applied)
+    $newCartTotal = $cartTotal - $appliedBonusDeduction;
+    $formattedNewCartTotal = number_format($newCartTotal, 2, '.', '');
+
+    // -----------------------------
+    // Continue with your additional charges calculation
+    // -----------------------------
     $charges = Charge::where('is_active', 1)->get();
-
     $additionalCharges = [];
     $totalAdditionalCharges = 0;
 
     foreach ($charges as $charge) {
         if ($charge->type === 'percentage') {
-            $chargeAmount = ($cartTotal * $charge->value) / 100;
+            $chargeAmount = ($newCartTotal * $charge->value) / 100;
         } else { // Rupees
             $chargeAmount = $charge->value;
         }
 
-        $chargeAmount = number_format($chargeAmount, 2, '.', '');
+        $chargeAmount = (float) number_format($chargeAmount, 2, '.', '');
         $additionalCharges[] = [
-            'name' => $charge->name,
-            'type' => $charge->type,
+            'name'  => $charge->name,
+            'type'  => $charge->type,
             'value' => $charge->value,
-            'amount' => $chargeAmount,
+            'amount'=> number_format($chargeAmount, 2, '.', ''),
         ];
         $totalAdditionalCharges += $chargeAmount;
     }
 
-    // Grand Total
-    $grandTotal = $cartTotal + $totalAdditionalCharges;
-    $grandTotal = number_format($grandTotal, 2, '.', '');
+    // Grand Total is based on the new cart total (after bonus deduction) plus additional charges
+    $grandTotal = $newCartTotal + $totalAdditionalCharges;
+    $formattedGrandTotal = number_format($grandTotal, 2, '.', '');
 
-        // Save total_charges and grand_total to the cart table
+    // Save total_charges and grand_total to the cart table
     $cart->total_charges = $totalAdditionalCharges;
-    $cart->grand_total = $grandTotal;
+    $cart->grand_total = $formattedGrandTotal;
     $cart->save();
 
     // Prepare Items for Response
     $items = [];
-     $couponDetails = null; // Initialize coupon details as null
+    $couponDetails = null; // Initialize coupon details as null
 
     // Check if coupon is applied
     $userCouponUsage = UserCouponUsage::where('user_id', $user->id)
@@ -433,11 +486,11 @@ public function checkout(Request $request)
         $coupon = Coupon::find($userCouponUsage->coupon_id);
         if ($coupon) {
             $couponDetails = [
-                'coupon_code' => $coupon->coupon_code,
-                'coupon_name' => $coupon->name,
+                'coupon_code'        => $coupon->coupon_code,
+                'coupon_name'        => $coupon->name,
                 'coupon_description' => $coupon->description,
-                'coupon_image' => $coupon->image,
-                'discount' => number_format($coupon->amount, 2, '.', ''),
+                'coupon_image'       => $coupon->image,
+                'discount'           => number_format($coupon->amount, 2, '.', ''),
             ];
         }
     }
@@ -450,47 +503,51 @@ public function checkout(Request $request)
         $category = Category::find($product->category_id);
         $subCategory = SubCategory::find($product->sub_category_id);
 
-
         $items[] = [
-            'cart_item_id' => $cartItem->id,
-            'product_id' => $product->id,
-            'product_name' => $product->name,
-            'product_variant_id' => $variant->id,
-            'variant' => $variant->unit,
-            'price' => number_format($variant->price, 2, '.', ''),
-            'quantity' => $cartItem->quantity,
-            'sku' => $product->sku,
-            'image' => $product->image,
-            'details' => $product->details,
-            'category_id' => $product->category_id,
-            'category_name' => $category ? $category->name : null, // Include category name
-            'sub_category_id' => $product->sub_category_id,
-            'sub_category_name' => $subCategory ? $subCategory->name : null, // Added sub_category_id
-            'total_price' => number_format($variant->price * $cartItem->quantity, 2, '.', ''),
+            'cart_item_id'      => $cartItem->id,
+            'product_id'        => $product->id,
+            'product_name'      => $product->name,
+            'product_variant_id'=> $variant->id,
+            'variant'           => $variant->unit,
+            'price'             => number_format($variant->price, 2, '.', ''),
+            'quantity'          => $cartItem->quantity,
+            'sku'               => $product->sku,
+            'image'             => $product->image,
+            'details'           => $product->details,
+            'category_id'       => $product->category_id,
+            'category_name'     => $category ? $category->name : null,
+            'sub_category_id'   => $product->sub_category_id,
+            'sub_category_name' => $subCategory ? $subCategory->name : null,
+            'total_price'       => number_format($variant->price * $cartItem->quantity, 2, '.', ''),
         ];
     }
 
-    // Return response without creating an order entry
+    // Return response including bonus details (or null if none available)
     return response()->json([
         'data' => [
-            'cart_id' => $cart->id,
-            'new_cart_total' => $cartTotal,
-            'additional_charges' => $additionalCharges,
-            'total_charges' => number_format($totalAdditionalCharges, 2, '.', ''), // Added charges total here
-            'grand_total' => $grandTotal,
-            'coupon_details' => $couponDetails, // Include coupon details if applied
-            'selected_branch' => [
-                'id' => $branch->id,
-                'name' => $branch->name,
+            'cart_id'                  => $cart->id,
+            'original_cart_total'      => $formattedCartTotal,
+            'bonus_deduction_applied'  => number_format($appliedBonusDeduction, 2, '.', ''),
+            'bonus_details'            => $bonusDeductionsDetails,
+            'new_cart_total'           => $formattedNewCartTotal,
+            'additional_charges'       => $additionalCharges,
+            'total_charges'            => number_format($totalAdditionalCharges, 2, '.', ''),
+            'grand_total'              => $formattedGrandTotal,
+            'coupon_details'           => $couponDetails,
+            'selected_branch'          => [
+                'id'      => $branch->id,
+                'name'    => $branch->name,
                 'address' => $branch->address,
-                'logo' => $branch->logo,
+                'logo'    => $branch->logo,
             ],
         ],
         'items' => $items,
-        'meta' => [
+        'meta'  => [
             'success' => true,
             'message' => 'Checkout successful',
         ],
     ], 200);
 }
+
+
 }

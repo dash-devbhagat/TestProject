@@ -42,7 +42,7 @@ public function processPayment(Request $request)
     $validator = Validator::make($request->all(), [
         'cart_id' => 'required|exists:carts,id',
         'payment_mode' => 'required|in:online,cash on delivery',
-        'payment_type' => 'nullable|required_if:payment_mode,online|in:credit,debit,upi', // Only required for 'online'
+        'payment_type' => 'nullable|required_if:payment_mode,online|in:credit,debit,upi',
         'payment_status' => 'required|in:success,pending,failed',
     ]);
 
@@ -56,38 +56,69 @@ public function processPayment(Request $request)
         ], 200);
     }
 
-    // Generate Order from Cart
-    $cartTotal = $cart->cart_total;
+    // Retrieve original cart total from the cart (without bonus applied)
+    $cartTotal = (float) $cart->cart_total;
+
+    // Calculate additional charges as before
     $charges = Charge::where('is_active', 1)->get();
     $totalAdditionalCharges = 0;
-
     foreach ($charges as $charge) {
-        $totalAdditionalCharges += $charge->type === 'percentage'
-            ? ($cartTotal * $charge->value) / 100
-            : $charge->value;
+        if ($charge->type === 'percentage') {
+            $totalAdditionalCharges += ($cartTotal * $charge->value) / 100;
+        } else {
+            $totalAdditionalCharges += $charge->value;
+        }
     }
 
-    $grandTotal = $cartTotal + $totalAdditionalCharges;
+    // BONUS DEDUCTION CALCULATION (same as in checkout)
+    $totalBonusDeduction = 0;
+    $bonusPaymentsToUpdate = []; // keep track of each bonus payment and its deduction
+    foreach ($user->payments as $payment) {
+        $bonus = Bonus::find($payment->bonus_id);
+        if ($bonus && $bonus->is_active) {
+            $availableBonus = (float) $payment->remaining_amount;
+            $deduction = $availableBonus * ((float) $bonus->percentage / 100);
+            $totalBonusDeduction += $deduction;
+            $bonusPaymentsToUpdate[] = [
+                'payment'   => $payment,
+                'deduction' => $deduction,
+            ];
+        }
+    }
 
+    // Only apply bonus if total deduction is not more than the cart total
+    if ($totalBonusDeduction > $cartTotal) {
+        $appliedBonusDeduction = 0;
+        $bonusPaymentsToUpdate = [];
+    } else {
+        $appliedBonusDeduction = $totalBonusDeduction;
+    }
+
+    // New grand total calculation:
+    $grandTotalWithoutBonus = $cartTotal + $totalAdditionalCharges;
+    $grandTotal = $grandTotalWithoutBonus - $appliedBonusDeduction;
+    $grandTotal = number_format($grandTotal, 2, '.', '');
+
+    // Create Order using the adjusted totals
     $order = Order::create([
-        'user_id' => $user->id,
-        'status' => 'pending',
-        'sub_total' => $cartTotal,
-        'charges_total' => $totalAdditionalCharges,
-        'grand_total' => $grandTotal,
-        'address_id' => $user->address_id,
-        'branch_id' => $cart->branch_id,
+        'user_id'            => $user->id,
+        'status'             => 'pending',
+        'sub_total'          => $cartTotal,
+        'charges_total'      => $totalAdditionalCharges,
+        'grand_total'        => $grandTotal,
+        'address_id'         => $user->address_id,
+        'branch_id'          => $cart->branch_id,
         'transaction_status' => 'pending',
-        'order_number' => 'OR-' . date('Y') . '-' . strtoupper(uniqid()),
+        'order_number'       => 'OR-' . date('Y') . '-' . strtoupper(uniqid()),
     ]);
 
     foreach ($cart->items as $cartItem) {
         OrderItem::create([
-            'order_id' => $order->id,
-            'cart_id' => $cart->id,
-            'product_id' => $cartItem->product_id,
-            'product_variant_id' => $cartItem->product_variant_id,
-            'quantity' => $cartItem->quantity,
+            'order_id'             => $order->id,
+            'cart_id'              => $cart->id,
+            'product_id'           => $cartItem->product_id,
+            'product_variant_id'   => $cartItem->product_variant_id,
+            'quantity'             => $cartItem->quantity,
         ]);
     }
 
@@ -97,56 +128,52 @@ public function processPayment(Request $request)
     // Create a transaction
     $transaction = Transaction::create([
         'transaction_number' => $transactionNumber,
-        'user_id' => $user->id,
-        'order_id' => $order->id,
-        'payment_mode' => $request->payment_mode,
-        'payment_type' => $request->payment_mode === 'online' ? $request->payment_type : null,
-        'payment_status' => $request->payment_status,
+        'user_id'            => $user->id,
+        'order_id'           => $order->id,
+        'payment_mode'       => $request->payment_mode,
+        'payment_type'       => $request->payment_mode === 'online' ? $request->payment_type : null,
+        'payment_status'     => $request->payment_status,
     ]);
 
     // Update Order based on payment status
     $message = '';
-    if ($request->payment_status === 'success') 
-    {
+    if ($request->payment_status === 'success') {
         $userCouponUsage = UserCouponUsage::where('user_id', $user->id)
-                                          ->whereNull('order_id') // Check if it hasn't already been linked
+                                          ->whereNull('order_id')
                                           ->latest()
                                           ->first();
         if ($userCouponUsage) {
             $userCouponUsage->order_id = $order->id;
             $userCouponUsage->save();
-        }                                  
-
-        $order->status = 'pending';  // COD orders stay 'pending'
-        $order->transaction_status = 'success';
-        $message = 'Payment was successful , order placed.';
-        
-        // Update the payments table's remaining amount after successful payment
-        foreach ($user->payments as $payment) 
-        {
-            // Calculate the remaining bonus after payment
-            if ($payment->bonus_id) {
-                $bonus = Bonus::find($payment->bonus_id);
-                if ($bonus && $bonus->is_active) {
-                    $remainingBonus = $payment->remaining_amount - ($payment->remaining_amount * $bonus->percentage / 100);
-                    $payment->remaining_amount = $remainingBonus;
-                    $payment->save();
-                }
-            }
         }
-        
-    } elseif ($request->payment_status === 'pending') 
-    {
+
+        $order->status = 'pending';  // For example, COD orders may stay pending
+        $order->transaction_status = 'success';
+        $message = 'Payment was successful, order placed.';
+    } elseif ($request->payment_status === 'pending') {
         $order->transaction_status = 'pending';
         $message = 'Payment is pending. Please try again later.';
-    } else 
-    {
+    } else {
         $order->transaction_status = 'failed';
         $message = 'Payment failed. Please try again.';
     }
 
     $order->transaction_id = $transaction->id;
     $order->save();
+
+    // If payment was successful and bonus was applied, update bonus records.
+    if ($request->payment_status === 'success' && $appliedBonusDeduction > 0) {
+        foreach ($bonusPaymentsToUpdate as $bonusData) {
+            /** @var Payment $paymentRecord */
+            $paymentRecord = $bonusData['payment'];
+            $deductionUsed = $bonusData['deduction'];
+            // Reduce the bonus's remaining amount by the deducted value.
+            $newRemaining = (float) $paymentRecord->remaining_amount - $deductionUsed;
+            // Ensure we do not go below zero.
+            $paymentRecord->remaining_amount = $newRemaining < 0 ? 0 : $newRemaining;
+            $paymentRecord->save();
+        }
+    }
 
     // Clear the cart
     $cart->items()->delete();
@@ -158,10 +185,10 @@ public function processPayment(Request $request)
 
     return response()->json([
         'data' => [
-            'transaction_id' => $transaction->id,
+            'transaction_id'     => $transaction->id,
             'transaction_number' => $transaction->transaction_number,
-            'order_id' => $order->id,
-            'payment_status' => $request->payment_status,
+            'order_id'           => $order->id,
+            'payment_status'     => $request->payment_status,
         ],
         'meta' => [
             'success' => true,
@@ -169,139 +196,140 @@ public function processPayment(Request $request)
         ],
     ], 200);
 }
-
-public function applyBonus(Request $request)
-{
-    // Fetch authenticated user
-    $user = Auth::user();
-
-    // Retrieve the cart for the user
-    $cart = Cart::where('user_id', $user->id)->first();
-
-    if (!$cart) {
-        return response()->json([
-            'data' => json_decode('{}'),
-            'meta' => [
-                'success' => false,
-                'message' => 'Cart is empty.',
-            ],
-        ], 200);
-    }
-
-    // Fetch cart total from the carts table
-    $cartTotal = $cart->cart_total;
-
-    if ($cartTotal <= 0) {
-        return response()->json([
-            'data' => json_decode('{}'),
-            'meta' => [
-                'success' => false,
-                'message' => 'Cart is empty or total is zero.',
-            ],
-        ], 200);
-    }
-
-    // Initialize variables to store total bonus used and details
-    $totalBonusUsed = 0;
-    $bonusDetails = [];
-    $bonusTypes = [];
-    $totalRemainingBonusAmount = 0;  // Initialize remaining bonus amount
-
-    // Loop through user's payments to fetch and apply bonuses
-    foreach ($user->payments as $payment) {
-        $bonus = Bonus::find($payment->bonus_id);
-
-        if ($bonus && $bonus->is_active) {
-            // Calculate bonus usage based on the dynamic percentage
-            $bonusUsage = ($payment->remaining_amount * $bonus->percentage) / 100;
-
-            // Update total bonus used
-            $totalBonusUsed += $bonusUsage;
-
-            // Deduct bonus usage from payment remaining amount
-            $payment->remaining_amount -= $bonusUsage;
-
-            // Group bonuses by type
-            if (!isset($bonusTypes[$bonus->type])) {
-                $bonusTypes[$bonus->type] = [
-                    'total_available' => 0,
-                    'total_used' => 0,
-                    'remaining_bonus' => 0,
-                    'percentage' => $bonus->percentage,
-                ];
-            }
-
-            $bonusTypes[$bonus->type]['total_available'] += $payment->remaining_amount + $bonusUsage;
-            $bonusTypes[$bonus->type]['total_used'] += $bonusUsage;
-            $bonusTypes[$bonus->type]['remaining_bonus'] = $bonusTypes[$bonus->type]['total_available'] - $bonusTypes[$bonus->type]['total_used'];
-
-            // Track remaining bonus amount
-            $totalRemainingBonusAmount += $payment->remaining_amount;
-        }
-    }
-
-    // Validate that bonuses were applied
-    if ($totalBonusUsed <= 0) {
-        return response()->json([
-            'data' => json_decode('{}'),
-            'meta' => [
-                'success' => false,
-                'message' => 'No bonus available to apply.',
-            ],
-        ], 200);
-    }
-
-    // Check if cart total allows bonus application
-    if ($cartTotal > $totalBonusUsed) {
-        // Convert grouped bonuses into an array
-        foreach ($bonusTypes as $type => $details) {
-            $bonusDetails[] = [
-                'bonus_type' => $type,
-                'percentage' => number_format($details['percentage'], 2, '.', ''),
-                'total_available' => number_format($details['total_available'], 2, '.', ''),
-                'bonus_used' => number_format($details['total_used'], 2, '.', ''),
-                'remaining_bonus_amount' => number_format($details['remaining_bonus'], 2, '.', ''),
-            ];
-        }
-
-        // Apply bonus to cart total
-        $oldCartTotal = $cartTotal;
-        $newCartTotal = $cartTotal - $totalBonusUsed;
-        $discount = $oldCartTotal - $newCartTotal;
-
-        // Update cart total in the database
-        $cart->cart_total = number_format($newCartTotal, 2, '.', '');
-        $cart->save();
-
-        return response()->json([
-            'data' => [
-                'cart_id' => $cart->id,
-                'old_cart_total' => number_format($oldCartTotal, 2, '.', ''),
-                'new_cart_total' => number_format($newCartTotal, 2, '.', ''),
-                'discount' => number_format($discount, 2, '.', ''),
-                'total_bonus_used' => number_format($totalBonusUsed, 2, '.', ''),
-                'remaining_total_bonus' => number_format($totalRemainingBonusAmount, 2, '.', ''), // Add this line
-                'bonus_details' => $bonusDetails,
-            ],
-            'meta' => [
-                'success' => true,
-                'message' => 'Bonuses applied successfully.',
-            ],
-        ], 200);
-    } else {
-        return response()->json([
-            'data' => json_decode('{}'),
-            'meta' => [
-                'success' => false,
-                'message' => 'Cart total is less than the total bonus used.',
-            ],
-        ], 200);
-    }
-}
-
 }
 
 
+
+
+
+// public function applyBonus(Request $request)
+// {
+//     // Fetch authenticated user
+//     $user = Auth::user();
+
+//     // Retrieve the cart for the user
+//     $cart = Cart::where('user_id', $user->id)->first();
+
+//     if (!$cart) {
+//         return response()->json([
+//             'data' => json_decode('{}'),
+//             'meta' => [
+//                 'success' => false,
+//                 'message' => 'Cart is empty.',
+//             ],
+//         ], 200);
+//     }
+
+//     // Fetch cart total from the carts table
+//     $cartTotal = $cart->cart_total;
+
+//     if ($cartTotal <= 0) {
+//         return response()->json([
+//             'data' => json_decode('{}'),
+//             'meta' => [
+//                 'success' => false,
+//                 'message' => 'Cart is empty or total is zero.',
+//             ],
+//         ], 200);
+//     }
+
+//     // Initialize variables to store total bonus used and details
+//     $totalBonusUsed = 0;
+//     $bonusDetails = [];
+//     $bonusTypes = [];
+//     $totalRemainingBonusAmount = 0;  // Initialize remaining bonus amount
+
+//     // Loop through user's payments to fetch and apply bonuses
+//     foreach ($user->payments as $payment) {
+//         $bonus = Bonus::find($payment->bonus_id);
+
+//         if ($bonus && $bonus->is_active) {
+//             // Calculate bonus usage based on the dynamic percentage
+//             $bonusUsage = ($payment->remaining_amount * $bonus->percentage) / 100;
+
+//             // Update total bonus used
+//             $totalBonusUsed += $bonusUsage;
+
+//             // Deduct bonus usage from payment remaining amount
+//             $payment->remaining_amount -= $bonusUsage;
+
+//             // Group bonuses by type
+//             if (!isset($bonusTypes[$bonus->type])) {
+//                 $bonusTypes[$bonus->type] = [
+//                     'total_available' => 0,
+//                     'total_used' => 0,
+//                     'remaining_bonus' => 0,
+//                     'percentage' => $bonus->percentage,
+//                 ];
+//             }
+
+//             $bonusTypes[$bonus->type]['total_available'] += $payment->remaining_amount + $bonusUsage;
+//             $bonusTypes[$bonus->type]['total_used'] += $bonusUsage;
+//             $bonusTypes[$bonus->type]['remaining_bonus'] = $bonusTypes[$bonus->type]['total_available'] - $bonusTypes[$bonus->type]['total_used'];
+
+//             // Track remaining bonus amount
+//             $totalRemainingBonusAmount += $payment->remaining_amount;
+//         }
+//     }
+
+//     // Validate that bonuses were applied
+//     if ($totalBonusUsed <= 0) {
+//         return response()->json([
+//             'data' => json_decode('{}'),
+//             'meta' => [
+//                 'success' => false,
+//                 'message' => 'No bonus available to apply.',
+//             ],
+//         ], 200);
+//     }
+
+//     // Check if cart total allows bonus application
+//     if ($cartTotal > $totalBonusUsed) {
+//         // Convert grouped bonuses into an array
+//         foreach ($bonusTypes as $type => $details) {
+//             $bonusDetails[] = [
+//                 'bonus_type' => $type,
+//                 'percentage' => number_format($details['percentage'], 2, '.', ''),
+//                 'total_available' => number_format($details['total_available'], 2, '.', ''),
+//                 'bonus_used' => number_format($details['total_used'], 2, '.', ''),
+//                 'remaining_bonus_amount' => number_format($details['remaining_bonus'], 2, '.', ''),
+//             ];
+//         }
+
+//         // Apply bonus to cart total
+//         $oldCartTotal = $cartTotal;
+//         $newCartTotal = $cartTotal - $totalBonusUsed;
+//         $discount = $oldCartTotal - $newCartTotal;
+
+//         // Update cart total in the database
+//         $cart->cart_total = number_format($newCartTotal, 2, '.', '');
+//         $cart->save();
+
+//         return response()->json([
+//             'data' => [
+//                 'cart_id' => $cart->id,
+//                 'old_cart_total' => number_format($oldCartTotal, 2, '.', ''),
+//                 'new_cart_total' => number_format($newCartTotal, 2, '.', ''),
+//                 'discount' => number_format($discount, 2, '.', ''),
+//                 'total_bonus_used' => number_format($totalBonusUsed, 2, '.', ''),
+//                 'remaining_total_bonus' => number_format($totalRemainingBonusAmount, 2, '.', ''), // Add this line
+//                 'bonus_details' => $bonusDetails,
+//             ],
+//             'meta' => [
+//                 'success' => true,
+//                 'message' => 'Bonuses applied successfully.',
+//             ],
+//         ], 200);
+//     } else {
+//         return response()->json([
+//             'data' => json_decode('{}'),
+//             'meta' => [
+//                 'success' => false,
+//                 'message' => 'Cart total is less than the total bonus used.',
+//             ],
+//         ], 200);
+//     }
+// }
 
 
 
