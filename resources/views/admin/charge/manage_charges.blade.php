@@ -1,6 +1,6 @@
 @extends('layouts.master')
 
-@section('title', 'Charges Management')
+@section('title', 'Charge Management')
 
 @section('content')
     <div class="content-wrapper">

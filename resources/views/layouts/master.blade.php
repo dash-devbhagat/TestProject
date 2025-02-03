@@ -45,7 +45,7 @@
             <a href="{{ route('dashboard') }}" class="brand-link text-decoration-none">
                 <img src="{{ asset('adminlte/dist/img/SH.jpg') }}" alt="AdminLTE Logo"
                     class="brand-image img-circle elevation-3" style="opacity: .8">
-                <span class="brand-text font-weight-light">SystemHub</span>
+                <span class="brand-text font-weight-light"><strong>SystemHub</strong></span>
             </a>
 
             <!-- Sidebar -->

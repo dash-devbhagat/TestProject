@@ -38,7 +38,7 @@ class BranchController extends Controller
             'address' => 'required|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'description' => 'nullable|string',
-            'longtitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
             'latitude' => 'required|numeric',
         ]);
 
@@ -55,7 +55,7 @@ class BranchController extends Controller
         $branch = new Branch();
         $branch->name = $request->name;
         $branch->address = $request->address;
-        $branch->longtitude = $request->longtitude;
+        $branch->longitude = $request->longitude;
         $branch->latitude = $request->latitude;
         $branch->description = $request->description;
         $branch->logo = $path;
@@ -103,7 +103,7 @@ class BranchController extends Controller
             'address' => 'required|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'description' => 'nullable|string',
-            'longtitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
             'latitude' => 'required|numeric',
         ]);
 
@@ -113,7 +113,7 @@ class BranchController extends Controller
         $branch->address = $request->address;
         $branch->description = $request->description;
         $branch->latitude = $request->latitude;
-        $branch->longtitude = $request->longtitude;
+        $branch->longitude = $request->longitude;
 
         // Handle Image Upload
         if ($request->hasFile('logo')) {

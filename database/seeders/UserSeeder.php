@@ -18,9 +18,9 @@ class UserSeeder extends Seeder
         DB::table('users')->insert([
             'role' => 'admin',
             'name' => 'Admin User',
-            'email' => 'admin@example.com',
+            'email' => 'admin@yopmail.com',
             'email_verified_at' => now(),
-            'password' => Hash::make('password'),
+            'password' => Hash::make('12345678'),
             'phone' => '1234567890',
             'storename' => 'Admin Store',
             'location' => '123 Admin Street, Admin City',
@@ -39,9 +39,9 @@ class UserSeeder extends Seeder
             DB::table('users')->insert([
                 'role' => 'user',
                 'name' => 'User ' . $i,
-                'email' => 'user' . $i . '@example.com',
+                'email' => 'user' . $i . '@yopmail.com',
                 'email_verified_at' => now(),
-                'password' => Hash::make('password'),
+                'password' => Hash::make('12345678'),
                 'phone' => '98765432' . str_pad($i, 2, '0', STR_PAD_LEFT),
                 'storename' => 'Store ' . $i,
                 'location' => 'Location ' . $i,
