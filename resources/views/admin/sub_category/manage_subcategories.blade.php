@@ -11,7 +11,6 @@
                     <div class="col-sm-6">
                         <h1>Manage Subcategories</h1>
                     </div>
-                    <!-- Add User Button on the right side -->
                     <!-- Back button on the right -->
                     <div class="col-sm-6 text-right">
                         <a href="{{  route('category.index') }}" class="btn btn-secondary text-light">
@@ -19,7 +18,7 @@
                         </a>
                     </div>
 
-                    {{-- Bootstrap Alert --}}
+                    <!-- {{-- Bootstrap Alert --}} -->
                     @if (session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ session('success') }}
@@ -291,8 +290,6 @@
                         _token: $('input[name="_token"]').val(), // CSRF token
                     },
                     success: function(response) {
-                        // Optionally, display a success message
-                        // alert(response.message);
                         location.reload();
                     },
                     error: function() {
@@ -300,9 +297,6 @@
                     }
                 });
             });
-
-
-
 
         });
     </script>

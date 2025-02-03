@@ -16,7 +16,7 @@
                         <a href="{{ route('bonusHistory') }}" class="btn btn-success">Bonus History</a>
                     </div>
 
-                    {{-- Bootstrap Alert --}}
+                    <!-- {{-- Bootstrap Alert --}} -->
                     @if (session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ session('success') }}
@@ -32,8 +32,6 @@
                     @endif
 
                 </div>
-
-                {{-- <form class="form-horizontal"> --}}
                 <form action="{{ route('bonus.store') }}" method="POST" enctype="multipart/form-data"
                     class="form-horizontal mt-4">
                     @csrf
@@ -75,7 +73,6 @@
                     <!-- /.card-body -->
 
                     <div class="card-footer">
-                        {{-- <button type="buton" id="saveBonusBtn" class="btn btn-primary float-right">Save</button> --}}
                         <button type="submit" id="saveBonusBtn" class="btn btn-primary float-right">Save</button>
                     </div>
                     <!-- /.card-footer -->
@@ -221,46 +218,6 @@
                 }
             });
 
-            // Add Bonus
-            // $('#saveBonusBtn').on('click', function() {
-            //     event.preventDefault();
-            //     // Collect form data
-            //     let formData = {
-            //         type: $('#bonusType').val(),
-            //         amount: $('#bonusAmount').val(),
-            //         _token: $('input[name="_token"]').val(),
-            //     };
-
-            //     // Perform AJAX Request
-            //     $.ajax({
-            //         url: "{{ route('bonus.store') }}", // Route to store method
-            //         type: "POST",
-            //         data: formData,
-            //         success: function(response) {
-
-
-            //             // Display success message
-            //             // alert(response.message);
-
-            //             // Optionally, reload or dynamically update the user list
-            //             location.reload();
-            //         },
-            //         error: function(xhr) {
-            //             // Handle validation errors
-            //             let errors = xhr.responseJSON.errors;
-            //             if (errors) {
-            //                 // if (errors.type) alert("Error: " + errors.type);
-            //                 // if (errors.amount) alert("Error: " + errors.amount);
-            //                 console.log(
-            //                     "error occured in name or email or password. remove above comment and know what is wrong."
-            //                 );
-            //             } else {
-            //                 alert("An error occurred. Please try again.");
-            //             }
-            //         }
-            //     });
-            // });
-
 
             // On Edit Icon Click Modal Open
             $('.editBonusBtn').on('click', function() {
@@ -310,10 +267,6 @@
                         // Close the modal
                         $('#editBonusModal').modal('hide');
 
-                        // Optionally display a success message
-                        // alert('Bonus updated successfully!');
-
-                        // Optionally, reload the page or dynamically update the bonus list
                         location.reload();
                     },
                     error: function(xhr) {
@@ -322,30 +275,6 @@
                     }
                 });
             });
-
-            // Toggle Status
-            // $(document).on('click', '[id^="toggleStatusBtn"]', function() {
-            //     var bonusId = $(this).data('id');
-            //     console.log(bonusId)
-
-            //     $.ajax({
-            //         url: '/bonus/' + bonusId +
-            //             '/toggle-status', // Use the route for toggling status
-            //         method: 'POST',
-            //         data: {
-            //             _token: $('input[name="_token"]').val(), // CSRF token
-            //         },
-            //         success: function(response) {
-            //             // Optionally, display a success message
-            //             // alert(response.message);
-            //             location.reload();
-            //         },
-            //         error: function() {
-            //             alert('An error occurred while toggling user status.');
-            //         }
-            //     });
-            // });
-            // Toggle Status
 
             // Toggle Status
             $(document).on('click', '[id^="toggleStatusBtn"]', function() {
@@ -381,12 +310,6 @@
                     }
                 });
             });
-
-
-
-
-
-
 
 
 

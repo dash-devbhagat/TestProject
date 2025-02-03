@@ -13,7 +13,7 @@ class ChargeController extends Controller
     public function index()
     {
         $charges = Charge::all();
-        // return $charges;
+      
         return view('admin.charge.manage_charges', compact('charges'));
     }
 
@@ -80,7 +80,6 @@ class ChargeController extends Controller
 
         $charge->save();
 
-        // return redirect()->route('charge.index')->with('success', 'Charge Updated Successfully.');
         session()->flash('success', 'Charge Updated Successfully.');
 
         return response()->json(['success' => true, 'charge' => $charge]);

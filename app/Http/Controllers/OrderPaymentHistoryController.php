@@ -11,7 +11,7 @@ class OrderPaymentHistoryController extends Controller
         $transactions = Transaction::with(['user', 'order'])
         ->orderBy('created_at', 'desc')
         ->get();
-        // return $transactions;
+  
         return view('admin.order_payment_history.order_payment_history',compact('transactions'));
     }
 }

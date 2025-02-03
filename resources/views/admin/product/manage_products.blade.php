@@ -11,11 +11,6 @@
                     <div class="col-sm-6">
                         <h1>Manage Products</h1>
                     </div>
-                    <!-- Add User Button on the right side -->
-                    <div class="col-sm-6 text-right">
-                         <!-- <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addUserModal">Add
-                            User</button>  -->
-                    </div>
 
                     <!-- {{-- Bootstrap Alert --}} -->
                     @if (session('success'))
@@ -100,7 +95,6 @@
                         <div id="extra-fields-container"></div>
                     </div>
                     <div class="card-footer d-flex">
-                        {{-- <button type="button" id="saveProductBtn" class="btn btn-primary">Save</button> --}}
                         <button type="submit" id="saveProductBtn" class="btn btn-primary">Save</button>
                     </div>
                 </form>
@@ -136,13 +130,11 @@
                             @endphp
                             @foreach ($products as $product)
                                 <tr>
-                                    {{-- <td>{{ $i }}</td> --}}
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $product->name }}</td>
                                     <td>{{ $product->category->name ?? 'N/A' }}</td>
                                     <td>{{ $product->subCategory->name ?? 'N/A' }}</td>
                                     <td>{{ $product->details ?? 'No Details Available' }}</td>
-                                    {{-- <td>{{ $product->image ?? 'N/A' }}</td> --}}
                                     <td class="text-center">
                                         @if ($product->image)
                                             <img src="{{ asset('storage/' . $product->image) }}" alt="Category Image"
@@ -243,61 +235,7 @@
                 $(this).closest('.form-group').remove();
             });
 
-
-            // Add Product
-            // $('#saveProductBtn').click(function() {
-            //     let formData = {
-            //         category_id: $('#category_id').val(),
-            //         sub_category_id: $('#sub_category_id').val() ? $('#sub_category_id').val() : null,
-            //         product_name: $('#product_name').val(),
-            //         product_details: $('#product_details').val(),
-            //         _token: $('input[name="_token"]').val(),
-            //         product_image: $('#product_image')[0].files[0], // File input
-            //         productvarient: [] // Array for variants
-            //     };
-
-            //     // Add dynamically created unit and price fields to productvarient
-            //     $('#extra-fields-container .form-group').each(function() {
-            //         const unit = $(this).find('input[name="unit[]"]').val();
-            //         const price = $(this).find('input[name="price[]"]').val();
-            //         if (unit && price) {
-            //             formData.productvarient.push({
-            //                 unit: unit,
-            //                 price: price
-            //             });
-            //         }
-            //     });
-
-            //     let ajaxData = new FormData();
-            //     ajaxData.append('category_id', formData.category_id);
-            //     ajaxData.append('sub_category_id', formData.sub_category_id);
-            //     ajaxData.append('product_name', formData.product_name);
-            //     ajaxData.append('product_details', formData.product_details);
-            //     ajaxData.append('_token', formData._token);
-            //     ajaxData.append('product_image', formData.product_image);
-
-            //     // Append each variant
-            //     formData.productvarient.forEach((variant, index) => {
-            //         ajaxData.append(`productvarient[${index}][unit]`, variant.unit);
-            //         ajaxData.append(`productvarient[${index}][price]`, variant.price);
-            //     });
-
-            //     $.ajax({
-            //         url: '{{ route('product.store') }}', // Replace with the correct route
-            //         type: 'POST',
-            //         data: ajaxData,
-            //         processData: false,
-            //         contentType: false,
-            //         success: function(response) {
-            //             // alert('Product created successfully!');
-            //             location.reload();
-            //         },
-            //         error: function(error) {
-            //             console.error(error);
-            //             // alert('Error creating the product.');
-            //         }
-            //     });
-            // });
+           
 
             // Toggle Status
             $(document).on('click', '[id^="toggleStatusBtn"]', function() {

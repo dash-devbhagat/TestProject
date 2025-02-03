@@ -124,7 +124,6 @@
                                                     {{ $bonusType }} Bonus
                                                 @endif
                                             </td>
-                                            {{-- <td>${{ number_format($totalAmount, 2) }}</td> --}}
                                             <td>
                                                 @php
                                                     $payment = $user->payments->firstWhere('bonus_id', $bonusId);

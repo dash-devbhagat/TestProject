@@ -1,4 +1,3 @@
-<!-- resources/views/home.blade.php -->
 @extends('layouts.master')
 
 @section('title', 'Bonus Payment History')
@@ -21,9 +20,6 @@
 
             <!-- Default box -->
             <div class="card">
-                <div class="card-header">
-                   Other Bonuses
-                </div>
                 <div class="card-body">
                     <table id="usersTable" class="table table-bordered table-hover">
                         <thead>
@@ -31,7 +27,6 @@
                                 <th>Sr</th>
                                 <th>User</th>
                                 <th>Bonus</th>
-                                <!-- <th>Amount</th> -->
                                 <th>Payment Status</th>
                                 <th>Referred By</th>
                                 <th>Referred To</th>
@@ -47,7 +42,6 @@
                                 <td>{{ $i }}</td>
                                 <td>{{ $payment->user->name }}</td>
                                 <td>{{ $payment->bonus->type }}</td>
-                                <!-- <td>₹{{ $payment->amount }}</td> -->
                                 <td class="{{ $payment->payment_status === 'completed' ? 'text-success' : ($payment->payment_status === 'pending' ? 'text-danger' : '') }}">
                                     {{ ucfirst($payment->payment_status) }}
                                 </td>                                

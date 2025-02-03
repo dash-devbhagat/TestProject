@@ -16,16 +16,14 @@ class MobileUserController extends Controller
     public function index()
     {
         $mobileUsers = MobileUser::all();
-        // return $mobileUsers;
 
         return view('admin.mobile_user.manage_mobileUser', compact('mobileUsers'));
     }
 
     public function show(string $id)
     {
-        // $user = MobileUser::where('id',$id)->first();
         $user = MobileUser::with('payments.bonus')->find($id);
-        // return $user;
+       
         return view('admin.mobile_user.view_mobileUser', compact('user'));
     }
 

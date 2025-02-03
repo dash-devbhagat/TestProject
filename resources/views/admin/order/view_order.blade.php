@@ -96,10 +96,6 @@
                                         <td colspan="7" class="text-end">Total Charges</td>
                                         <td class="text-end">₹{{ number_format($order->charges_total, 2) }}</td>
                                     </tr>
-                                    <!-- <tr>
-                                            <td colspan="7" class="text-end">Discount (Code: NEWYEAR)</td>
-                                            <td class="text-danger text-end">-₹10.00</td>
-                                    </tr>  -->
                                     <tr class="fw-bold">
                                         <td colspan="7" class="text-end">Grand Total</td>
                                         <td class="text-end">₹{{ number_format($order->grand_total, 2) }}</td>

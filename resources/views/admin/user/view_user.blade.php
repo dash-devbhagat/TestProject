@@ -94,9 +94,7 @@
                 <!-- /.card-body -->
 
                 <div class="card-footer">
-                    {{-- <a href="{{ url()->previous() }}" class="btn btn-secondary text-light">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </a> --}}
+                   
                 </div>
             </div>
             <!-- /.card -->

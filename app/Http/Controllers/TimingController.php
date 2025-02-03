@@ -87,7 +87,6 @@ class TimingController extends Controller
             'day' => 'required|string',
             'opening_time' => 'required|date_format:H:i',
             'closing_time' => 'required|date_format:H:i',
-            // 'closing_time' => 'required|date_format:H:i|after:opening_time',
         ]);
 
         // Find the timing entry by ID

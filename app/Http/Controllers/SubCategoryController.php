@@ -87,7 +87,6 @@ class SubCategoryController extends Controller
 
         $subcategory->save();
 
-        // return redirect()->route('sub-category.index')->with('success', 'SubCategory Updated Successfully.');
         session()->flash('success', 'SubCategory Updated Successfully.');
 
         return response()->json(['success' => true, 'category' => $subcategory]);
@@ -125,7 +124,6 @@ class SubCategoryController extends Controller
     }
 
     public function fetchSubCategory($id){
-        // return SubCategory::where('category_id', $id)->get();
         $subCategories = SubCategory::where('category_id', $id)->where('is_active', 1)->get();
         return $subCategories;
     }

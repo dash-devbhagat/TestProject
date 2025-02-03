@@ -13,7 +13,6 @@ class StateController extends Controller
     public function index()
     {
         $states = State::all();
-        // return $states;
 
         return view('admin.state.manage_states', compact('states'));
     }

@@ -52,9 +52,6 @@ class AuthController extends Controller
             return redirect()->route('complete-profile');
         }
 
-        // return back()->withErrors([
-        //     'email' => 'The provided credentials do not match our records.',
-        // ]);
         return redirect()->route('login.page')->with('error', 'The provided credentials do not match our records.');
     }
 

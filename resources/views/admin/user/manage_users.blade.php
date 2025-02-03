@@ -13,9 +13,6 @@
                     </div>
                     <!-- Add User Button on the right side -->
                     <div class="col-sm-6 text-right">
-                        {{-- <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                            Add User
-                        </button> --}}
                         <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addUserModal">Add
                             Staff</button>
                     </div>
@@ -23,7 +20,7 @@
             </div><!-- /.container-fluid -->
         </section>
 
-        {{-- Bootstrap Alert --}}
+        <!-- {{-- Bootstrap Alert --}} -->
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
@@ -40,12 +37,7 @@
 
         <!-- Main content -->
         <section class="content">
-
             <div class="card">
-                {{-- <div class="card-header">
-                    <h3 class="card-title">DataTable with minimal features & hover style</h3>
-                </div> --}}
-                <!-- /.card-header -->
                 <div class="card-body">
                     <table id="usersTable" class="table table-bordered table-hover">
                         <thead>
@@ -123,7 +115,7 @@
     </div>
 
 
-    {{-- Add User modal --}}
+    <!-- {{-- Add User modal --}} -->
     <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -228,10 +220,6 @@
                         // Close the modal
                         $('#addUserModal').modal('hide');
 
-                        // Display success message
-                        // alert(response.message);
-
-                        // Optionally, reload or dynamically update the user list
                         location.reload();
                     },
                     error: function(xhr) {
@@ -296,10 +284,6 @@
                         // Close the modal
                         $('#editUserModal').modal('hide');
 
-                        // Display success message
-                        // alert('User updated successfully!');
-
-                        // Optionally, reload or update the user list
                         location.reload();
                     },
                     error: function(xhr) {
@@ -321,8 +305,6 @@
                         _token: $('input[name="_token"]').val(), // CSRF token
                     },
                     success: function(response) {
-                        // Optionally, display a success message
-                        // alert(response.message);
                         location.reload();
                     },
                     error: function() {
@@ -330,8 +312,6 @@
                     }
                 });
             });
-
-
 
 
 

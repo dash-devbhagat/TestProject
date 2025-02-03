@@ -15,7 +15,6 @@ class BonusController extends Controller
     public function index()
     {
         $bonuses = Bonus::where('is_active', true)->get();
-        // return $bonus;
 
         return view('admin.bonus.manage_bonus', compact('bonuses'));
     }
@@ -67,32 +66,6 @@ class BonusController extends Controller
                 ]);
             }
         }
-
-        // // Fetch all active users (ensure they are not deactivated)
-        // $activeUsers = MobileUser::where('is_active', true)->get();
-
-        // // Fetch all active bonuses except signup and referral
-        // $activeBonuses = Bonus::whereNotIn('type', ['signup', 'referral'])
-        //                       ->where('is_active', true)
-        //                       ->get();
-
-        // // Apply bonuses to all active users
-        // foreach ($activeUsers as $user) {
-        //     foreach ($activeBonuses as $bonus) {
-        //         // Update or create a payment record for each user
-        //         Payment::updateOrCreate(
-        //             [
-        //                 'user_id' => $user->id,
-        //                 'bonus_id' => $bonus->id,
-        //             ],
-        //             [
-        //                 'amount' => $bonus->amount,          
-        //                 'remaining_amount' => $bonus->amount,  
-        //                 'payment_status' => 'completed',      
-        //             ]
-        //         );
-        //     }
-        // }
 
         return redirect()->route('bonus.index')->with('success', 'Bonus Created Successfully.');
     }
@@ -151,21 +124,6 @@ class BonusController extends Controller
 
         return redirect()->route('bonus.index')->with('success', 'Bonus Deleted Successfully.');
     }
-
-    // public function toggleStatus($id)
-    // {
-    //     // dd($id);
-    //     $bonus = Bonus::findOrFail($id);
-
-    //     $bonus->is_active = !$bonus->is_active;
-    //     $bonus->save();
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'status' => $bonus->is_active ? 'activated' : 'deactivated',
-    //         'message' => $bonus->is_active ? 'Bonus activated successfully.' : 'Bonus deactivated successfully.'
-    //     ]);
-    // }
 
     public function toggleStatus($id)
     {
