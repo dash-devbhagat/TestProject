@@ -148,6 +148,29 @@ class MobileUserController extends Controller
         ]);
 
         $user->load('address');
+        
+
+        // **Assign missing bonuses**
+        $activeBonuses = Bonus::whereNotIn('type', ['signup', 'referral'])
+            ->where('is_active', true)
+            ->get();
+
+        foreach ($activeBonuses as $bonus) {
+            // Check if user already has this bonus
+            $existingPayment = Payment::where('user_id', $user->id)
+                ->where('bonus_id', $bonus->id)
+                ->exists();
+
+            if (!$existingPayment) {
+                Payment::create([
+                    'user_id' => $user->id,
+                    'bonus_id' => $bonus->id,
+                    'amount' => $bonus->amount,
+                    'remaining_amount' => $bonus->amount,
+                    'payment_status' => 'completed',
+                ]);
+            }
+        }
 
         // // Fetch all active bonuses except signup and referral
         //         $activeBonuses = Bonus::whereNotIn('type', ['signup', 'referral'])
@@ -175,39 +198,39 @@ class MobileUserController extends Controller
             $user->save();
 
             return response()->json([
-            'data' => [
-        'user' => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'phone' => $user->phone,
-            'gender' => $user->gender,
-            'profilePicture' => $user->profilepic,
-            'birthDate' => $user->birthdate,
-            'is_profile_complete' => $user->is_profile_complete,
-            'referralCode' => $user->referral_code,
-            'address' => $user->address ? [
-                'addressLine' => $user->address->address_line ?? 'null',
-                'city' => $user->address->city ? $user->address->city->name : 'null',
-                'city_id' => $user->address->city ? $user->address->city->id : 'null',
-                'state' => $user->address->state ? $user->address->state->name : 'null',
-                'state_id' => $user->address->state ? $user->address->state->id : 'null',
-                'zipCode' => $user->address->zip_code ?? 'null',
-                'latitude' => $user->address->latitude ?? 'null',
-                'longitude' => $user->address->longitude ?? 'null',
-            ] : [
-                'addressLine' => 'null',
-                'city' => 'null',
-                'city_id' => 'null',
-                'state' => 'null',
-                'state_id' => 'null',
-                'zipCode' => 'null',
-                'latitude' => 'null',
-                'longitude' => 'null',
-            ],
+                'data' => [
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'phone' => $user->phone,
+                        'gender' => $user->gender,
+                        'profilePicture' => $user->profilepic,
+                        'birthDate' => $user->birthdate,
+                        'is_profile_complete' => $user->is_profile_complete,
+                        'referralCode' => $user->referral_code,
+                        'address' => $user->address ? [
+                            'addressLine' => $user->address->address_line ?? 'null',
+                            'city' => $user->address->city ? $user->address->city->name : 'null',
+                            'city_id' => $user->address->city ? $user->address->city->id : 'null',
+                            'state' => $user->address->state ? $user->address->state->name : 'null',
+                            'state_id' => $user->address->state ? $user->address->state->id : 'null',
+                            'zipCode' => $user->address->zip_code ?? 'null',
+                            'latitude' => $user->address->latitude ?? 'null',
+                            'longitude' => $user->address->longitude ?? 'null',
+                        ] : [
+                            'addressLine' => 'null',
+                            'city' => 'null',
+                            'city_id' => 'null',
+                            'state' => 'null',
+                            'state_id' => 'null',
+                            'zipCode' => 'null',
+                            'latitude' => 'null',
+                            'longitude' => 'null',
+                        ],
 
 
-        ],
+                    ],
                 ],
                 'meta' => [
                     'access_token' => $authToken,
@@ -222,7 +245,7 @@ class MobileUserController extends Controller
             $user->save();
 
 
-             
+
 
 
 
@@ -230,51 +253,51 @@ class MobileUserController extends Controller
 
 
             // Return response with token and message
-           return response()->json([
-        'data' => [
+            return response()->json([
+                'data' => [
 
-        'user' => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'phone' => $user->phone,
-            'gender' => $user->gender,
-            'profilePicture' => $user->profilepic,
-            'birthDate' => $user->birthdate,
-            'is_profile_complete' => $user->is_profile_complete,
-            'referralCode' => $user->referral_code,
-        'address' => $user->address ? [
-            'addressLine' => $user->address->address_line ?? 'null',
-            'city' => $user->address->city ? $user->address->city->name : 'null',
-            'city_id' => $user->address->city ? $user->address->city->id : 'null',
-            'state' => $user->address->state ? $user->address->state->name : 'null',
-            'state_id' => $user->address->state ? $user->address->state->id : 'null',
-            'zipCode' => $user->address->zip_code ?? 'null',
-            'latitude' => $user->address->latitude ?? 'null',
-            'longitude' => $user->address->longitude ?? 'null',
-        ] : [
-            'addressLine' => 'null',
-            'city' => 'null',
-            'city_id' => 'null',
-            'state' => 'null',
-            'state_id' => 'null',
-            'zipCode' => 'null',
-            'latitude' => 'null',
-            'longitude' => 'null',
-        ],
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'phone' => $user->phone,
+                        'gender' => $user->gender,
+                        'profilePicture' => $user->profilepic,
+                        'birthDate' => $user->birthdate,
+                        'is_profile_complete' => $user->is_profile_complete,
+                        'referralCode' => $user->referral_code,
+                        'address' => $user->address ? [
+                            'addressLine' => $user->address->address_line ?? 'null',
+                            'city' => $user->address->city ? $user->address->city->name : 'null',
+                            'city_id' => $user->address->city ? $user->address->city->id : 'null',
+                            'state' => $user->address->state ? $user->address->state->name : 'null',
+                            'state_id' => $user->address->state ? $user->address->state->id : 'null',
+                            'zipCode' => $user->address->zip_code ?? 'null',
+                            'latitude' => $user->address->latitude ?? 'null',
+                            'longitude' => $user->address->longitude ?? 'null',
+                        ] : [
+                            'addressLine' => 'null',
+                            'city' => 'null',
+                            'city_id' => 'null',
+                            'state' => 'null',
+                            'state_id' => 'null',
+                            'zipCode' => 'null',
+                            'latitude' => 'null',
+                            'longitude' => 'null',
+                        ],
 
-                ],
+                    ],
                 ],
                 'meta' => [
-                'accessToken' => $authToken,
-                'tokenType' => 'Bearer',
-                'status' => 200,
-                'success' => true,
-                'message' => 'Logged in successfully.',
+                    'accessToken' => $authToken,
+                    'tokenType' => 'Bearer',
+                    'status' => 200,
+                    'success' => true,
+                    'message' => 'Logged in successfully.',
                 ],
-                ], 200);
-                // 200 OK status
-                }
+            ], 200);
+            // 200 OK status
+        }
     }
 
 
@@ -449,56 +472,56 @@ class MobileUserController extends Controller
         );
     }
 
-public function forgotPassword(Request $request)
-{
-    // Validate email
-    $validator = Validator::make($request->all(), [
-        'email' => 'required|email|exists:mobile_users,email',
-    ]);
+    public function forgotPassword(Request $request)
+    {
+        // Validate email
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:mobile_users,email',
+        ]);
 
-    if ($validator->fails()) {
+        if ($validator->fails()) {
+            return response()->json([
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => $validator->errors()->first(),
+                ],
+            ], 200);
+        }
+
+        $user = MobileUser::where('email', $request->email)->first();
+
+        // Generate OTP and expiry time
+        $otp = rand(100000, 999999); // 6-digit OTP
+        $otpExpiry = Carbon::now()->addMinutes(2); // OTP valid for 2 minutes
+
+        // Update OTP and OTP expiry time
+        $user->otp = (string) $otp;  // Ensure OTP is stored as a string
+        $user->otp_expires_at = $otpExpiry;
+
+        // Save the changes
+        $user->save();
+
+        // Log the OTP for debugging (remove in production)
+        \Log::info("Generated OTP for {$user->email}: {$otp}");
+
+        // Send OTP email
+        // Send the email using the new view path
+        Mail::send('emails.API.password-reset', ['user' => $user, 'otp' => $otp], function ($message) use ($user) {
+            $message->to($user->email)
+                ->subject('Password Reset Request');
+        });
+
         return response()->json([
             'data' => json_decode('{}'),
             'meta' => [
-                'success' => false,
-                'message' => $validator->errors()->first(),
+                'success' => true,
+                'message' => 'An OTP has been sent to your email.',
             ],
         ], 200);
     }
 
-    $user = MobileUser::where('email', $request->email)->first();
-
-    // Generate OTP and expiry time
-    $otp = rand(100000, 999999); // 6-digit OTP
-    $otpExpiry = Carbon::now()->addMinutes(2); // OTP valid for 2 minutes
-
-    // Update OTP and OTP expiry time
-    $user->otp = (string) $otp;  // Ensure OTP is stored as a string
-    $user->otp_expires_at = $otpExpiry;
-
-    // Save the changes
-    $user->save();
-
-    // Log the OTP for debugging (remove in production)
-    \Log::info("Generated OTP for {$user->email}: {$otp}");
-
-    // Send OTP email
-   // Send the email using the new view path
-    Mail::send('emails.API.password-reset', ['user' => $user, 'otp' => $otp], function ($message) use ($user) {
-        $message->to($user->email)
-            ->subject('Password Reset Request');
-    });
-
-    return response()->json([
-        'data' => json_decode('{}'),
-        'meta' => [
-            'success' => true,
-            'message' => 'An OTP has been sent to your email.',
-        ],
-    ], 200);
-}
-
- public function resetPassword(Request $request)
+    public function resetPassword(Request $request)
     {
         // Validate OTP and new password
         $validator = Validator::make($request->all(), [
@@ -544,7 +567,7 @@ public function forgotPassword(Request $request)
             'otp_expires_at' => null,
         ]);
 
-            // Send success email notification
+        // Send success email notification
         Mail::send('emails.API.password-reset-success', ['user' => $user], function ($message) use ($user) {
             $message->to($user->email)
                 ->subject('Password Reset Successfully');

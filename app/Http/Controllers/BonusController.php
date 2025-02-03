@@ -14,7 +14,7 @@ class BonusController extends Controller
      */
     public function index()
     {
-        $bonuses = Bonus::where('is_active',true)->get();
+        $bonuses = Bonus::where('is_active', true)->get();
         // return $bonus;
 
         return view('admin.bonus.manage_bonus', compact('bonuses'));
@@ -23,79 +23,79 @@ class BonusController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    // public function create()
-    // {
-
-    // }
+    public function create()
+    {
+        //
+    }
 
     /**
      * Store a newly created resource in storage.
      */
-    // public function store(Request $request)
-    // {
-    //     // dd($request->all());
-    
-    //     $request->validate([
-    //         'type' => 'required|string|max:255',
-    //         'amount' => 'required|numeric|min:0',
-    //         'percentage' => 'required|numeric|min:0|max:100',
-    //     ]);
-    
-    //     // Save bonus to database
-    //     Bonus::create([
-    //         'type' => $request->type,
-    //         'amount' => $request->amount,
-    //         'percentage' => $request->percentage,
-    //     ]);
-    
-    //     return redirect()->route('bonus.index')->with('success', 'Bonus Created Successfully.');
 
-    // }
-    
     public function store(Request $request)
-{
-    // Validate incoming data
-    $request->validate([
-        'type' => 'required|string|max:255',
-        'amount' => 'required|numeric|min:0',
-        'percentage' => 'required|numeric|min:0|max:100',
-    ]);
-    
-    // Save bonus to database
-    $bonus = Bonus::create([
-        'type' => $request->type,
-        'amount' => $request->amount,
-        'percentage' => $request->percentage,
-    ]);
-    
-    // Fetch all active users (ensure they are not deactivated)
-    $activeUsers = MobileUser::where('is_active', true)->get();
-    
-    // Fetch all active bonuses except signup and referral
-    $activeBonuses = Bonus::whereNotIn('type', ['signup', 'referral'])
-                          ->where('is_active', true)
-                          ->get();
-    
-    // Apply bonuses to all active users
-    foreach ($activeUsers as $user) {
-        foreach ($activeBonuses as $bonus) {
-            // Update or create a payment record for each user
-            Payment::updateOrCreate(
-                [
+    {
+        // Validate incoming data
+        $request->validate([
+            'type' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'percentage' => 'required|numeric|min:0|max:100',
+        ]);
+
+        // Save bonus to database
+        $bonus = Bonus::create([
+            'type' => $request->type,
+            'amount' => $request->amount,
+            'percentage' => $request->percentage,
+        ]);
+
+        // Fetch all active users
+        $activeUsers = MobileUser::where('is_active', true)->get();
+
+        foreach ($activeUsers as $user) {
+            // Check if the user has already received this bonus
+            $existingPayment = Payment::where('user_id', $user->id)
+                ->where('bonus_id', $bonus->id)
+                ->exists();
+
+            if (!$existingPayment) {
+                Payment::create([
                     'user_id' => $user->id,
                     'bonus_id' => $bonus->id,
-                ],
-                [
-                    'amount' => $bonus->amount,          
-                    'remaining_amount' => $bonus->amount,  
-                    'payment_status' => 'completed',      
-                ]
-            );
+                    'amount' => $bonus->amount,
+                    'remaining_amount' => $bonus->amount,
+                    'payment_status' => 'completed',
+                ]);
+            }
         }
-    }
 
-    return redirect()->route('bonus.index')->with('success', 'Bonus Created Successfully.');
-}
+        // // Fetch all active users (ensure they are not deactivated)
+        // $activeUsers = MobileUser::where('is_active', true)->get();
+
+        // // Fetch all active bonuses except signup and referral
+        // $activeBonuses = Bonus::whereNotIn('type', ['signup', 'referral'])
+        //                       ->where('is_active', true)
+        //                       ->get();
+
+        // // Apply bonuses to all active users
+        // foreach ($activeUsers as $user) {
+        //     foreach ($activeBonuses as $bonus) {
+        //         // Update or create a payment record for each user
+        //         Payment::updateOrCreate(
+        //             [
+        //                 'user_id' => $user->id,
+        //                 'bonus_id' => $bonus->id,
+        //             ],
+        //             [
+        //                 'amount' => $bonus->amount,          
+        //                 'remaining_amount' => $bonus->amount,  
+        //                 'payment_status' => 'completed',      
+        //             ]
+        //         );
+        //     }
+        // }
+
+        return redirect()->route('bonus.index')->with('success', 'Bonus Created Successfully.');
+    }
 
 
     /**
@@ -120,12 +120,12 @@ class BonusController extends Controller
      */
     public function update(Request $request, string $id)
     {
-         // Validate the request
+        // Validate the request
         $validatedData = $request->validate([
-        'type' => 'required|string|max:255',
-        'amount' => 'required|numeric|min:0',
-        'percentage' => 'required|numeric|min:0|max:100',
-         ]);
+            'type' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'percentage' => 'required|numeric|min:0|max:100',
+        ]);
 
         $bonus = Bonus::findOrFail($id);
 
@@ -148,7 +148,7 @@ class BonusController extends Controller
         $bonus = Bonus::findOrFail($id);
 
         $bonus->delete();
-    
+
         return redirect()->route('bonus.index')->with('success', 'Bonus Deleted Successfully.');
     }
 
@@ -156,7 +156,7 @@ class BonusController extends Controller
     // {
     //     // dd($id);
     //     $bonus = Bonus::findOrFail($id);
-        
+
     //     $bonus->is_active = !$bonus->is_active;
     //     $bonus->save();
 
@@ -180,12 +180,12 @@ class BonusController extends Controller
         if (!$bonus->is_active && $previousStatus == true) {
             // Fetch all payments with the bonus applied and remove the bonus from them
             $payments = Payment::where('bonus_id', $bonus->id)
-                            ->where('remaining_amount', '>', 0) 
-                            ->get();
-            
+                ->where('remaining_amount', '>', 0)
+                ->get();
+
             foreach ($payments as $payment) {
                 $payment->remaining_amount = 0;
-                $payment->amount = 0; 
+                $payment->amount = 0;
                 $payment->save();
             }
         }
@@ -198,9 +198,10 @@ class BonusController extends Controller
     }
 
 
-    public function bonusHistory(){
+    public function bonusHistory()
+    {
 
-        $bonuses = Bonus::where('is_active',false)->orderBy('created_at', 'desc')->get();
+        $bonuses = Bonus::where('is_active', false)->orderBy('created_at', 'desc')->get();
 
         return view('admin.bonus.bonus_history', compact('bonuses'));
     }
