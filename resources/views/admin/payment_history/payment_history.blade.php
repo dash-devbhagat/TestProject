@@ -21,9 +21,9 @@
 
             <!-- Default box -->
             <div class="card">
-                <div class="card-header">
+                <!-- <div class="card-header">
                    Other Bonuses
-                </div>
+                </div> -->
                 <div class="card-body">
                     <table id="usersTable" class="table table-bordered table-hover">
                         <thead>
