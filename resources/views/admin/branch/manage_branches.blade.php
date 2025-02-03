@@ -63,8 +63,8 @@
                     </div>
 
                     <div class="col-sm-6 mt-2">
-                        <label for="longitude">Longtitude</label>
-                        <input type="text" class="form-control @error('longitude') is-invalid @enderror" name="longitude" id="longitude" placeholder="Enter Longtitude" value="{{ old('longitude') }}">
+                        <label for="longitude">Longitude</label>
+                        <input type="text" class="form-control @error('longitude') is-invalid @enderror" name="longitude" id="longitude" placeholder="Enter Longitude" value="{{ old('longitude') }}">
                         @error('longitude')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -196,8 +196,8 @@
                             required>
                     </div>
                     <div class="form-group">
-                        <label for="editBranchLongtitude">Longtitude</label>
-                        <input type="text" class="form-control" id="editBranchLongtitude" name="longitude"
+                        <label for="editBranchLongitude">Longitude</label>
+                        <input type="text" class="form-control" id="editBranchLongitude" name="longitude"
                             required>
                     </div>
                     <div class="form-group">
@@ -233,7 +233,7 @@
                     $('#editBranchAddress').val(branch.address);
                     $('#editBranchDescription').val(branch.description);
                     $('#editBranchLatitude').val(branch.latitude);
-                    $('#editBranchLongtitude').val(branch.longitude);
+                    $('#editBranchLongitude').val(branch.longitude);
                     $('#editBranchModal').modal('show');
                 },
                 error: function() {

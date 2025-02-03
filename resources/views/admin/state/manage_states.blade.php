@@ -11,13 +11,8 @@
                     <div class="col-sm-6">
                         <h1>Manage States</h1>
                     </div>
-                    <!-- Add User Button on the right side -->
-                    {{-- <div class="col-sm-6 text-right">
-                        <a href="{{ route('sub-category.index') }}" class="btn btn-success">Add Sub
-                            Categories</a>
-                    </div> --}}
 
-                    {{-- Bootstrap Alert --}}
+                    <!-- {{-- Bootstrap Alert --}} -->
                     @if (session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ session('success') }}
@@ -119,6 +114,9 @@
                                         </form>
                                     </td>
                                 </tr>
+                                @php
+                                    $i++;
+                                @endphp
                             @endforeach
 
 
@@ -160,10 +158,6 @@
                         </div>
                     </form>
                 </div>
-                {{-- <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" id="updateStateBtn" class="btn btn-primary">Save changes</button>
-                </div> --}}
             </div>
         </div>
     </div>
@@ -240,8 +234,6 @@
                         _token: $('input[name="_token"]').val(), // CSRF token
                     },
                     success: function(response) {
-                        // Optionally, display a success message
-                        // alert(response.message);
                         location.reload();
                     },
                     error: function() {
@@ -249,9 +241,6 @@
                     }
                 });
             });
-
-
-
 
         });
     </script>

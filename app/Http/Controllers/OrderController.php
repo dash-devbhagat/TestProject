@@ -40,7 +40,7 @@ class OrderController extends Controller
     public function show(string $id)
     {
         $order = Order::with(['user', 'address', 'items', 'transactions'])->findOrFail($id);
-        // return $order;
+
         $charges = Charge::where('is_active', 1)->get();
 
         return view('admin.order.view_order', compact('order','charges'));
@@ -77,7 +77,6 @@ class OrderController extends Controller
             return response()->json(['success' => false, 'message' => 'Order not found'], 404);
         }
         $order->status = $request->status;
-        // dd($order->status);
         $order->save();
 
         $additionalMessages = [

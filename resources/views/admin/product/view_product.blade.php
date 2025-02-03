@@ -62,7 +62,7 @@
                                                     <strong>Price:</strong> {{ $variant->price }}
                                                 </div>
                                                 @if (!$loop->last)
-                                                    <hr> <!-- Add horizontal line between variants -->
+                                                    <hr>
                                                 @endif
                                             @empty
                                                 <p>No Variants Available</p>

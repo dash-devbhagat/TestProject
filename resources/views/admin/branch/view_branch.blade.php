@@ -41,32 +41,32 @@
                     <div class="col-md-12">
                         <h3 class="text-primary">Branch Details</h3>
                         <div class="table-responsive">
-                            <table class="table" style="table-layout: fixed; width: 100%;"> <!-- Fixed table layout -->
+                            <table class="table" style="table-layout: fixed; width: 100%;"> 
                                 <tbody>
                                     <tr>
-                                        <th style="width: 20%;">Branch Name</th> <!-- Set width for consistency -->
+                                        <th style="width: 20%;">Branch Name</th> 
                                         <td>{{ $branch->name }}</td>
                                     </tr>
                                     <tr>
-                                        <th style="width: 20%;">Branch Address</th> <!-- Set width for consistency -->
+                                        <th style="width: 20%;">Branch Address</th> 
                                         <td>{{ $branch->address }}</td>
                                     </tr>
                                     <tr>
-                                        <th style="width: 20%;">Description</th> <!-- Set width for consistency -->
-                                        <td style="word-wrap: break-word; max-width: 500px;"> <!-- Prevent overflow -->
+                                        <th style="width: 20%;">Description</th> 
+                                        <td style="word-wrap: break-word; max-width: 500px;">
                                             {{ $branch->description ?? 'No Description Available' }}
                                         </td>
                                     </tr>
                                     <tr>
-                                        <th style="width: 20%;">Latitude</th> <!-- Set width for consistency -->
+                                        <th style="width: 20%;">Latitude</th> 
                                         <td>{{ $branch->latitude }}</td>
                                     </tr>
                                     <tr>
-                                        <th style="width: 20%;">Longitude</th> <!-- Set width for consistency -->
-                                        <td>{{ $branch->longtitude }}</td>
+                                        <th style="width: 20%;">Longitude</th> 
+                                        <td>{{ $branch->longitude }}</td>
                                     </tr>
                                     <tr>
-                                        <th style="width: 20%;">Branch Logo</th> <!-- Set width for consistency -->
+                                        <th style="width: 20%;">Branch Logo</th> 
                                         <td>
                                             @if ($branch->logo)
                                             <img src="{{ asset('storage/' . $branch->logo) }}" width="200" height="200">
@@ -139,45 +139,6 @@
 </div>
 
 <!-- Add Timing Modal -->
-<!-- <div class="modal fade" id="addTimingModal" tabindex="-1" aria-labelledby="addTimingModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Timing</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('timing.store') }}" method="POST">
-                @csrf
-                <input type="hidden" name="branch_id" value="{{ $branch->id }}">
-                <div id="timingFields">
-                    <div class="timing-entry row mb-4">
-                        <div class="col-12 mb-3">
-                            <label>Day</label>
-                            <select name="timings[0][day]" class="form-control day-select">
-                                <option value="">Select Day</option>
-                                @foreach(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as $day)
-                                <option value="{{ $day }}" {{ in_array($day, $existingTimings) ? 'disabled' : '' }}>{{ $day }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-12 mb-3">
-                            <label>Opening Time</label>
-                            <input type="time" class="form-control" name="timings[0][opening_time]" required>
-                        </div>
-                        <div class="col-12 mb-3">
-                            <label>Closing Time</label>
-                            <input type="time" class="form-control" name="timings[0][closing_time]" required>
-                        </div>
-                    </div>
-                </div>
-                <button type="button" class="btn btn-success mt-2" id="addMoreTimings">Add More</button>
-                <div class="modal-footer mt-3">
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div> -->
 <div class="modal fade" id="addTimingModal" tabindex="-1" aria-labelledby="addTimingModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -188,10 +149,10 @@
             <form action="{{ route('timing.store') }}" method="POST">
                 @csrf
                 <input type="hidden" name="branch_id" value="{{ $branch->id }}">
-                <div id="timingFields" class="px-4 py-3"> <!-- Added padding to the content -->
+                <div id="timingFields" class="px-4 py-3"> 
                     <div class="timing-entry row mb-4">
                         <div class="col-12 mb-3">
-                            <label for="day" class="form-label">Day</label> <!-- Added form-label class for proper spacing -->
+                            <label for="day" class="form-label">Day</label> 
                             <select name="timings[0][day]" class="form-control day-select" id="day" required>
                                 <option value="">Select Day</option>
                                 @foreach(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as $day)
@@ -200,11 +161,11 @@
                             </select>
                         </div>
                         <div class="col-12 mb-3">
-                            <label for="opening_time" class="form-label">Opening Time</label> <!-- Added form-label class for proper spacing -->
+                            <label for="opening_time" class="form-label">Opening Time</label> 
                             <input type="time" class="form-control" name="timings[0][opening_time]" id="opening_time" required>
                         </div>
                         <div class="col-12 mb-2">
-                            <label for="closing_time" class="form-label">Closing Time</label> <!-- Added form-label class for proper spacing -->
+                            <label for="closing_time" class="form-label">Closing Time</label>
                             <input type="time" class="form-control" name="timings[0][closing_time]" id="closing_time" required>
                         </div>
                     </div>

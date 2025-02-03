@@ -11,7 +11,6 @@ class BonusPaymentHistoryController extends Controller
         $payments = Payment::with(['user', 'bonus','paymentParent','paymentChild'])
         ->orderBy('created_at', 'desc')
         ->get();
-        // return $payments;
 
         return view('admin.payment_history.payment_history', compact('payments'));
     }

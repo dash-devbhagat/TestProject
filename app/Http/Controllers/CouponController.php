@@ -15,7 +15,7 @@ class CouponController extends Controller
     public function index()
     {
         $coupons = Coupon::orderBy('created_at', 'desc')->get();
-        // return $coupons;
+      
         return view('admin.coupon.manage_coupon', compact('coupons'));
     }
 
@@ -130,7 +130,6 @@ class CouponController extends Controller
 
         $coupon->save();
 
-        // return redirect()->route('category.index')->with('success', 'Category Updated Successfully.');
         session()->flash('success', 'Coupon Updated Successfully.');
 
         return response()->json(['success' => true, 'coupon' => $coupon]);

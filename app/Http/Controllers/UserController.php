@@ -20,7 +20,6 @@ class UserController extends Controller
     {
 
         $users = User::where('role', 'User')->where('isdelete', 0)->orderBy('id', 'desc')->get();
-        // return $users;
 
         return view('admin.user.manage_users', compact('users'));
     }
@@ -28,10 +27,10 @@ class UserController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    // public function create()
-    // {
-    //     return view('admin.view_user');
-    // }
+    public function create()
+    {
+        //
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -44,17 +43,6 @@ class UserController extends Controller
             'email' => 'required|email',
             'password' => 'required|string|min:8',
         ]);
-
-
-        // $user = User::create([
-        //     'name' => $validated['name'],
-        //     'email' => $validated['email'],
-        //     'password' => bcrypt($validated['password']),
-        // ]);
-
-        // Mail::to($user->email)->queue(new WelcomeUserMail($user, $validated['password']));
-
-        // session()->flash('success', 'User Created Successfully.');
 
         // Check if the email exists and is marked as deleted
         $user = User::where('email', $validated['email'])->where('isDelete', 1)->first();
@@ -130,8 +118,6 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        // $user->delete();
-
         // Using Soft Delete
         $user->isdelete = true;
         $user->save();

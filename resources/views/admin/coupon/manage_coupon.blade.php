@@ -276,8 +276,6 @@
                     _token: $('input[name="_token"]').val(), // CSRF token
                 },
                 success: function(response) {
-                    // Optionally, display a success message
-                    // alert(response.message);
                     location.reload();
                 },
                 error: function() {
@@ -285,10 +283,6 @@
                 }
             });
         });
-
-
-
-
 
 
     });

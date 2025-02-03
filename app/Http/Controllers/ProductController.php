@@ -16,7 +16,6 @@ class ProductController extends Controller
      */
     public function index()
     {
-        // $products = Product::with('productVarients')->get();
         $products = Product::with(['productVarients', 'category', 'subCategory'])->get();
         $categories = Category::where('is_active', 1)->get();
        
@@ -26,10 +25,10 @@ class ProductController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    // public function create()
-    // {
-        
-    // }
+    public function create()
+    {
+        //
+    }
 
     /**
      * Store a newly created resource in storage.

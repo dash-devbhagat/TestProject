@@ -11,13 +11,8 @@
                     <div class="col-sm-6">
                         <h1>Manage Charges</h1>
                     </div>
-                    <!-- Add User Button on the right side -->
-                    <div class="col-sm-6 text-right">
-                        {{-- <a href="{{ route('sub-category.index') }}" class="btn btn-success">Add Sub
-                            Categories</a> --}}
-                    </div>
 
-                    {{-- Bootstrap Alert --}}
+                    <!-- {{-- Bootstrap Alert --}} -->
                     @if (session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ session('success') }}
@@ -145,6 +140,9 @@
                                         </form>
                                     </td>
                                 </tr>
+                                @php
+                                    $i++;
+                                @endphp
                             @endforeach
 
 
@@ -224,7 +222,6 @@
                     url: '/charge/' + chargeId + '/edit',
                     type: "GET",
                     success: function(response) {
-                        // console.log(response);
                         const charge = response.charge;
                         $('#editChargeName').val(charge.name);
                         $('#editChargeType').val(charge.type);
@@ -284,9 +281,6 @@
                     }
                 });
             });
-
-
-
 
         });
     </script>
