@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             ChargesSeeder::class,
             BranchesTableSeeder::class,
             TimingsTableSeeder::class,
+            DealSeeder::class,
         ]);
     }
 }
