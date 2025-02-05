@@ -16,123 +16,77 @@ class DealSeeder extends Seeder
      */
     public function run()
     {
-        // Create BOGO Deal for Red T-Shirt
         Deal::create([
-            'title' => 'Buy 1 Red T-Shirt, Get 1 Free',
-            'description' => 'Get a free Red T-Shirt when you buy 1.',
+            'title' => 'Buy One Get One Free - Red T-Shirt',
+            'description' => 'Buy one Red T-Shirt and get one free!',
             'type' => 'BOGO',
+            'image' => null,
             'product_id' => 1, // Red T-Shirt
-            'product_variant_id' => ProductVarient::where('product_id', 1)->where('unit', 'Medium')->first()->id, // Medium variant
+            'product_variant_id' => 2, // Medium size
             'min_quantity' => 1,
             'free_quantity' => 1,
-            'free_product_id' => 1, // Red T-Shirt
-            'free_product_variant_id' => ProductVarient::where('product_id', 1)->where('unit', 'Medium')->first()->id, // Medium variant
+            'free_product_id' => 1, // Free Red T-Shirt
+            'free_product_variant_id' => 2, // Same variant
             'start_date' => now(),
             'end_date' => now()->addDays(30),
-            'is_active' => true,
+            'is_active' => 1
         ]);
 
-        // Create Combo Deal for Black Jacket
         Deal::create([
-            'title' => 'Buy 1 Black Jacket + Red T-Shirt for $80',
-            'description' => 'Purchase both a Black Jacket and a Red T-Shirt for $80.',
+            'title' => 'Laptop + Red T-Shirt',
+            'description' => 'Get a free Red T-Shirt when you buy a Silver Laptop 16GB.',
             'type' => 'Combo',
-            'product_id' => 2, // Black Jacket
-            'product_variant_id' => ProductVarient::where('product_id', 2)->where('unit', 'Medium')->first()->id, // Medium variant
-            'min_quantity' => 1,
-            'quantity' => 1, // Both items in the combo
-            'amount' => 80,
+            'image' => null,
+            'product_id' => 3, // Laptop
+            'product_variant_id' => 7, // 16GB RAM, 512GB SSD
+            'free_product_id' => 1, // Mouse (Assumed ID)
+            'free_product_variant_id' => 1, // Mouse variant
             'start_date' => now(),
             'end_date' => now()->addDays(30),
-            'is_active' => true,
+            'is_active' => 1
         ]);
 
-        // Create Discount Deal for Silver Laptop 16GB
         Deal::create([
-            'title' => '10% Off on Silver Laptop 16GB',
-            'description' => 'Get a 10% discount on the Silver Laptop with 16GB RAM and 512GB SSD.',
+            'title' => '20% Off on Black Jackets',
+            'description' => 'Get 20% off on all Black Jackets.',
             'type' => 'Discount',
-            'product_id' => 3, // Silver Laptop 16GB
-            'product_variant_id' => ProductVarient::where('product_id', 3)->first()->id, // Variant for Silver Laptop
-            'percentage' => 10, // 10% discount
-            'start_date' => now(),
-            'end_date' => now()->addDays(30),
-            'is_active' => true,
-        ]);
-
-        // Create BOGO Deal for Black Jacket
-        Deal::create([
-            'title' => 'Buy 1 Black Jacket, Get 1 Free',
-            'description' => 'Get a free Black Jacket when you buy 1.',
-            'type' => 'BOGO',
+            'image' => null,
             'product_id' => 2, // Black Jacket
-            'product_variant_id' => ProductVarient::where('product_id', 2)->where('unit', 'Medium')->first()->id, // Medium variant
-            'min_quantity' => 1,
-            'free_quantity' => 1,
-            'free_product_id' => 2, // Black Jacket
-            'free_product_variant_id' => ProductVarient::where('product_id', 2)->where('unit', 'Medium')->first()->id, // Medium variant
+            'product_variant_id' => null, // Applies to all variants
+            'percentage' => 20.00,
             'start_date' => now(),
             'end_date' => now()->addDays(30),
-            'is_active' => true,
+            'is_active' => 1
         ]);
 
-        // Create Combo Deal for Red T-Shirt and Silver Laptop
         Deal::create([
-            'title' => 'Buy Red T-Shirt and Silver Laptop for $1019',
-            'description' => 'Get a Red T-Shirt and Silver Laptop together for $1019.',
-            'type' => 'Combo',
-            'product_id' => 1, // Red T-Shirt
-            'product_variant_id' => ProductVarient::where('product_id', 1)->where('unit', 'Medium')->first()->id, // Medium variant
-            'min_quantity' => 1,
-            'quantity' => 2, // Both items in the combo
-            'amount' => 1019, // Combo price
-            'start_date' => now(),
-            'end_date' => now()->addDays(30),
-            'is_active' => true,
-        ]);
-
-        // **New Deal 1** - Discount on Red T-Shirt
-        Deal::create([
-            'title' => '20% Off on Red T-Shirt',
-            'description' => 'Get 20% off on all sizes of the Red T-Shirt.',
-            'type' => 'Discount',
-            'product_id' => 1, // Red T-Shirt
-            'product_variant_id' => ProductVarient::where('product_id', 1)->first()->id, // All variants of Red T-Shirt
-            'percentage' => 20, // 20% discount
-            'start_date' => now(),
-            'end_date' => now()->addDays(30),
-            'is_active' => true,
-        ]);
-
-        // **New Deal 2** - Combo Deal for Black Jacket and Laptop
-        Deal::create([
-            'title' => 'Buy Black Jacket and Silver Laptop for $1050',
-            'description' => 'Buy a Black Jacket and Silver Laptop for $1050.',
-            'type' => 'Combo',
-            'product_id' => 2, // Black Jacket
-            'product_variant_id' => ProductVarient::where('product_id', 2)->where('unit', 'Medium')->first()->id, // Medium variant
-            'min_quantity' => 1,
-            'quantity' => 2, // Both items in the combo
-            'amount' => 1050, // Combo price
-            'start_date' => now(),
-            'end_date' => now()->addDays(30),
-            'is_active' => true,
-        ]);
-
-        // **New Deal 3** - BOGO Deal on Laptop Accessories
-        Deal::create([
-            'title' => 'Buy 1 Laptop Sleeve, Get 1 Free',
-            'description' => 'Buy one Laptop Sleeve, get one free!',
+            'title' => 'Buy 2 Get 1 Free - Medium Red T-Shirt',
+            'description' => 'Buy two Medium Red T-Shirts and get one free!',
             'type' => 'BOGO',
-            'product_id' => 3, // Silver Laptop
-            'product_variant_id' => ProductVarient::where('product_id', 3)->first()->id, // Laptop accessory variant
-            'min_quantity' => 1,
+            'image' => null,
+            'product_id' => 1, // Red T-Shirt
+            'product_variant_id' => 2, // Medium size
+            'min_quantity' => 2,
             'free_quantity' => 1,
-            'free_product_id' => 3, // Silver Laptop (assuming accessories are tracked this way)
-            'free_product_variant_id' => ProductVarient::where('product_id', 3)->first()->id, // Same variant
+            'free_product_id' => 1, // Free Red T-Shirt
+            'free_product_variant_id' => 2, // Medium size
             'start_date' => now(),
             'end_date' => now()->addDays(30),
-            'is_active' => true,
+            'is_active' => 1
+        ]);
+
+        Deal::create([
+            'title' => 'Laptop + Red T-Shirt',
+            'description' => 'Buy a Silver Laptop 16GB and get a free Red T-Shirt.',
+            'type' => 'Combo',
+            'image' => null,
+            'product_id' => 3, // Laptop
+            'product_variant_id' => 7, // 16GB RAM, 512GB SSD
+            'free_product_id' => 1, // Backpack (Assumed ID)
+            'free_product_variant_id' => 1, // Backpack variant
+            'start_date' => now(),
+            'end_date' => now()->addDays(30),
+            'is_active' => 1
         ]);
     }
 }

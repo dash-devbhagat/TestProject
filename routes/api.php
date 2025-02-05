@@ -16,6 +16,7 @@ use App\Http\Controllers\API\V1\TransactionAPIController;
 use App\Http\Controllers\API\V1\OrderAPIController;
 use App\Http\Controllers\API\V1\CouponAPIController;
 use App\Http\Controllers\API\V1\BranchAPIController;
+use App\Http\Controllers\API\V1\DealsAPIController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +47,7 @@ Route::prefix('v1')->group(function () {
     Route::post('cities', [CityAPIController::class, 'getCitiesByStateId']); // Expects state_id as query param
     Route::post('products', [ProductAPIController::class, 'getActiveProducts']); // Expects filters as query params
     Route::get('coupons', [CouponAPIController::class, 'getActiveCoupons']);
+    Route::get('deals', [DealsAPIController::class, 'getAllDeals']);
 
     // Authenticated Routes (Custom Auth)
     Route::middleware(['custom.auth'])->group(function () {
