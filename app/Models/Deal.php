@@ -13,7 +13,7 @@ class Deal extends Model
 
     public function product()
     {
-        return $this->belongsTo(Product::class,'product_id');
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
     public function freeProduct()
@@ -23,7 +23,7 @@ class Deal extends Model
 
     public function productVarient()
     {
-        return $this->belongsTo(ProductVarient::class,'product_variant_id');
+        return $this->belongsTo(ProductVarient::class, 'product_variant_id');
     }
 
     public function freeProductVarient()

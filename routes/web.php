@@ -9,6 +9,7 @@ use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\ChargeController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\CouponController;
+use App\Http\Controllers\DealController;
 use App\Http\Controllers\MobileUserController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderPaymentHistoryController;
@@ -67,11 +68,11 @@ Route::middleware(['auth', 'check.active'])->group(function () {
     Route::resource('user', UserController::class);
     Route::post('/user/{id}/toggle-status', [UserController::class, 'toggleStatus']);
 
-    Route::get('mobileUser',[MobileUserController::class, 'index'])->name('mobileUser.index');
-    Route::get('mobileUser/{id}',[MobileUserController::class, 'show'])->name('mobileUser.show');
+    Route::get('mobileUser', [MobileUserController::class, 'index'])->name('mobileUser.index');
+    Route::get('mobileUser/{id}', [MobileUserController::class, 'show'])->name('mobileUser.show');
     Route::post('/mobileUser/{id}/toggle-status', [MobileUserController::class, 'toggleStatus']);
 
-    Route::resource('order',OrderController::class);
+    Route::resource('order', OrderController::class);
     Route::post('/order/updatestatus/{id}', [OrderController::class, 'updateStatus'])->name('order.updateStatus');
     Route::get('/cancelled-orders', [OrderController::class, 'cancelledOrders'])->name('cancelled-orders');
     Route::get('/orders/table', [OrderController::class, 'table'])->name('orders.table');
@@ -93,7 +94,7 @@ Route::middleware(['auth', 'check.active'])->group(function () {
     Route::post('/sub-category/{id}/toggle-status', [SubCategoryController::class, 'toggleStatus']);
     Route::get('/sub-category/fetch/{id}', [SubCategoryController::class, 'fetchSubCategory']);
 
-    Route::resource('product',ProductController::class);
+    Route::resource('product', ProductController::class);
     Route::post('/product/{id}/toggle-status', [ProductController::class, 'toggleStatus']);
 
     Route::resource('charge', ChargeController::class);
@@ -108,10 +109,15 @@ Route::middleware(['auth', 'check.active'])->group(function () {
     Route::resource('coupon', CouponController::class);
     Route::post('/coupon/{id}/toggle-status', [CouponController::class, 'toggleStatus']);
 
+    Route::resource('deal', DealController::class);
+    Route::post('/deal/{id}/toggle-status', [DealController::class, 'toggleStatus']);
+    Route::get('/get-product-variants/{product_id}', [DealController::class, 'getProductVariants'])->name('get.product.variants');
+
+
     Route::get('/bonus-payment-history', [BonusPaymentHistoryController::class, 'index'])->name('ph.index');
 
     Route::get('/order-payment-history', [OrderPaymentHistoryController::class, 'index'])->name('oh.index');
-    
+
 
     // for staff
     Route::get('/complete-profile', function () {
@@ -127,8 +133,6 @@ Route::middleware(['auth', 'check.active'])->group(function () {
 
     Route::get('/edit-profile', [UserController::class, 'editProfile'])->name('user.edit-profile');
     Route::post('/update-profile', [UserController::class, 'updateProfile'])->name('user.update-profile');
-
-    
 });
 Route::fallback(function () {
     return redirect()->route('login.page')->with('error', 'Page not found or unauthorized access.');
