@@ -30,4 +30,9 @@ class Deal extends Model
     {
         return $this->belongsTo(Product::class, 'free_product_variant_id');
     }
+
+    public function dealComboProducts()
+    {
+        return $this->hasMany(DealComboProduct::class, 'deal_id', 'id');
+    }
 }

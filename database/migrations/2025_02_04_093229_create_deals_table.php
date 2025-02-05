@@ -8,29 +8,41 @@ return new class extends Migration {
     public function up()
     {
         Schema::create('deals', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->text('description');
-            $table->enum('type', ['BOGO', 'Combo', 'Discount']);
-            $table->string('image')->nullable(); // Image for the deal
-            $table->unsignedBigInteger('product_id')->nullable();
-            $table->unsignedBigInteger('product_variant_id')->nullable();
-            $table->integer('min_quantity')->nullable(); // Minimum quantity required for the deal
-            $table->integer('free_quantity')->nullable(); // Free quantity (for BOGO)
-            $table->unsignedBigInteger('free_product_id')->nullable(); // Free product (if applicable)
-            $table->unsignedBigInteger('free_product_variant_id')->nullable();
-            $table->integer('quantity')->nullable(); // Quantity for Combo deals
-            $table->decimal('amount', 10, 2)->nullable(); // Discounted amount (for Discount deals)
-            $table->decimal('percentage', 5, 2)->nullable(); // Discount percentage (for Discount deals)
-            $table->dateTime('start_date');
-            $table->dateTime('end_date');
-            $table->boolean('is_active')->default(true);
+            $table->id(); // Primary key
+            $table->enum('type', ['BOGO', 'Combo', 'Discount', 'Flat'])->default('BOGO'); // Deal type
+            $table->string('title'); // Deal title
+            $table->text('description'); // Deal description
+            $table->string('image')->nullable(); // Deal image
+            $table->dateTime('start_date'); // Start date of the deal
+            $table->dateTime('end_date'); // End date of the deal
+            $table->string('renewal_time'); // Renewal time (e.g., 1 hour, 1 week)
+            $table->boolean('is_active')->default(true); // Deal status
+
+            // BOGO and Flat deal fields
+            $table->unsignedBigInteger('buy_product_id')->nullable(); // Buy product ID
+            $table->unsignedBigInteger('buy_variant_id')->nullable(); // Buy product variant ID
+            $table->integer('buy_quantity')->nullable(); // Buy product quantity
+            $table->unsignedBigInteger('get_product_id')->nullable(); // Get product ID
+            $table->unsignedBigInteger('get_variant_id')->nullable(); // Get product variant ID
+            $table->integer('get_quantity')->nullable(); // Get product quantity
+            $table->decimal('actual_amount', 10, 2)->nullable(); // Actual amount
+
+            // Combo deal fields
+            $table->decimal('combo_discounted_amount', 10, 2)->nullable(); // Combo discounted amount
+
+            // Discount deal fields
+            $table->decimal('min_cart_amount', 10, 2)->nullable(); // Minimum cart amount for discount
+            $table->enum('discount_type', ['fixed', 'percentage'])->nullable(); // Discount type
+            $table->decimal('discount_amount', 10, 2)->nullable(); // Discount amount
+
+            // Timestamps
             $table->timestamps();
 
-            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-            $table->foreign('product_variant_id')->references('id')->on('product_varients')->onDelete('cascade');
-            $table->foreign('free_product_id')->references('id')->on('products')->onDelete('cascade');
-            $table->foreign('free_product_variant_id')->references('id')->on('product_varients')->onDelete('cascade');
+            // Foreign keys
+            $table->foreign('buy_product_id')->references('id')->on('products')->onDelete('cascade');
+            $table->foreign('buy_variant_id')->references('id')->on('product_varients')->onDelete('cascade');
+            $table->foreign('get_product_id')->references('id')->on('products')->onDelete('cascade');
+            $table->foreign('get_variant_id')->references('id')->on('product_varients')->onDelete('cascade');
         });
     }
 

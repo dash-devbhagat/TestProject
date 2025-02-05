@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             BranchesTableSeeder::class,
             TimingsTableSeeder::class,
             DealSeeder::class,
+            DealComboProductSeeder::class,
         ]);
     }
 }

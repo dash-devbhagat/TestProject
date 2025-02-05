@@ -6,6 +6,7 @@ use App\Models\Deal;
 use App\Models\Product;
 use App\Models\ProductVarient;
 use Illuminate\Database\Seeder;
+use Carbon\Carbon;
 
 class DealSeeder extends Seeder
 {
@@ -16,77 +17,84 @@ class DealSeeder extends Seeder
      */
     public function run()
     {
+        // BOGO Deal: Buy 1 Red T-Shirt (Medium) and Get 1 Free
         Deal::create([
-            'title' => 'Buy One Get One Free - Red T-Shirt',
-            'description' => 'Buy one Red T-Shirt and get one free!',
             'type' => 'BOGO',
-            'image' => null,
-            'product_id' => 1, // Red T-Shirt
-            'product_variant_id' => 2, // Medium size
-            'min_quantity' => 1,
-            'free_quantity' => 1,
-            'free_product_id' => 1, // Free Red T-Shirt
-            'free_product_variant_id' => 2, // Same variant
-            'start_date' => now(),
-            'end_date' => now()->addDays(30),
-            'is_active' => 1
+            'title' => 'Buy 1 Red T-Shirt (Medium), Get 1 Free',
+            'description' => 'Buy 1 Red T-Shirt in Medium size, Get 1 Free of the same product.',
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addDays(7),
+            'renewal_time' => '1 week',
+            'is_active' => true,
+            'buy_product_id' => 1, // Red T-Shirt
+            'buy_variant_id' => 2, // Medium variant
+            'buy_quantity' => 1,
+            'get_product_id' => 1, // Red T-Shirt
+            'get_variant_id' => 2, // Medium variant
+            'get_quantity' => 1,
+            'actual_amount' => 22.00, // Price of 1 Red T-Shirt Medium
         ]);
 
+        // Combo Deal: 1 Red T-Shirt + 1 Black Jacket for 70rs
         Deal::create([
-            'title' => 'Laptop + Red T-Shirt',
-            'description' => 'Get a free Red T-Shirt when you buy a Silver Laptop 16GB.',
             'type' => 'Combo',
-            'image' => null,
-            'product_id' => 3, // Laptop
-            'product_variant_id' => 7, // 16GB RAM, 512GB SSD
-            'free_product_id' => 1, // Mouse (Assumed ID)
-            'free_product_variant_id' => 1, // Mouse variant
-            'start_date' => now(),
-            'end_date' => now()->addDays(30),
-            'is_active' => 1
+            'title' => 'Red T-Shirt & Black Jacket',
+            'description' => 'Get 1 Red T-Shirt and 1 Black Jacket for only 70rs.',
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addDays(10),
+            'renewal_time' => '1 week',
+            'is_active' => true,
+            'actual_amount' => 79.00,
+            'combo_discounted_amount' => 70.00,
         ]);
 
+        // Discount Deal: 10% off on orders above 1000rs
         Deal::create([
-            'title' => '20% Off on Black Jackets',
-            'description' => 'Get 20% off on all Black Jackets.',
             'type' => 'Discount',
-            'image' => null,
-            'product_id' => 2, // Black Jacket
-            'product_variant_id' => null, // Applies to all variants
-            'percentage' => 20.00,
-            'start_date' => now(),
-            'end_date' => now()->addDays(30),
-            'is_active' => 1
+            'title' => '10% Discount on Orders Above 1000rs',
+            'description' => 'Get a 10% discount on cart total if the total exceeds 1000rs.',
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addDays(14),
+            'renewal_time' => '1 week',
+            'is_active' => true,
+            'min_cart_amount' => 1000.00,
+            'discount_type' => 'percentage',
+            'discount_amount' => 10.00,
         ]);
 
+        // Flat Deal: Flat 100rs off on Red T-Shirt (Medium)
         Deal::create([
-            'title' => 'Buy 2 Get 1 Free - Medium Red T-Shirt',
-            'description' => 'Buy two Medium Red T-Shirts and get one free!',
+            'type' => 'Flat',
+            'title' => 'Flat 100rs Off on Red T-Shirt (Medium)',
+            'description' => 'Get a flat 100rs off on Red T-Shirt in Medium size.',
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addDays(7),
+            'renewal_time' => '1 week',
+            'is_active' => true,
+            'buy_product_id' => 1, // Red T-Shirt
+            'buy_variant_id' => 2, // Medium variant
+            'buy_quantity' => 1,
+            'actual_amount' => 25.00,
+            'discount_type' => 'fixed',
+            'discount_amount' => 100.00,
+        ]);
+
+        // BOGO Deal: Buy 2 Black Jackets and Get 1 Free
+        Deal::create([
             'type' => 'BOGO',
-            'image' => null,
-            'product_id' => 1, // Red T-Shirt
-            'product_variant_id' => 2, // Medium size
-            'min_quantity' => 2,
-            'free_quantity' => 1,
-            'free_product_id' => 1, // Free Red T-Shirt
-            'free_product_variant_id' => 2, // Medium size
-            'start_date' => now(),
-            'end_date' => now()->addDays(30),
-            'is_active' => 1
-        ]);
-
-        Deal::create([
-            'title' => 'Laptop + Red T-Shirt',
-            'description' => 'Buy a Silver Laptop 16GB and get a free Red T-Shirt.',
-            'type' => 'Combo',
-            'image' => null,
-            'product_id' => 3, // Laptop
-            'product_variant_id' => 7, // 16GB RAM, 512GB SSD
-            'free_product_id' => 1, // Backpack (Assumed ID)
-            'free_product_variant_id' => 1, // Backpack variant
-            'start_date' => now(),
-            'end_date' => now()->addDays(30),
-            'is_active' => 1
+            'title' => 'Buy 2 Black Jackets, Get 1 Free',
+            'description' => 'Buy 2 Black Jackets (Medium), Get 1 Free.',
+            'start_date' => Carbon::now(),
+            'end_date' => Carbon::now()->addDays(14),
+            'renewal_time' => '1 week',
+            'is_active' => true,
+            'buy_product_id' => 2, // Black Jacket
+            'buy_variant_id' => 2, // Medium variant
+            'buy_quantity' => 2,
+            'get_product_id' => 2, // Black Jacket
+            'get_variant_id' => 2, // Medium variant
+            'get_quantity' => 1,
+            'actual_amount' => 70.00,
         ]);
     }
 }
