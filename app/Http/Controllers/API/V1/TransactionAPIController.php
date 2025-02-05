@@ -19,183 +19,195 @@ use App\Models\OrderItem;
 use App\Models\Category;
 use App\Models\SubCategory;
 use App\Models\UserCouponUsage;
+use App\Models\Deal;
+use App\Models\DealsRedeems;
+use App\Models\DealComboProduct;
 
 class TransactionAPIController extends Controller
 {
 
-public function processPayment(Request $request)
-{
-    $user = Auth::user();
-    $cart = Cart::where('user_id', $user->id)->first();
+    public function processPayment(Request $request)
+    {
+        $user = Auth::user();
+        $cart = Cart::where('user_id', $user->id)->first();
 
-    if (!$cart || $cart->items->isEmpty()) {
-        return response()->json([
-            'data' => json_decode('{}'),
-            'meta' => [
-                'success' => false,
-                'message' => 'Your cart is empty.',
-            ],
-        ], 200);
-    }
-
-    // Validate payment details
-    $validator = Validator::make($request->all(), [
-        'cart_id' => 'required|exists:carts,id',
-        'payment_mode' => 'required|in:online,cash on delivery',
-        'payment_type' => 'nullable|required_if:payment_mode,online|in:credit,debit,upi',
-        'payment_status' => 'required|in:success,pending,failed',
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json([
-            'data' => json_decode('{}'),
-            'meta' => [
-                'success' => false,
-                'message' => $validator->errors()->first(),
-            ],
-        ], 200);
-    }
-
-    // Retrieve original cart total from the cart (without bonus applied)
-    $cartTotal = (float) $cart->cart_total;
-
-    // Calculate additional charges as before
-    $charges = Charge::where('is_active', 1)->get();
-    $totalAdditionalCharges = 0;
-    foreach ($charges as $charge) {
-        if ($charge->type === 'percentage') {
-            $totalAdditionalCharges += ($cartTotal * $charge->value) / 100;
-        } else {
-            $totalAdditionalCharges += $charge->value;
+        if (!$cart || $cart->items->isEmpty()) {
+            return response()->json([
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => 'Your cart is empty.',
+                ],
+            ], 200);
         }
-    }
 
-    // BONUS DEDUCTION CALCULATION (same as in checkout)
-    $totalBonusDeduction = 0;
-    $bonusPaymentsToUpdate = []; // keep track of each bonus payment and its deduction
-    foreach ($user->payments as $payment) {
-        $bonus = Bonus::find($payment->bonus_id);
-        if ($bonus && $bonus->is_active) {
-            $availableBonus = (float) $payment->remaining_amount;
-            $deduction = $availableBonus * ((float) $bonus->percentage / 100);
-            $totalBonusDeduction += $deduction;
-            $bonusPaymentsToUpdate[] = [
-                'payment'   => $payment,
-                'deduction' => $deduction,
-            ];
-        }
-    }
-
-    // Only apply bonus if total deduction is not more than the cart total
-    if ($totalBonusDeduction > $cartTotal) {
-        $appliedBonusDeduction = 0;
-        $bonusPaymentsToUpdate = [];
-    } else {
-        $appliedBonusDeduction = $totalBonusDeduction;
-    }
-
-    // New grand total calculation:
-    $grandTotalWithoutBonus = $cartTotal + $totalAdditionalCharges;
-    $grandTotal = $grandTotalWithoutBonus - $appliedBonusDeduction;
-    $grandTotal = number_format($grandTotal, 2, '.', '');
-
-    // Create Order using the adjusted totals
-    $order = Order::create([
-        'user_id'            => $user->id,
-        'status'             => 'pending',
-        'sub_total'          => $cartTotal,
-        'charges_total'      => $totalAdditionalCharges,
-        'grand_total'        => $grandTotal,
-        'address_id'         => $user->address_id,
-        'branch_id'          => $cart->branch_id,
-        'transaction_status' => 'pending',
-        'order_number'       => 'OR-' . date('Y') . '-' . strtoupper(uniqid()),
-    ]);
-
-    foreach ($cart->items as $cartItem) {
-        OrderItem::create([
-            'order_id'             => $order->id,
-            'cart_id'              => $cart->id,
-            'product_id'           => $cartItem->product_id,
-            'product_variant_id'   => $cartItem->product_variant_id,
-            'quantity'             => $cartItem->quantity,
+        // Validate payment details
+        $validator = Validator::make($request->all(), [
+            'cart_id' => 'required|exists:carts,id',
+            'payment_mode' => 'required|in:online,cash on delivery',
+            'payment_type' => 'nullable|required_if:payment_mode,online|in:credit,debit,upi',
+            'payment_status' => 'required|in:success,pending,failed',
         ]);
-    }
 
-    // Generate a unique transaction number
-    $transactionNumber = 'TXN-' . str_pad(mt_rand(0, 99999), 5, '0', STR_PAD_LEFT);
-
-    // Create a transaction
-    $transaction = Transaction::create([
-        'transaction_number' => $transactionNumber,
-        'user_id'            => $user->id,
-        'order_id'           => $order->id,
-        'payment_mode'       => $request->payment_mode,
-        'payment_type'       => $request->payment_mode === 'online' ? $request->payment_type : null,
-        'payment_status'     => $request->payment_status,
-    ]);
-
-    // Update Order based on payment status
-    $message = '';
-    if ($request->payment_status === 'success') {
-        $userCouponUsage = UserCouponUsage::where('user_id', $user->id)
-                                          ->whereNull('order_id')
-                                          ->latest()
-                                          ->first();
-        if ($userCouponUsage) {
-            $userCouponUsage->order_id = $order->id;
-            $userCouponUsage->save();
+        if ($validator->fails()) {
+            return response()->json([
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => $validator->errors()->first(),
+                ],
+            ], 200);
         }
 
-        $order->status = 'pending';  // For example, COD orders may stay pending
-        $order->transaction_status = 'success';
-        $message = 'Payment was successful, order placed.';
-    } elseif ($request->payment_status === 'pending') {
-        $order->transaction_status = 'pending';
-        $message = 'Payment is pending. Please try again later.';
-    } else {
-        $order->transaction_status = 'failed';
-        $message = 'Payment failed. Please try again.';
-    }
+        // Retrieve original cart total from the cart (without bonus applied)
+        $cartTotal = (float) $cart->cart_total;
 
-    $order->transaction_id = $transaction->id;
-    $order->save();
-
-    // If payment was successful and bonus was applied, update bonus records.
-    if ($request->payment_status === 'success' && $appliedBonusDeduction > 0) {
-        foreach ($bonusPaymentsToUpdate as $bonusData) {
-            /** @var Payment $paymentRecord */
-            $paymentRecord = $bonusData['payment'];
-            $deductionUsed = $bonusData['deduction'];
-            // Reduce the bonus's remaining amount by the deducted value.
-            $newRemaining = (float) $paymentRecord->remaining_amount - $deductionUsed;
-            // Ensure we do not go below zero.
-            $paymentRecord->remaining_amount = $newRemaining < 0 ? 0 : $newRemaining;
-            $paymentRecord->save();
+        // Calculate additional charges as before
+        $charges = Charge::where('is_active', 1)->get();
+        $totalAdditionalCharges = 0;
+        foreach ($charges as $charge) {
+            if ($charge->type === 'percentage') {
+                $totalAdditionalCharges += ($cartTotal * $charge->value) / 100;
+            } else {
+                $totalAdditionalCharges += $charge->value;
+            }
         }
+
+        // BONUS DEDUCTION CALCULATION (same as in checkout)
+        $totalBonusDeduction = 0;
+        $bonusPaymentsToUpdate = []; // keep track of each bonus payment and its deduction
+        foreach ($user->payments as $payment) {
+            $bonus = Bonus::find($payment->bonus_id);
+            if ($bonus && $bonus->is_active) {
+                $availableBonus = (float) $payment->remaining_amount;
+                $deduction = $availableBonus * ((float) $bonus->percentage / 100);
+                $totalBonusDeduction += $deduction;
+                $bonusPaymentsToUpdate[] = [
+                    'payment' => $payment,
+                    'deduction' => $deduction,
+                ];
+            }
+        }
+
+        // Only apply bonus if total deduction is not more than the cart total
+        if ($totalBonusDeduction > $cartTotal) {
+            $appliedBonusDeduction = 0;
+            $bonusPaymentsToUpdate = [];
+        } else {
+            $appliedBonusDeduction = $totalBonusDeduction;
+        }
+
+        // New grand total calculation:
+        $grandTotalWithoutBonus = $cartTotal + $totalAdditionalCharges;
+        $grandTotal = $grandTotalWithoutBonus - $appliedBonusDeduction;
+        $grandTotal = number_format($grandTotal, 2, '.', '');
+
+        // Create Order using the adjusted totals
+        $order = Order::create([
+            'user_id' => $user->id,
+            'status' => 'pending',
+            'sub_total' => $cartTotal,
+            'charges_total' => $totalAdditionalCharges,
+            'grand_total' => $grandTotal,
+            'address_id' => $user->address_id,
+            'branch_id' => $cart->branch_id,
+            'transaction_status' => 'pending',
+            'order_number' => 'OR-' . date('Y') . '-' . strtoupper(uniqid()),
+        ]);
+
+        foreach ($cart->items as $cartItem) {
+            OrderItem::create([
+                'order_id' => $order->id,
+                'cart_id' => $cart->id,
+                'product_id' => $cartItem->product_id,
+                'product_variant_id' => $cartItem->product_variant_id,
+                'quantity' => $cartItem->quantity,
+            ]);
+        }
+
+        // Generate a unique transaction number
+        $transactionNumber = 'TXN-' . str_pad(mt_rand(0, 99999), 5, '0', STR_PAD_LEFT);
+
+        // Create a transaction
+        $transaction = Transaction::create([
+            'transaction_number' => $transactionNumber,
+            'user_id' => $user->id,
+            'order_id' => $order->id,
+            'payment_mode' => $request->payment_mode,
+            'payment_type' => $request->payment_mode === 'online' ? $request->payment_type : null,
+            'payment_status' => $request->payment_status,
+        ]);
+
+        // Update Order based on payment status
+        $message = '';
+        if ($request->payment_status === 'success') {
+            $userCouponUsage = UserCouponUsage::where('user_id', $user->id)
+                ->whereNull('order_id')
+                ->latest()
+                ->first();
+            if ($userCouponUsage) {
+                $userCouponUsage->order_id = $order->id;
+                $userCouponUsage->save();
+            }
+
+            $order->status = 'pending';  // For example, COD orders may stay pending
+            $order->transaction_status = 'success';
+            $message = 'Payment was successful, order placed.';
+
+            // **UPDATE deals_redeems TABLE**
+            DealsRedeems::where('user_id', $user->id)
+                ->where('is_redeemed', 0)
+                ->update([
+                    'is_redeemed' => 1,
+                    'order_id' => $order->id,
+                ]);
+
+        } elseif ($request->payment_status === 'pending') {
+            $order->transaction_status = 'pending';
+            $message = 'Payment is pending. Please try again later.';
+        } else {
+            $order->transaction_status = 'failed';
+            $message = 'Payment failed. Please try again.';
+        }
+
+        $order->transaction_id = $transaction->id;
+        $order->save();
+
+        // If payment was successful and bonus was applied, update bonus records.
+        if ($request->payment_status === 'success' && $appliedBonusDeduction > 0) {
+            foreach ($bonusPaymentsToUpdate as $bonusData) {
+                /** @var Payment $paymentRecord */
+                $paymentRecord = $bonusData['payment'];
+                $deductionUsed = $bonusData['deduction'];
+                // Reduce the bonus's remaining amount by the deducted value.
+                $newRemaining = (float) $paymentRecord->remaining_amount - $deductionUsed;
+                // Ensure we do not go below zero.
+                $paymentRecord->remaining_amount = $newRemaining < 0 ? 0 : $newRemaining;
+                $paymentRecord->save();
+            }
+        }
+
+        // Clear the cart
+        $cart->items()->delete();
+        $cart->cart_total = 0;
+        $cart->total_charges = 0;
+        $cart->grand_total = 0;
+        $cart->branch_id = null;
+        $cart->save();
+
+        return response()->json([
+            'data' => [
+                'transaction_id' => $transaction->id,
+                'transaction_number' => $transaction->transaction_number,
+                'order_id' => $order->id,
+                'payment_status' => $request->payment_status,
+            ],
+            'meta' => [
+                'success' => true,
+                'message' => $message,
+            ],
+        ], 200);
     }
-
-    // Clear the cart
-    $cart->items()->delete();
-    $cart->cart_total = 0;
-    $cart->total_charges = 0;
-    $cart->grand_total = 0;
-    $cart->branch_id = null;
-    $cart->save();
-
-    return response()->json([
-        'data' => [
-            'transaction_id'     => $transaction->id,
-            'transaction_number' => $transaction->transaction_number,
-            'order_id'           => $order->id,
-            'payment_status'     => $request->payment_status,
-        ],
-        'meta' => [
-            'success' => true,
-            'message' => $message,
-        ],
-    ], 200);
-}
 }
 
 

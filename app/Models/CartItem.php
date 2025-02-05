@@ -26,4 +26,10 @@ class CartItem extends Model
     {
         return $this->belongsTo(ProductVarient::class, 'product_variant_id');
     }
+
+    public function variant()
+    {
+        return $this->belongsTo(ProductVarient::class, 'product_variant_id');
+    }
+
 }
