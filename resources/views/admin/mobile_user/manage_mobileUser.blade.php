@@ -89,22 +89,6 @@
                                             data-bs-toggle="tooltip" title="View">
                                             <i class="fa fa-eye"></i>
                                         </a>
-                                        {{-- <!-- Edit Icon -->
-                                        <a href="#javascript" class="text-primary" data-toggle="modal"
-                                            data-target="#exampleModal" data-bs-toggle="tooltip" title="Edit">
-                                            <i class="fa fa-edit editUserBtn" data-id="{{ $user->id }}"></i>
-                                        </a>
-                                        <!-- Delete Icon -->
-                                        <form action="{{ route('user.destroy', $user->id) }}" method="POST"
-                                            style="display:inline;"
-                                            onsubmit="return confirm('Are you sure you want to delete this member?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-link text-danger p-0 m-0"
-                                                data-bs-toggle="tooltip" title="Delete">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </form> --}}
                                     </td>
                                 </tr>
                                 @php
