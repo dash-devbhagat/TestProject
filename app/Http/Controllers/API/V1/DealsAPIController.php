@@ -47,7 +47,6 @@ class DealsAPIController extends Controller
                         'get_product_id' => $deal->get_product_id,
                         'get_variant_id' => $deal->get_variant_id,
                         'get_quantity' => $deal->get_quantity,
-                        'actual_amount' => $deal->actual_amount,
                     ]);
 
                 case 'Combo':
@@ -59,7 +58,6 @@ class DealsAPIController extends Controller
                                 'quantity' => $combo->quantity,
                             ];
                         }),
-                        'actual_amount' => $deal->actual_amount,
                         'combo_discounted_amount' => $deal->combo_discounted_amount,
                     ]);
 
@@ -75,7 +73,6 @@ class DealsAPIController extends Controller
                         'product_id' => $deal->buy_product_id,
                         'variant_id' => $deal->buy_variant_id,
                         'quantity' => $deal->buy_quantity,
-                        'actual_amount' => $deal->actual_amount,
                         'discount_type' => $deal->discount_type,
                         'discount_amount' => $deal->discount_amount,
                     ]);
