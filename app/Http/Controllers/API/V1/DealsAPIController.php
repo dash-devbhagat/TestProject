@@ -132,25 +132,45 @@ class DealsAPIController extends Controller
         // Check if the user has already redeemed this deal
         $redeemRecord = DealsRedeems::where('deal_id', $deal->id)
             ->where('user_id', $user->id)
-            ->first();
-
-        if ($redeemRecord && $redeemRecord->is_redeemed == 1) {
-            return response()->json([
-                'meta' => [
-                    'success' => false,
-                    'message' => 'You have already redeemed this deal.',
-                ],
-            ], 400);
-        }
-
-        $redeemRecord = DealsRedeems::where('user_id', $user->id)
-            ->where('deal_id', $deal->id)
-            ->whereNull('order_id') // Ensures it's not yet linked to an order
+            ->where('is_redeemed', 1)
+            ->latest('used_at')
             ->first();
 
         if ($redeemRecord) {
-            // If coupon has already been applied but payment not done, remove old entry
-            $redeemRecord->delete();
+            $renewalTime = (int) $deal->renewal_time;
+
+            if ($renewalTime === 0) {
+                return response()->json([
+                    'meta' => [
+                        'success' => false,
+                        'message' => 'You can only redeem this deal once.',
+                    ],
+                ], 400);
+            }
+
+            $lastUsedAt = $redeemRecord->used_at;
+            $now = now();
+            $daysSinceLastUse = $now->diffInDays($lastUsedAt);
+
+            if ($daysSinceLastUse < $renewalTime) {
+                return response()->json([
+                    'meta' => [
+                        'success' => false,
+                        'message' => "You can redeem this deal again after $renewalTime days.",
+                    ],
+                ], 400);
+            }
+        }
+
+        // Check if there's an unredeemed record (e.g., payment not completed)
+        $unredeemedRecord = DealsRedeems::where('user_id', $user->id)
+            ->where('deal_id', $deal->id)
+            ->whereNull('order_id')
+            ->first();
+
+        if ($unredeemedRecord) {
+            // Remove the old unredeemed record
+            $unredeemedRecord->delete();
         }
 
         $cart = Cart::firstOrCreate(['user_id' => $user->id]);
@@ -165,6 +185,7 @@ class DealsAPIController extends Controller
         DealsRedeems::create([
             'deal_id' => $deal->id,
             'user_id' => $user->id,
+            'is_redeemed' => 0, // Mark as unredeemed until payment is successful
         ]);
 
         // Recalculate the cart total

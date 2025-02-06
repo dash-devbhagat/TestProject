@@ -80,7 +80,7 @@ class CartController extends Controller
                 'product_id' => $product->id,
                 'product_variant_id' => $variant->id,
                 'quantity' => $request->quantity,
-                'is_free' => false, // Explicitly mark as paid
+                'is_free' => 0, // Explicitly mark as paid
             ]);
         }
 
@@ -98,6 +98,7 @@ class CartController extends Controller
                     'variant' => $variant->unit,
                     'price' => number_format($variant->price, 2, '.', ''),
                     'quantity' => $cartItem->quantity,
+                    'is_free' => $cartItem->is_free,
                 ],
                 'total_price' => number_format($variant->price * $cartItem->quantity, 2, '.', ''),
                 'cart_total' => $cart->cart_total, // Include the updated cart total
@@ -153,6 +154,7 @@ class CartController extends Controller
                 'variant' => $variant->unit,
                 'price' => number_format($variant->price, 2, '.', ''),  // Fetch the price dynamically from product_varients
                 'quantity' => $item->quantity,
+                'is_free' => $item->is_free,
                 'total_price' => number_format($variant->price * $item->quantity, 2, '.', ''),
             ];
         });
@@ -508,6 +510,7 @@ class CartController extends Controller
                 'variant' => $variant->unit,
                 'price' => number_format($variant->price, 2, '.', ''),
                 'quantity' => $cartItem->quantity,
+                'is_free' => $cartItem->is_free,
                 'sku' => $product->sku,
                 'image' => $product->image,
                 'details' => $product->details,
