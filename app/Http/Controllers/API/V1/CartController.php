@@ -313,8 +313,11 @@ class CartController extends Controller
             // Delete all items from the cart
             $cart->items()->delete();
 
-            // Set the cart total to 0
+            // Reset cart totals and combo discount
             $cart->cart_total = 0;
+            $cart->combo_discount = 0;
+            $cart->total_charges = 0; // If needed, reset other totals too
+            $cart->grand_total = 0;   // If needed, reset other totals too
             $cart->save();
 
             return response()->json([
@@ -334,6 +337,7 @@ class CartController extends Controller
             ],
         ], 200);
     }
+
 
 
     public function checkout(Request $request)

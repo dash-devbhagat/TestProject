@@ -193,6 +193,7 @@ class TransactionAPIController extends Controller
         $cart->total_charges = 0;
         $cart->grand_total = 0;
         $cart->branch_id = null;
+        $cart->combo_discount = 0;
         $cart->save();
 
         return response()->json([
