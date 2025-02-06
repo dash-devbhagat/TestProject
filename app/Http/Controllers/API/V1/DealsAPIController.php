@@ -153,21 +153,10 @@ class DealsAPIController extends Controller
             $redeemRecord->delete();
         }
 
-
         $cart = Cart::firstOrCreate(['user_id' => $user->id]);
 
         // Add the paid item
-        $this->addToCart($cart, $deal->buy_product_id, $deal->buy_variant_id, $deal->buy_quantity);
-
-        // Calculate savings for the free item
-        $variant = ProductVarient::where('id', $deal->get_variant_id)
-            ->where('product_id', $deal->get_product_id)
-            ->first();
-
-        $savedAmount = 0;
-        if ($variant) {
-            $savedAmount = $variant->price * $deal->get_quantity;
-        }
+        $this->addToCart($cart, $deal->buy_product_id, $deal->buy_variant_id, $deal->buy_quantity, false);
 
         // Add the free item (BOGO deal)
         $this->addToCart($cart, $deal->get_product_id, $deal->get_variant_id, $deal->get_quantity, true);
@@ -177,6 +166,9 @@ class DealsAPIController extends Controller
             'deal_id' => $deal->id,
             'user_id' => $user->id,
         ]);
+
+        // Recalculate the cart total
+        $cart->recalculateTotal();
 
         // Fetch cart items with product and variant details
         $cartItems = $cart->items->map(function ($item) {
@@ -188,6 +180,7 @@ class DealsAPIController extends Controller
                 'variant_name' => optional($item->variant)->unit,
                 'quantity' => $item->quantity,
                 'total_price' => number_format(optional($item->variant)->price * $item->quantity, 2, '.', ''),
+                'is_free' => $item->is_free,
             ];
         });
 
@@ -215,7 +208,7 @@ class DealsAPIController extends Controller
                 'cart_id' => $cart->id,
                 'cart_items' => $cartItems,
                 'cart_total' => $cart->cart_total,
-                'saved_amount' => number_format($savedAmount, 2, '.', ''), // Include the saved amount (RS.)
+                'saved_amount' => number_format($deal->get_quantity * optional($deal->getVariant)->price, 2, '.', ''),
                 'deals_details' => $dealDetails,
             ],
             'meta' => [
@@ -225,17 +218,17 @@ class DealsAPIController extends Controller
         ], 200);
     }
 
-
-
     private function addToCart($cart, $product_id, $variant_id, $quantity, $is_free = false)
     {
         $variant = ProductVarient::where('id', $variant_id)->where('product_id', $product_id)->first();
         if (!$variant)
             return;
 
+        // Check for existing item with the same variant and free status
         $cartItem = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $product_id)
             ->where('product_variant_id', $variant_id)
+            ->where('is_free', $is_free)
             ->first();
 
         if ($cartItem) {
@@ -247,14 +240,11 @@ class DealsAPIController extends Controller
                 'product_id' => $product_id,
                 'product_variant_id' => $variant_id,
                 'quantity' => $quantity,
+                'is_free' => $is_free, // Mark as free if applicable
             ]);
         }
-
-        if (!$is_free) {
-            $cart->cart_total += $variant->price * $quantity;
-            $cart->save();
-        }
     }
+
 
 
 

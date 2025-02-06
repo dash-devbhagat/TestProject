@@ -24,7 +24,7 @@ class DealSeeder extends Seeder
             'description' => 'Buy 1 Red T-Shirt in Medium size, Get 1 Free of the same product.',
             'start_date' => Carbon::now(),
             'end_date' => Carbon::now()->addDays(7),
-            'renewal_time' => '1 week',
+            'renewal_time' => '1',
             'is_active' => true,
             'buy_product_id' => 1, // Red T-Shirt
             'buy_variant_id' => 2, // Medium variant
@@ -42,7 +42,7 @@ class DealSeeder extends Seeder
             'description' => 'Get 1 Red T-Shirt and 1 Black Jacket for only 70rs.',
             'start_date' => Carbon::now(),
             'end_date' => Carbon::now()->addDays(10),
-            'renewal_time' => '1 week',
+            'renewal_time' => '1',
             'is_active' => true,
             'actual_amount' => 79.00,
             'combo_discounted_amount' => 70.00,
@@ -55,7 +55,7 @@ class DealSeeder extends Seeder
             'description' => 'Get a 10% discount on cart total if the total exceeds 1000rs.',
             'start_date' => Carbon::now(),
             'end_date' => Carbon::now()->addDays(14),
-            'renewal_time' => '1 week',
+            'renewal_time' => '2',
             'is_active' => true,
             'min_cart_amount' => 1000.00,
             'discount_type' => 'percentage',
@@ -69,7 +69,7 @@ class DealSeeder extends Seeder
             'description' => 'Get a flat 100rs off on Red T-Shirt in Medium size.',
             'start_date' => Carbon::now(),
             'end_date' => Carbon::now()->addDays(7),
-            'renewal_time' => '1 week',
+            'renewal_time' => '7',
             'is_active' => true,
             'buy_product_id' => 1, // Red T-Shirt
             'buy_variant_id' => 2, // Medium variant
@@ -86,7 +86,7 @@ class DealSeeder extends Seeder
             'description' => 'Buy 2 Black Jackets (Medium), Get 1 Free.',
             'start_date' => Carbon::now(),
             'end_date' => Carbon::now()->addDays(14),
-            'renewal_time' => '1 week',
+            'renewal_time' => '30',
             'is_active' => true,
             'buy_product_id' => 2, // Black Jacket
             'buy_variant_id' => 2, // Medium variant

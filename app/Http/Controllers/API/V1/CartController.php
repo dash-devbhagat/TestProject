@@ -68,6 +68,7 @@ class CartController extends Controller
         $cartItem = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $product->id)
             ->where('product_variant_id', $variant->id)
+            ->where('is_free', false) // Only merge with paid items
             ->first();
 
         if ($cartItem) {
@@ -79,18 +80,12 @@ class CartController extends Controller
                 'product_id' => $product->id,
                 'product_variant_id' => $variant->id,
                 'quantity' => $request->quantity,
+                'is_free' => false, // Explicitly mark as paid
             ]);
         }
 
-        // Calculate the cart total
-        $cartTotal = $cart->items->sum(function ($item) {
-            $variant = $item->productVariant;
-            return $variant->price * $item->quantity;
-        });
-
-        // Update cart total in the database
-        $cart->cart_total = number_format($cartTotal, 2, '.', '');
-        $cart->save();
+        // Recalculate the cart total
+        $cart->recalculateTotal();
 
         return response()->json([
             'data' => [
@@ -113,7 +108,6 @@ class CartController extends Controller
             ],
         ], 200);
     }
-
 
 
 
