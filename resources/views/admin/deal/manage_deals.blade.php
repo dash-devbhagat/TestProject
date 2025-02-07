@@ -7,12 +7,12 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <div class="container-fluid">
-            <div class="row">
+            <div class="row mb-2">
                 <div class="col-sm-6 d-flex align-items-center">
                     <h1 class="me-2" style="margin-top: -6px;">Manage Deals</h1>
                     <!-- Info Icon for Deal Types -->
                     <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#dealTypesModal">
-                        <i class="fas fa-info-circle" style="font-size: 1.5em;" title="Click to see deal type details"></i>
+                        <i class="fas fa-info-circle" style="font-size: 1.5em;" data-bs-toggle="tooltip" title="Deal Type Information"></i>
                     </a>
                 </div>
                 <!-- Add User Button on the right side -->
@@ -21,23 +21,25 @@
                         Deal</a>
                 </div>
             </div>
+
+            <!-- {{-- Bootstrap Alert --}} -->
+            @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+
+            @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+
+
         </div><!-- /.container-fluid -->
     </section>
-
-    <!-- {{-- Bootstrap Alert --}} -->
-    @if (session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    @endif
-
-    @if (session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    @endif
 
 
     <!-- Main content -->
@@ -57,6 +59,7 @@
                             <th>Image</th>
                             <th>Start Date</th>
                             <th>End Date</th>
+                            <th>Renewal Time(Days)</th>
                             <th>Active Status</th>
                             <th>Action</th>
                         </tr>
@@ -81,6 +84,7 @@
                             </td>
                             <td>{{ \Carbon\Carbon::parse($deal->start_date)->format('d-m-Y') }}</td>
                             <td>{{ \Carbon\Carbon::parse($deal->end_date)->format('d-m-Y') }}</td>
+                            <td>{{ $deal->renewal_time }}</td>
                             <td class="text-center">
                                 <!-- Active/Inactive Toggle Icon -->
                                 <a href="javascript:void(0);" id="toggleStatusBtn{{ $deal->id }}"
@@ -133,7 +137,7 @@
 
 <!-- Modal for Showing Deal Types Information -->
 <div class="modal fade" id="dealTypesModal" tabindex="-1" aria-labelledby="dealTypesModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="dealTypesModalLabel">Deal Types Information</h5>
@@ -143,12 +147,32 @@
                 <!-- Content for Deal Types Information -->
                 <h5><strong>BOGO (Buy One Get One)</strong></h5>
                 <p>With this deal type, customers can get a free product after buying one product of equal or lesser value.</p>
+                <ul>
+                    <li><strong>Buy 1 Get 1 Free:</strong> Purchase 1 product, and get 1 free.</li>
+                    <li><strong>Buy 2 Get 1 Free:</strong> Purchase 2 products, and get 1 free.</li>
+                    <li><strong>Buy 5 Get 2 Free:</strong> Purchase 5 products, and get 2 free.</li>
+                </ul>
 
                 <h5><strong>Combo Deals</strong></h5>
                 <p>This deal type allows customers to purchase multiple products in a package at a discounted price.</p>
+                <ul>
+                    <li><strong>Buy 1 XYZ product + 1 ABC product for 200 rupees:</strong> Purchase both products together at a special price.</li>
+                    <li><strong>Buy 3 ABC products for 150 rupees:</strong> Purchase 3 ABC products at a discounted price.</li>
+                </ul>
 
                 <h5><strong>Discount</strong></h5>
                 <p>Discount deals allow customers to get a certain percentage or fixed amount off the original price of the product.</p>
+                <ul>
+                    <li><strong>10% discount on 1000 rs cart total:</strong> Get 10% off when your total cart value reaches 1000 rs.</li>
+                    <li><strong>200 rs discount on 2000 rs cart total:</strong> Get a 200 rs discount when your total cart value reaches 2000 rs.</li>
+                </ul>
+
+                <h5><strong>Flat</strong></h5>
+                <p>Flat discount deals provide a fixed amount or percentage discount on a specific product or category.</p>
+                <ul>
+                    <li><strong>10% flat discount on ABC product:</strong> A 10% flat discount on the price of 1 ABC product, making it cost 450 rs (originally 500 rs).</li>
+                    <li><strong>100 rs flat off on XYZ product:</strong> Get 100 rs off the price of 1 XYZ product, making it cost 400 rs (originally 500 rs).</li>
+                </ul>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -156,6 +180,7 @@
         </div>
     </div>
 </div>
+
 
 
 
@@ -236,83 +261,12 @@
             });
         });
 
-        // // Toggle Fields based on type
-        // function toggleFields() {
-        //     let dealType = $('#type').val();
-        //     $('.deal-fields').hide();
-
-        //     if (dealType === 'BOGO') {
-        //         $('#bogo-fields').show();
-        //     } else if (dealType === 'Combo') {
-        //         $('#combo-fields').show();
-        //     } else if (dealType === 'Discount') {
-        //         $('#discount-fields').show();
-        //     }
-        // }
-
-        // // Trigger the function on change
-        // $('#type').change(toggleFields);
-
-        // // Run on page load in case of form repopulation
-        // toggleFields();
-
-
-
-
-        // // script to load variants dropdown
-        // // Modify the `loadVariants()` function to handle both Combo and BOGO
-        // function loadVariants(productSelect, variantSelect, freeProduct = false) {
-        //     let productId = $(productSelect).val();
-        //     let variantDropdown = $(variantSelect);
-
-        //     variantDropdown.html('<option value="">Loading...</option>');
-
-        //     if (productId) {
-        //         $.ajax({
-        //             url: "/get-product-variants/" + productId,
-        //             type: "GET",
-        //             success: function(response) {
-        //                 console.log("Variants Loaded: ", response); // Debugging step
-        //                 variantDropdown.html('<option value="">Select Variant</option>');
-        //                 if (response.length > 0) {
-        //                     response.forEach(function(variant) {
-        //                         variantDropdown.append(`<option value="${variant.id}">${variant.unit}</option>`);
-        //                     });
-        //                 } else {
-        //                     variantDropdown.html('<option value="">No Variants Available</option>');
-        //                 }
-        //             },
-        //             error: function(xhr, status, error) {
-        //                 console.error("Error loading variants:", error);
-        //                 variantDropdown.html('<option value="">Error Loading Variants</option>');
-        //             }
-        //         });
-        //     } else {
-        //         variantDropdown.html('<option value="">Select Product First</option>');
-        //     }
-        // }
-
-        // // Event listener for normal product selection
-        // $('#product_id').change(function() {
-        //     loadVariants('#product_id', '#product_variant_id');
-        // });
-
-        // // Event listener for Combo and BOGO free product variant selection
-        // $('#b_free_product_id, #c_free_product_id').change(function() {
-        //     let freeProductId = $(this).val();
-        //     let variantSelect = $(this).attr('id') === 'b_free_product_id' ? '#b_free_product_variant_id' : '#c_free_product_variant_id';
-        //     loadVariants(this, variantSelect, true); // true indicates this is for a free product
-        // });
-
-
 
 
         // // Open the modal when the info icon is clicked
         // $('.fas.fa-info-circle').on('click', function() {
         //     $('#dealTypesModal').modal('show');
         // });
-
-
 
 
     });
