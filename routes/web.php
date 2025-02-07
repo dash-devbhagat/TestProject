@@ -112,6 +112,8 @@ Route::middleware(['auth', 'check.active'])->group(function () {
     Route::resource('deal', DealController::class);
     Route::post('/deal/{id}/toggle-status', [DealController::class, 'toggleStatus']);
     Route::get('/get-product-variants/{product_id}', [DealController::class, 'getProductVariants'])->name('get.product.variants');
+    Route::get('/get-product-price/{variantId}', [DealController::class, 'getProductPrice']);
+
 
 
     Route::get('/bonus-payment-history', [BonusPaymentHistoryController::class, 'index'])->name('ph.index');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Deal;
+use App\Models\DealComboProduct;
 use App\Models\Product;
 use App\Models\ProductVarient;
 use Illuminate\Http\Request;
@@ -40,38 +41,51 @@ class DealController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'type' => 'required|in:BOGO,Combo,Discount',
+            'type' => 'required|in:BOGO,Combo,Discount,Flat',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'product_id' => 'nullable|exists:products,id',
-            'product_variant_id' => 'nullable|exists:product_varients,id',
+            'renewal_time' => 'nullable|integer|min:1',
         ]);
 
         // Additional validation based on deal type
         if ($request->type == 'BOGO') {
             $request->validate([
-                'min_quantity' => 'nullable|integer|min:1',
-                'free_quantity' => 'nullable|integer|min:1',
-                'b_free_product_id' => 'nullable|exists:products,id',
-                'b_free_product_variant_id' => 'nullable|exists:product_varients,id',
+                'buy_product_id' => 'nullable|exists:products,id',
+                'buy_variant_id' => 'nullable|exists:product_varients,id',
+                'buy_quantity' => 'nullable|integer|min:1',
+                'get_product_id' => 'nullable|exists:products,id',
+                'get_variant_id' => 'nullable|exists:product_varients,id',
+                'get_quantity' => 'nullable|integer|min:1',
             ]);
         } elseif ($request->type == 'Combo') {
             $request->validate([
-                'quantity' => 'nullable|integer|min:1',
-                'camount' => 'nullable|numeric|min:0',
-                'c_free_product_id' => 'nullable|exists:products,id',
-                'c_free_product_variant_id' => 'nullable|exists:product_varients,id',
+                'product_id' => 'nullable|array|min:1',
+                'product_id.*' => 'exists:products,id',
+                'product_variant_id' => 'nullable|array|min:1',
+                'product_variant_id.*' => 'exists:product_varients,id',
+                'quantity' => 'nullable|array|min:1',
+                'quantity.*' => 'integer|min:1',
+                'combo_discounted_amount' => 'nullable|numeric|min:0',
             ]);
         } elseif ($request->type == 'Discount') {
             $request->validate([
-                'damount' => 'nullable|numeric|min:0',
-                'percentage' => 'nullable|numeric|min:0|max:100',
+                'min_cart_amount' => 'nullable|numeric|min:0',
+                'discount_type' => 'nullable|in:fixed,percentage',
+                'discount_amount' => 'nullable|numeric|min:0',
+            ]);
+        } elseif ($request->type == 'Flat') {
+            $request->validate([
+                'flat_product_id' => 'nullable|exists:products,id',
+                'flat_variant_id' => 'nullable|exists:product_varients,id',
+                'flat_quantity' => 'nullable|integer|min:1',
+                'flat_discount_type' => 'nullable|in:fixed,percentage',
+                'flat_discount_amount' => 'nullable|numeric|min:0',
             ]);
         }
 
-         // Check if an image was uploaded
-         if ($request->hasFile('image')) {
+        // Check if an image was uploaded
+        if ($request->hasFile('image')) {
             // Store the image in the public storage folder and get the path
             $path = $request->file('image')->store('images/deals', 'public');
         } else {
@@ -79,26 +93,7 @@ class DealController extends Controller
             $path = null;
         }
 
-        // Logic to store free product and variant id value
-        $free_product_id = null;
-        $free_product_variant_id = null;
-        if ($request->type == 'BOGO') {
-            $free_product_id = $request->b_free_product_id;
-            $free_product_variant_id = $request->b_free_product_variant_id;
-        } elseif ($request->type == 'Combo') {
-            $free_product_id = $request->c_free_product_id;
-            $free_product_variant_id = $request->c_free_product_variant_id;
-        }
-
-        // Logic to store amount value
-        $amount = null;
-        if ($request->type == 'Combo' && $request->has('camount')) {
-            $amount = $request->camount;
-        } elseif ($request->type == 'Discount' && $request->has('damount')) {
-            $amount = $request->damount;
-        }
-
-        // Create the Deal
+        // Create the deal with all necessary fields
         $deal = Deal::create([
             'title' => $request->title,
             'description' => $request->description,
@@ -106,19 +101,43 @@ class DealController extends Controller
             'image' => $path,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
-            'product_id' => $request->product_id,
-            'product_variant_id' => $request->product_variant_id,
-            'min_quantity' => $request->min_quantity ?? null,
-            'free_quantity' => $request->free_quantity ?? null,
-            'free_product_id' => $free_product_id,
-            'free_product_variant_id' => $free_product_variant_id,
-            'quantity' => $request->quantity ?? null,
-            'amount' => $amount,
-            'percentage' => $request->percentage ?? null,
+            'renewal_time' => $request->renewal_time,
+            // BOGO & Flat
+            'buy_product_id' => $request->type == 'BOGO' ? $request->buy_product_id : $request->flat_product_id,
+            'buy_variant_id' => $request->type == 'BOGO' ? $request->buy_variant_id : $request->flat_variant_id,
+            'buy_quantity' => $request->type == 'BOGO' ? $request->buy_quantity : $request->flat_quantity,
+            'get_product_id' => $request->type == 'BOGO' ? $request->get_product_id : null,
+            'get_variant_id' => $request->type == 'BOGO' ? $request->get_variant_id : null,
+            'get_quantity' => $request->type == 'BOGO' ? $request->get_quantity : null,
+            // Combo
+            'combo_discounted_amount' => $request->type == 'Combo' ? $request->combo_discounted_amount : null,
+            // Discount & Flat
+            'min_cart_amount' => $request->type == 'Discount' ? $request->min_cart_amount : null,
+            'discount_type' => $request->type == 'Discount' ? $request->discount_type : $request->flat_discount_type,
+            'discount_amount' => $request->type == 'Discount' ? $request->discount_amount : $request->flat_discount_amount,
+            // Flat
+            // 'buy_product_id' => $request->type == 'Flat' ? $request->flat_product_id : null,
+            // 'buy_variant_id' => $request->type == 'Flat' ? $request->flat_variant_id : null,
+            // 'buy_quantity' => $request->type == 'Flat' ? $request->flat_quantity : null,
+            // 'discount_type' => $request->type == 'Flat' ? $request->flat_discount_type : null,
+            // 'discount_amount' => $request->type == 'Flat' ? $request->flat_discount_amount : null,
         ]);
+
+        // If it's a combo deal, store related products in deal_combo_products table
+        if ($request->type == 'Combo') {
+            foreach ($request->product_id as $index => $productId) {
+                DealComboProduct::create([
+                    'deal_id' => $deal->id,
+                    'product_id' => $productId,
+                    'variant_id' => $request->product_variant_id[$index],
+                    'quantity' => $request->quantity[$index],
+                ]);
+            }
+        }
 
         return redirect()->route('deal.index')->with('success', 'Deal Created Successfully!');
     }
+
 
     /**
      * Display the specified resource.
@@ -150,7 +169,7 @@ class DealController extends Controller
     public function destroy(string $id)
     {
         $deal = Deal::findOrFail($id);
-        
+
         if ($deal->image) {
             Storage::disk('public')->delete($deal->image);
         }
@@ -180,5 +199,16 @@ class DealController extends Controller
             ->select('id', 'unit')
             ->get();
         return response()->json($variants);
+    }
+
+    public function getProductPrice($variantId)
+    {
+        $variant = ProductVarient::find($variantId);
+
+        if ($variant) {
+            return response()->json(['price' => $variant->price]);
+        }
+
+        return response()->json(['price' => 0], 404);
     }
 }
