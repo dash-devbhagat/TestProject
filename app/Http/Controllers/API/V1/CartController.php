@@ -391,14 +391,6 @@ class CartController extends Controller
 
         /*
          * BONUS DEDUCTION LOGIC:
-         *
-         * For each bonus payment (i.e. records from the payments table where a bonus is attached),
-         * we calculate a potential deduction as:
-         *
-         *    deduction = remaining_amount * (bonus_percentage / 100)
-         *
-         * The total bonus deduction is the sum across all active bonus payments.
-         * However, if the total bonus deduction exceeds the cart total, then we do not apply any bonus.
          */
         $totalBonusDeduction = 0;
         $bonusDeductionsDetails = []; // to keep per-bonus info
@@ -434,17 +426,26 @@ class CartController extends Controller
 
         /*
          * Check if a deal has been redeemed.
-         * If a discount deal is redeemed, we calculate its discount value based on the ORIGINAL cart total
-         * (even though the bonus deduction has already been applied) and then subtract it from the bonus-adjusted subtotal.
-         * For non-discount deals (BOGO / Combo), we simply pass along their details.
          */
-        $redeemedDeal = DealsRedeems::where('user_id', $user->id)->latest()->first();
+        $redeemedDeal = DealsRedeems::where('user_id', $user->id)
+            ->whereNull('order_id') // Ensure it's not used in an order
+            ->latest()
+            ->first();
+
         $discountValue = 0;
         $dealDetails = null;
+
         if ($redeemedDeal) {
             $deal = Deal::find($redeemedDeal->deal_id);
-            if ($deal) {
-                if ($deal->type === 'Discount') {
+
+            if ($deal && $deal->type === 'Discount') {
+                // Check if original cart total meets the deal's minimum requirement
+                if ($cartTotal < $deal->min_cart_amount) {
+                    // Delete the redeemed deal as conditions are no longer met
+                    $redeemedDeal->delete();
+                    $redeemedDeal = null;
+                    $deal = null;
+                } else {
                     // Calculate discount based on the original cart total
                     if ($deal->discount_type === 'percentage') {
                         $discountValue = ($cartTotal * $deal->discount_amount) / 100;
@@ -467,71 +468,11 @@ class CartController extends Controller
                         'discount_amount' => $deal->discount_amount,
                         'saved_amount' => number_format($discountValue, 2, '.', ''),
                     ];
-                } else {
-                    // For BOGO and Combo deals, use your existing logic.
-                    if ($deal->type === 'BOGO') {
-                        $variant = ProductVarient::where('id', $deal->get_variant_id)
-                            ->where('product_id', $deal->get_product_id)
-                            ->first();
-                        if ($variant) {
-                            $savedAmount = $variant->price * $deal->get_quantity;
-                        } else {
-                            $savedAmount = 0;
-                        }
-                        $dealDetails = [
-                            'deal_id' => $deal->id,
-                            'type' => $deal->type,
-                            'title' => $deal->title,
-                            'description' => $deal->description,
-                            'image' => $deal->image,
-                            'start_date' => $deal->start_date,
-                            'end_date' => $deal->end_date,
-                            'renewal_time' => $deal->renewal_time,
-                            'is_active' => $deal->is_active,
-                            'buy_product_id' => $deal->buy_product_id,
-                            'buy_variant_id' => $deal->buy_variant_id,
-                            'buy_quantity' => $deal->buy_quantity,
-                            'get_product_id' => $deal->get_product_id,
-                            'get_variant_id' => $deal->get_variant_id,
-                            'get_quantity' => $deal->get_quantity,
-                            'saved_amount' => number_format($savedAmount, 2, '.', ''),
-                        ];
-                    } elseif ($deal->type === 'Combo') {
-                        $originalTotal = 0;
-                        foreach ($deal->dealComboProducts as $combo) {
-                            $variant = ProductVarient::find($combo->variant_id);
-                            if ($variant) {
-                                $originalTotal += $variant->price * $combo->quantity;
-                            }
-                        }
-                        $savedAmount = number_format($originalTotal - $deal->combo_discounted_amount, 2, '.', '');
-                        $dealDetails = [
-                            'deal_id' => $deal->id,
-                            'type' => $deal->type,
-                            'title' => $deal->title,
-                            'description' => $deal->description,
-                            'image' => $deal->image,
-                            'start_date' => $deal->start_date,
-                            'end_date' => $deal->end_date,
-                            'renewal_time' => $deal->renewal_time,
-                            'is_active' => $deal->is_active,
-                            'combo_products' => $deal->dealComboProducts->map(function ($combo) {
-                                return [
-                                    'product_id' => $combo->product_id,
-                                    'variant_id' => $combo->variant_id,
-                                    'quantity' => $combo->quantity,
-                                ];
-                            }),
-                            'combo_discounted_amount' => $deal->combo_discounted_amount,
-                            'saved_amount' => $savedAmount,
-                        ];
-                    }
                 }
             }
         }
 
         // Apply discount (if any) on top of the bonus-adjusted subtotal.
-        // The discount is calculated using the original cart total.
         $finalCartTotal = $subtotalAfterBonus;
         if ($discountValue > 0) {
             $finalCartTotal = $subtotalAfterBonus - $discountValue;
@@ -644,7 +585,6 @@ class CartController extends Controller
                     'address' => $branch->address,
                     'logo' => $branch->logo,
                 ],
-
             ],
             'items' => $items,
             'meta' => [
