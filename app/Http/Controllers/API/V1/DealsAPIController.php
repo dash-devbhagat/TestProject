@@ -172,6 +172,16 @@ class DealsAPIController extends Controller
             $unredeemedRecord->delete();
         }
 
+        // Check for any unredeemed records (pending payment) and remove them
+        $unredeemedRecords = DealsRedeems::where('user_id', $user->id)
+            ->whereNull('order_id')
+            ->get();
+
+        foreach ($unredeemedRecords as $record) {
+            $record->delete();
+        }
+
+
         $cart = Cart::firstOrCreate(['user_id' => $user->id]);
 
         // Process based on deal type
@@ -184,6 +194,68 @@ class DealsAPIController extends Controller
             foreach ($deal->dealComboProducts as $combo) {
                 $this->addToCart($cart, $combo->product_id, $combo->variant_id, $combo->quantity, false);
             }
+        } elseif ($deal->type === 'Discount') {
+            // For Discount deals, check if the cart meets the minimum amount
+            if ($cart->cart_total < $deal->min_cart_amount) {
+                return response()->json([
+                    'meta' => [
+                        'success' => false,
+                        'message' => 'Cart total must be at least ' . $deal->min_cart_amount . ' to redeem this deal.',
+                    ],
+                ], 400);
+            }
+
+            // Calculate saved amount
+            $savedAmount = $deal->discount_type === 'percentage'
+                ? ($cart->cart_total * $deal->discount_amount / 100)
+                : $deal->discount_amount;
+
+            // Create a redeem record
+            DealsRedeems::create([
+                'deal_id' => $deal->id,
+                'user_id' => $user->id,
+                'is_redeemed' => 0,
+            ]);
+
+            return response()->json([
+                'data' => [
+                    'cart_id' => $cart->id,
+                    'cart_items' => $cart->items->map(function ($item) {
+                        return [
+                            'cart_item_id' => $item->id,
+                            'product_id' => $item->product_id,
+                            'product_name' => optional($item->product)->name,
+                            'variant_id' => $item->product_variant_id,
+                            'variant_name' => optional($item->variant)->unit,
+                            'quantity' => $item->quantity,
+                            'total_price' => number_format(optional($item->variant)->price * $item->quantity, 2, '.', ''),
+                            'is_free' => $item->is_free,
+                        ];
+                    }),
+                    'original_cart_total' => number_format($cart->cart_total, 2, '.', ''),
+                    'saved_amount' => number_format($savedAmount, 2, '.', ''),
+                    'final_cart_total' => number_format($cart->cart_total - $savedAmount, 2, '.', ''),
+                    'deals_details' => [
+                        'id' => $deal->id,
+                        'type' => $deal->type,
+                        'title' => $deal->title,
+                        'description' => $deal->description,
+                        'image' => $deal->image,
+                        'start_date' => $deal->start_date,
+                        'end_date' => $deal->end_date,
+                        'renewal_time' => $deal->renewal_time,
+                        'is_active' => $deal->is_active,
+                        'min_cart_amount' => $deal->min_cart_amount,
+                        'discount_type' => $deal->discount_type,
+                        'discount_amount' => $deal->discount_amount,
+                    ],
+                ],
+                'meta' => [
+                    'success' => true,
+                    'message' => 'Discount deal applied successfully.',
+                ],
+            ], 200);
+
         }
 
         // Mark the deal as redeemed (unredeemed until payment is successful)

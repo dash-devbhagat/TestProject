@@ -405,13 +405,9 @@ class CartController extends Controller
 
         // Assuming the user model has a relationship "payments" for bonus-related records
         foreach ($user->payments as $payment) {
-            // Find the bonus configuration for this payment record
             $bonus = Bonus::find($payment->bonus_id);
             if ($bonus && $bonus->is_active) {
-                // Use the current remaining bonus amount for calculation.
-                // (The available bonus for deduction is what remains.)
                 $availableBonus = (float) $payment->remaining_amount;
-                // Compute the potential deduction for this bonus record
                 $deduction = $availableBonus * ((float) $bonus->percentage / 100);
                 $totalBonusDeduction += $deduction;
                 $bonusDeductionsDetails[] = [
@@ -424,8 +420,6 @@ class CartController extends Controller
             }
         }
 
-        // Determine if bonus deduction is applicable.
-        // (Bonus is applied only if the total bonus deduction does not exceed the cart total.)
         if ($totalBonusDeduction > $cartTotal) {
             // Do not apply bonus deduction if bonus > cart total.
             $appliedBonusDeduction = 0;
@@ -434,17 +428,124 @@ class CartController extends Controller
             $appliedBonusDeduction = $totalBonusDeduction;
         }
 
-        // If bonus details array is empty, set it to null.
-        if (empty($bonusDeductionsDetails)) {
-            $bonusDeductionsDetails = null;
+        // Subtotal after bonus deduction
+        $subtotalAfterBonus = $cartTotal - $appliedBonusDeduction;
+        $formattedSubtotalAfterBonus = number_format($subtotalAfterBonus, 2, '.', '');
+
+        /*
+         * Check if a deal has been redeemed.
+         * If a discount deal is redeemed, we calculate its discount value based on the ORIGINAL cart total
+         * (even though the bonus deduction has already been applied) and then subtract it from the bonus-adjusted subtotal.
+         * For non-discount deals (BOGO / Combo), we simply pass along their details.
+         */
+        $redeemedDeal = DealsRedeems::where('user_id', $user->id)->latest()->first();
+        $discountValue = 0;
+        $dealDetails = null;
+        if ($redeemedDeal) {
+            $deal = Deal::find($redeemedDeal->deal_id);
+            if ($deal) {
+                if ($deal->type === 'Discount') {
+                    // Calculate discount based on the original cart total
+                    if ($deal->discount_type === 'percentage') {
+                        $discountValue = ($cartTotal * $deal->discount_amount) / 100;
+                    } else {
+                        $discountValue = $deal->discount_amount;
+                    }
+                    $discountValue = round($discountValue, 2);
+                    $dealDetails = [
+                        'deal_id' => $deal->id,
+                        'type' => $deal->type,
+                        'title' => $deal->title,
+                        'description' => $deal->description,
+                        'image' => $deal->image,
+                        'start_date' => $deal->start_date,
+                        'end_date' => $deal->end_date,
+                        'renewal_time' => $deal->renewal_time,
+                        'is_active' => $deal->is_active,
+                        'min_cart_amount' => $deal->min_cart_amount,
+                        'discount_type' => $deal->discount_type,
+                        'discount_amount' => $deal->discount_amount,
+                        'saved_amount' => number_format($discountValue, 2, '.', ''),
+                    ];
+                } else {
+                    // For BOGO and Combo deals, use your existing logic.
+                    if ($deal->type === 'BOGO') {
+                        $variant = ProductVarient::where('id', $deal->get_variant_id)
+                            ->where('product_id', $deal->get_product_id)
+                            ->first();
+                        if ($variant) {
+                            $savedAmount = $variant->price * $deal->get_quantity;
+                        } else {
+                            $savedAmount = 0;
+                        }
+                        $dealDetails = [
+                            'deal_id' => $deal->id,
+                            'type' => $deal->type,
+                            'title' => $deal->title,
+                            'description' => $deal->description,
+                            'image' => $deal->image,
+                            'start_date' => $deal->start_date,
+                            'end_date' => $deal->end_date,
+                            'renewal_time' => $deal->renewal_time,
+                            'is_active' => $deal->is_active,
+                            'buy_product_id' => $deal->buy_product_id,
+                            'buy_variant_id' => $deal->buy_variant_id,
+                            'buy_quantity' => $deal->buy_quantity,
+                            'get_product_id' => $deal->get_product_id,
+                            'get_variant_id' => $deal->get_variant_id,
+                            'get_quantity' => $deal->get_quantity,
+                            'saved_amount' => number_format($savedAmount, 2, '.', ''),
+                        ];
+                    } elseif ($deal->type === 'Combo') {
+                        $originalTotal = 0;
+                        foreach ($deal->dealComboProducts as $combo) {
+                            $variant = ProductVarient::find($combo->variant_id);
+                            if ($variant) {
+                                $originalTotal += $variant->price * $combo->quantity;
+                            }
+                        }
+                        $savedAmount = number_format($originalTotal - $deal->combo_discounted_amount, 2, '.', '');
+                        $dealDetails = [
+                            'deal_id' => $deal->id,
+                            'type' => $deal->type,
+                            'title' => $deal->title,
+                            'description' => $deal->description,
+                            'image' => $deal->image,
+                            'start_date' => $deal->start_date,
+                            'end_date' => $deal->end_date,
+                            'renewal_time' => $deal->renewal_time,
+                            'is_active' => $deal->is_active,
+                            'combo_products' => $deal->dealComboProducts->map(function ($combo) {
+                                return [
+                                    'product_id' => $combo->product_id,
+                                    'variant_id' => $combo->variant_id,
+                                    'quantity' => $combo->quantity,
+                                ];
+                            }),
+                            'combo_discounted_amount' => $deal->combo_discounted_amount,
+                            'saved_amount' => $savedAmount,
+                        ];
+                    }
+                }
+            }
         }
 
-        // New cart total after bonus (if any applied)
-        $newCartTotal = $cartTotal - $appliedBonusDeduction;
-        $formattedNewCartTotal = number_format($newCartTotal, 2, '.', '');
+        // Apply discount (if any) on top of the bonus-adjusted subtotal.
+        // The discount is calculated using the original cart total.
+        $finalCartTotal = $subtotalAfterBonus;
+        if ($discountValue > 0) {
+            $finalCartTotal = $subtotalAfterBonus - $discountValue;
+            if ($finalCartTotal < 0) {
+                $finalCartTotal = 0;
+            }
+        }
+        $formattedFinalCartTotal = number_format($finalCartTotal, 2, '.', '');
+
+        $cart->cart_total = $formattedFinalCartTotal; // Store the cart total in the database
+        $cart->save();
 
         // -----------------------------
-        // Continue with your additional charges calculation
+        // Additional charges calculation using the final cart total (after bonus & discount)
         // -----------------------------
         $charges = Charge::where('is_active', 1)->get();
         $additionalCharges = [];
@@ -452,12 +553,11 @@ class CartController extends Controller
 
         foreach ($charges as $charge) {
             if ($charge->type === 'percentage') {
-                $chargeAmount = ($newCartTotal * $charge->value) / 100;
-            } else { // Rupees
+                $chargeAmount = ($finalCartTotal * $charge->value) / 100;
+            } else { // Fixed amount
                 $chargeAmount = $charge->value;
             }
-
-            $chargeAmount = (float) number_format($chargeAmount, 2, '.', '');
+            $chargeAmount = round($chargeAmount, 2);
             $additionalCharges[] = [
                 'name' => $charge->name,
                 'type' => $charge->type,
@@ -467,8 +567,7 @@ class CartController extends Controller
             $totalAdditionalCharges += $chargeAmount;
         }
 
-        // Grand Total is based on the new cart total (after bonus deduction) plus additional charges
-        $grandTotal = $newCartTotal + $totalAdditionalCharges;
+        $grandTotal = $finalCartTotal + $totalAdditionalCharges;
         $formattedGrandTotal = number_format($grandTotal, 2, '.', '');
 
         // Save total_charges and grand_total to the cart table
@@ -526,61 +625,26 @@ class CartController extends Controller
             ];
         }
 
-        $redeemedDeal = DealsRedeems::where('user_id', $user->id)->latest()->first();
-        $dealDetails = null;
-        $savedAmount = 0;
-
-        if ($redeemedDeal) {
-            $deal = Deal::find($redeemedDeal->deal_id);
-            if ($deal) {
-                $variant = ProductVarient::where('id', $deal->get_variant_id)
-                    ->where('product_id', $deal->get_product_id)
-                    ->first();
-
-                if ($variant) {
-                    $savedAmount = $variant->price * $deal->get_quantity;
-                }
-
-                $dealDetails = [
-                    'deal_id' => $deal->id,
-                    'type' => $deal->type,
-                    'title' => $deal->title,
-                    'description' => $deal->description,
-                    'image' => $deal->image,
-                    'start_date' => $deal->start_date,
-                    'end_date' => $deal->end_date,
-                    'renewal_time' => $deal->renewal_time,
-                    'is_active' => $deal->is_active,
-                    'buy_product_id' => $deal->buy_product_id,
-                    'buy_variant_id' => $deal->buy_variant_id,
-                    'buy_quantity' => $deal->buy_quantity,
-                    'get_product_id' => $deal->get_product_id,
-                    'get_variant_id' => $deal->get_variant_id,
-                    'get_quantity' => $deal->get_quantity,
-                    'saved_amount' => number_format($savedAmount, 2, '.', ''), // Add saved amount
-                ];
-            }
-        }
-
-        // Return response including bonus details (or null if none available)
+        // Return response including bonus, discount (if applied) and coupon details
         return response()->json([
             'data' => [
                 'cart_id' => $cart->id,
                 'original_cart_total' => $formattedCartTotal,
                 'bonus_deduction_applied' => number_format($appliedBonusDeduction, 2, '.', ''),
                 'bonus_details' => $bonusDeductionsDetails,
-                'new_cart_total' => $formattedNewCartTotal,
+                'deals_details' => $dealDetails,
+                'coupon_details' => $couponDetails,
+                'new_cart_total' => $formattedFinalCartTotal,
                 'additional_charges' => $additionalCharges,
                 'total_charges' => number_format($totalAdditionalCharges, 2, '.', ''),
                 'grand_total' => $formattedGrandTotal,
-                'coupon_details' => $couponDetails,
                 'selected_branch' => [
                     'id' => $branch->id,
                     'name' => $branch->name,
                     'address' => $branch->address,
                     'logo' => $branch->logo,
                 ],
-                'deals_details' => $dealDetails,
+
             ],
             'items' => $items,
             'meta' => [
@@ -589,6 +653,7 @@ class CartController extends Controller
             ],
         ], 200);
     }
+
 
 
 }
