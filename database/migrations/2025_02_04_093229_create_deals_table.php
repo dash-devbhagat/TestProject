@@ -25,7 +25,6 @@ return new class extends Migration {
             $table->unsignedBigInteger('get_product_id')->nullable(); // Get product ID
             $table->unsignedBigInteger('get_variant_id')->nullable(); // Get product variant ID
             $table->integer('get_quantity')->nullable(); // Get product quantity
-            $table->decimal('actual_amount', 10, 2)->nullable(); // Actual amount
 
             // Combo deal fields
             $table->decimal('combo_discounted_amount', 10, 2)->nullable(); // Combo discounted amount

@@ -64,25 +64,15 @@ class CartController extends Controller
             ], 200);
         }
 
-        // Check if Product is Already in Cart
-        $cartItem = CartItem::where('cart_id', $cart->id)
-            ->where('product_id', $product->id)
-            ->where('product_variant_id', $variant->id)
-            ->where('is_free', false) // Only merge with paid items
-            ->first();
-
-        if ($cartItem) {
-            $cartItem->quantity += $request->quantity;
-            $cartItem->save();
-        } else {
-            $cartItem = CartItem::create([
-                'cart_id' => $cart->id,
-                'product_id' => $product->id,
-                'product_variant_id' => $variant->id,
-                'quantity' => $request->quantity,
-                'is_free' => 0, // Explicitly mark as paid
-            ]);
-        }
+        // Always create a new cart item for non-deal additions
+        $cartItem = CartItem::create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_variant_id' => $variant->id,
+            'quantity' => $request->quantity,
+            'is_free' => false,
+            'dealid' => null, // Explicitly set dealid to null
+        ]);
 
         // Recalculate the cart total
         $cart->recalculateTotal();
@@ -101,7 +91,7 @@ class CartController extends Controller
                     'is_free' => $cartItem->is_free,
                 ],
                 'total_price' => number_format($variant->price * $cartItem->quantity, 2, '.', ''),
-                'cart_total' => $cart->cart_total, // Include the updated cart total
+                'cart_total' => $cart->cart_total,
             ],
             'meta' => [
                 'success' => true,
@@ -141,36 +131,74 @@ class CartController extends Controller
             ], 200);
         }
 
-        // Use the saved cart total from the database
         $cartTotal = $cart->cart_total;
 
-        $items = $cartItems->map(function ($item) {
+        $mergedItems = [];
+        $dealItems = [];
+
+        foreach ($cartItems as $item) {
             $variant = $item->productVariant;
-            return [
-                'cart_item_id' => $item->id,
-                'product_id' => $item->product->id,
-                'product_name' => $item->product->name,
-                'product_variant_id' => $variant->id,
-                'variant' => $variant->unit,
-                'price' => number_format($variant->price, 2, '.', ''),  // Fetch the price dynamically from product_varients
-                'quantity' => $item->quantity,
-                'is_free' => $item->is_free,
-                'total_price' => number_format($variant->price * $item->quantity, 2, '.', ''),
-            ];
+            $key = $item->product_id . '-' . $item->product_variant_id . '-' . $item->is_free;
+
+            if ($item->dealid) {
+                $dealItems[] = [
+                    'cart_item_id' => $item->id,
+                    'product_id' => $item->product->id,
+                    'product_name' => $item->product->name,
+                    'product_variant_id' => $variant->id,
+                    'variant' => $variant->unit,
+                    'price' => number_format($variant->price, 2, '.', ''),
+                    'quantity' => $item->quantity,
+                    'is_free' => $item->is_free,
+                    'total_price' => number_format($variant->price * $item->quantity, 2, '.', ''),
+                    'dealid' => $item->dealid,
+                ];
+            } else {
+                if (!isset($mergedItems[$key])) {
+                    $mergedItems[$key] = [
+                        'cart_item_id' => $item->id,
+                        'product_id' => $item->product->id,
+                        'product_name' => $item->product->name,
+                        'product_variant_id' => $variant->id,
+                        'variant' => $variant->unit,
+                        'price' => number_format($variant->price, 2, '.', ''),
+                        'quantity' => $item->quantity,
+                        'is_free' => $item->is_free,
+                        'total_price' => number_format($variant->price * $item->quantity, 2, '.', ''),
+                    ];
+                } else {
+                    $mergedItems[$key]['quantity'] += $item->quantity;
+                    $mergedItems[$key]['total_price'] = number_format(
+                        $mergedItems[$key]['quantity'] * $variant->price,
+                        2,
+                        '.',
+                        ''
+                    );
+                }
+            }
+        }
+
+        // Prepare response data and remove empty keys
+        $responseData = array_filter([
+            'cart_id' => $cart->id,
+            'items' => !empty($mergedItems) ? array_values($mergedItems) : null,
+            'deal_items' => !empty($dealItems) ? $dealItems : null,
+            'cart_total' => $cartTotal,
+        ], function ($value) {
+            return !is_null($value); // Remove null values
         });
 
         return response()->json([
-            'data' => [
-                'cart_id' => $cart->id,
-                'items' => $items,
-                'cart_total' => $cartTotal, // Fetch cart total directly from the database
-            ],
+            'data' => $responseData,
             'meta' => [
                 'success' => true,
                 'message' => 'Cart items fetched successfully.',
             ],
         ], 200);
     }
+
+
+
 
 
 
@@ -200,6 +228,17 @@ class CartController extends Controller
                 'meta' => [
                     'success' => false,
                     'message' => 'Cart item not found.',
+                ],
+            ], 200);
+        }
+
+        // Check if the cart item is part of a deal
+        if ($cartItem->dealid) {
+            return response()->json([
+                'data' => json_decode('{}'),
+                'meta' => [
+                    'success' => false,
+                    'message' => 'Deal items cannot be updated.',
                 ],
             ], 200);
         }
@@ -278,10 +317,23 @@ class CartController extends Controller
         // Get the cart associated with the item
         $cart = $cartItem->cart;
 
-        // Remove the cart item
-        $cartItem->delete();
+        // Check if the item is part of a deal
+        if ($cartItem->dealid) {
+            // Find all items in the cart that are part of the same deal
+            $dealItems = CartItem::where('cart_id', $cart->id)
+                ->where('dealid', $cartItem->dealid)
+                ->get();
 
-        // Recalculate the cart total after removing the item
+            // Remove all items associated with the deal
+            foreach ($dealItems as $dealItem) {
+                $dealItem->delete();
+            }
+        } else {
+            // If the item is not part of a deal, just remove the item
+            $cartItem->delete();
+        }
+
+        // Recalculate the cart total after removing the item(s)
         $cartTotal = $cart->items->sum(function ($item) {
             $variant = $item->productVariant;
             return $variant->price * $item->quantity;
@@ -295,7 +347,7 @@ class CartController extends Controller
             'data' => json_decode('{}'),
             'meta' => [
                 'success' => true,
-                'message' => 'Cart item removed successfully.',
+                'message' => 'Cart item(s) removed successfully.',
                 'cart_total' => $cart->cart_total, // Include the updated cart total
             ],
         ], 200);
@@ -319,6 +371,17 @@ class CartController extends Controller
             $cart->total_charges = 0; // If needed, reset other totals too
             $cart->grand_total = 0;   // If needed, reset other totals too
             $cart->save();
+
+            // Clear any unredeemed deals associated with the user
+            DealsRedeems::where('user_id', $user->id)
+                ->where('is_redeemed', 0) // Only clear unredeemed deals
+                ->whereNull('order_id')   // Ensure they are not linked to an order
+                ->delete();
+
+            // Clear any unused coupons associated with the user
+            UserCouponUsage::where('user_id', $user->id)
+                ->whereNull('order_id')   // Ensure they are not linked to an order
+                ->delete();
 
             return response()->json([
                 'data' => [],
@@ -423,6 +486,72 @@ class CartController extends Controller
         // Subtotal after bonus deduction
         $subtotalAfterBonus = $cartTotal - $appliedBonusDeduction;
         $formattedSubtotalAfterBonus = number_format($subtotalAfterBonus, 2, '.', '');
+
+        // Add this code after applying the bonus deduction and before applying the Discount deal
+
+        // Apply Flat deal discounts
+        $flatDeals = DealsRedeems::with([
+            'deal' => function ($query) {
+                $query->where('type', 'Flat');
+            }
+        ])
+            ->where('user_id', $user->id)
+            ->where('is_redeemed', 0)
+            ->get();
+
+        $flatDiscount = 0;
+        $deals_details = [];
+
+        foreach ($flatDeals as $redeem) {
+            $deal = $redeem->deal;
+            if (!$deal) {
+                continue;
+            }
+
+            $cartItem = CartItem::where('cart_id', $cart->id)
+                ->where('product_id', $deal->buy_product_id)
+                ->where('product_variant_id', $deal->buy_variant_id)
+                ->where('is_free', false)
+                ->first();
+
+            if ($cartItem) {
+                $quantity = min($cartItem->quantity, $deal->buy_quantity);
+                if ($quantity > 0) {
+                    if ($deal->discount_type === 'fixed') {
+                        $discount = $deal->discount_amount * $quantity;
+                    } else {
+                        $pricePerItem = $cartItem->variant->price;
+                        $discountPerItem = ($pricePerItem * $deal->discount_amount) / 100;
+                        $discount = $discountPerItem * $quantity;
+                    }
+                    $flatDiscount += $discount;
+
+                    $deals_details[] = [
+                        'deal_id' => $deal->id,
+                        'deal_type' => $deal->type,
+                        'title' => $deal->title,
+                        'description' => $deal->description,
+                        'image' => $deal->image,
+                        'start_date' => $deal->start_date,
+                        'end_date' => $deal->end_date,
+                        'discount' => number_format($discount, 2, '.', ''),
+                        'discount_type' => $deal->discount_type,
+                        'product_id' => $deal->buy_product_id,
+                        'variant_id' => $deal->buy_variant_id,
+                        'quantity_applied' => $quantity,
+                    ];
+                }
+            }
+        }
+
+        // Apply flat discount to subtotal after bonus
+        $subtotalAfterBonus -= $flatDiscount;
+        if ($subtotalAfterBonus < 0) {
+            $subtotalAfterBonus = 0;
+        }
+
+        // Update the final cart total
+        $finalCartTotal = $subtotalAfterBonus;
 
         /*
          * Check if a deal has been redeemed.
@@ -573,7 +702,7 @@ class CartController extends Controller
                 'original_cart_total' => $formattedCartTotal,
                 'bonus_deduction_applied' => number_format($appliedBonusDeduction, 2, '.', ''),
                 'bonus_details' => $bonusDeductionsDetails,
-                'deals_details' => $dealDetails,
+                'deals_details' => !empty($deals_details) ? $deals_details : null,
                 'coupon_details' => $couponDetails,
                 'new_cart_total' => $formattedFinalCartTotal,
                 'additional_charges' => $additionalCharges,

@@ -162,6 +162,20 @@ class DealsAPIController extends Controller
             }
         }
 
+        // Check if a coupon is already applied
+        $activeCoupon = UserCouponUsage::where('user_id', $user->id)
+            ->whereNull('order_id')
+            ->exists();
+
+        if ($activeCoupon) {
+            return response()->json([
+                'meta' => [
+                    'success' => false,
+                    'message' => 'A coupon is already applied. Deals cannot be applied with coupons.',
+                ],
+            ], 400);
+        }
+
         // Check for an unredeemed record (e.g., pending payment) and remove it if present
         $unredeemedRecord = DealsRedeems::where('user_id', $user->id)
             ->where('deal_id', $deal->id)
@@ -181,21 +195,17 @@ class DealsAPIController extends Controller
             $record->delete();
         }
 
-
         $cart = Cart::firstOrCreate(['user_id' => $user->id]);
 
         // Process based on deal type
         if ($deal->type === 'BOGO') {
-            // Existing BOGO logic...
-            $this->addToCart($cart, $deal->buy_product_id, $deal->buy_variant_id, $deal->buy_quantity, false);
-            $this->addToCart($cart, $deal->get_product_id, $deal->get_variant_id, $deal->get_quantity, true);
+            $this->addToCart($cart, $deal->buy_product_id, $deal->buy_variant_id, $deal->buy_quantity, false, $deal->id);
+            $this->addToCart($cart, $deal->get_product_id, $deal->get_variant_id, $deal->get_quantity, true, $deal->id);
         } elseif ($deal->type === 'Combo') {
-            // For combo deals, add each combo product as a paid item
             foreach ($deal->dealComboProducts as $combo) {
-                $this->addToCart($cart, $combo->product_id, $combo->variant_id, $combo->quantity, false);
+                $this->addToCart($cart, $combo->product_id, $combo->variant_id, $combo->quantity, false, $deal->id);
             }
         } elseif ($deal->type === 'Discount') {
-            // For Discount deals, check if the cart meets the minimum amount
             if ($cart->cart_total < $deal->min_cart_amount) {
                 return response()->json([
                     'meta' => [
@@ -205,12 +215,10 @@ class DealsAPIController extends Controller
                 ], 400);
             }
 
-            // Calculate saved amount
             $savedAmount = $deal->discount_type === 'percentage'
                 ? ($cart->cart_total * $deal->discount_amount / 100)
                 : $deal->discount_amount;
 
-            // Create a redeem record
             DealsRedeems::create([
                 'deal_id' => $deal->id,
                 'user_id' => $user->id,
@@ -255,25 +263,91 @@ class DealsAPIController extends Controller
                     'message' => 'Discount deal applied successfully.',
                 ],
             ], 200);
+        } elseif ($deal->type === 'Flat') {
+            $product = Product::find($deal->buy_product_id);
+            $variant = ProductVarient::find($deal->buy_variant_id);
+            if (!$product || !$variant) {
+                return response()->json([
+                    'meta' => [
+                        'success' => false,
+                        'message' => 'Product or variant not found.',
+                    ],
+                ], 400);
+            }
 
+            $this->addToCart($cart, $deal->buy_product_id, $deal->buy_variant_id, $deal->buy_quantity, false, $deal->id);
+
+            DealsRedeems::create([
+                'deal_id' => $deal->id,
+                'user_id' => $user->id,
+                'is_redeemed' => 0,
+            ]);
+
+            $cart->recalculateTotal();
+
+            $savedAmount = 0;
+            if ($deal->discount_type === 'fixed') {
+                $savedAmount = $deal->discount_amount * $deal->buy_quantity;
+            } else {
+                $savedAmount = ($variant->price * $deal->discount_amount / 100) * $deal->buy_quantity;
+            }
+
+            $dealDetails = [
+                'id' => $deal->id,
+                'type' => $deal->type,
+                'title' => $deal->title,
+                'description' => $deal->description,
+                'image' => $deal->image,
+                'start_date' => $deal->start_date,
+                'end_date' => $deal->end_date,
+                'renewal_time' => $deal->renewal_time,
+                'is_active' => $deal->is_active,
+                'product_id' => $deal->buy_product_id,
+                'variant_id' => $deal->buy_variant_id,
+                'quantity' => $deal->buy_quantity,
+                'discount_type' => $deal->discount_type,
+                'discount_amount' => $deal->discount_amount,
+            ];
+
+            $cartItems = $cart->items->map(function ($item) {
+                return [
+                    'cart_item_id' => $item->id,
+                    'product_id' => $item->product_id,
+                    'product_name' => optional($item->product)->name,
+                    'variant_id' => $item->product_variant_id,
+                    'variant_name' => optional($item->variant)->unit,
+                    'quantity' => $item->quantity,
+                    'total_price' => number_format(optional($item->variant)->price * $item->quantity, 2, '.', ''),
+                    'is_free' => $item->is_free,
+                ];
+            });
+
+            return response()->json([
+                'data' => [
+                    'cart_id' => $cart->id,
+                    'cart_items' => $cartItems,
+                    'cart_total' => number_format($cart->cart_total - $savedAmount, 2, '.', ''),
+                    'saved_amount' => number_format($savedAmount, 2, '.', ''),
+                    'deals_details' => $dealDetails,
+                ],
+                'meta' => [
+                    'success' => true,
+                    'message' => 'Flat deal redeemed and added to cart successfully.',
+                ],
+            ], 200);
         }
 
-        // Mark the deal as redeemed (unredeemed until payment is successful)
         DealsRedeems::create([
             'deal_id' => $deal->id,
             'user_id' => $user->id,
             'is_redeemed' => 0,
         ]);
 
-        // Recalculate the cart total (sums the regular prices for all paid items)
         $cart->recalculateTotal();
 
-        // If it's a combo deal, adjust the combo discount on the cart
         if ($deal->type === 'Combo') {
-            // Calculate the current total of the combo items as added at full price.
             $comboItemsTotal = 0;
             foreach ($deal->dealComboProducts as $combo) {
-                // Find the corresponding cart item
                 $cartItem = $cart->items()
                     ->where('product_id', $combo->product_id)
                     ->where('product_variant_id', $combo->variant_id)
@@ -283,17 +357,12 @@ class DealsAPIController extends Controller
                     $comboItemsTotal += $cartItem->quantity * $cartItem->variant->price;
                 }
             }
-            // Calculate discount difference
             $discountDifference = $comboItemsTotal - $deal->combo_discounted_amount;
-            // Save the discount into the cart record so that future recalculations subtract it
             $cart->combo_discount = $discountDifference;
             $cart->save();
-
-            // Recalculate to update cart_total accordingly
             $cart->recalculateTotal();
         }
 
-        // Fetch cart items with product and variant details
         $cartItems = $cart->items->map(function ($item) {
             return [
                 'cart_item_id' => $item->id,
@@ -307,7 +376,6 @@ class DealsAPIController extends Controller
             ];
         });
 
-        // Build deal details and calculate saved amount
         if ($deal->type === 'Combo') {
             $dealDetails = [
                 'deal_id' => $deal->id,
@@ -338,7 +406,6 @@ class DealsAPIController extends Controller
             }
             $savedAmount = number_format($originalTotal - $deal->combo_discounted_amount, 2, '.', '');
         } else {
-            // BOGO deal details (unchanged)
             $dealDetails = [
                 'deal_id' => $deal->id,
                 'type' => $deal->type,
@@ -378,17 +445,18 @@ class DealsAPIController extends Controller
             ],
         ], 200);
     }
-    private function addToCart($cart, $product_id, $variant_id, $quantity, $is_free = false)
+    private function addToCart($cart, $product_id, $variant_id, $quantity, $is_free = false, $dealid = null)
     {
         $variant = ProductVarient::where('id', $variant_id)->where('product_id', $product_id)->first();
         if (!$variant)
             return;
 
-        // Check for existing item with the same variant and free status
+        // Check for existing item with the same variant, free status, and dealid
         $cartItem = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $product_id)
             ->where('product_variant_id', $variant_id)
             ->where('is_free', $is_free)
+            ->where('dealid', $dealid) // Include dealid in the check
             ->first();
 
         if ($cartItem) {
@@ -400,7 +468,8 @@ class DealsAPIController extends Controller
                 'product_id' => $product_id,
                 'product_variant_id' => $variant_id,
                 'quantity' => $quantity,
-                'is_free' => $is_free, // Mark as free if applicable
+                'is_free' => $is_free,
+                'dealid' => $dealid, // Set the dealid
             ]);
         }
     }

@@ -18,6 +18,9 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
 use App\Models\Bonus;
 use App\Models\UserCouponUsage;
+use App\Models\Deal;
+use App\Models\DealsRedeems;
+use App\Models\DealComboProduct;
 
 class CouponAPIController extends Controller
 {
@@ -108,6 +111,21 @@ class CouponAPIController extends Controller
                     'message' => 'Coupon has already been used.',
                 ],
             ], 200);
+        }
+
+        // Check if a deal is already applied
+        $activeDeal = DealsRedeems::where('user_id', $user->id)
+            ->where('is_redeemed', 0)
+            ->whereNull('order_id')
+            ->exists();
+
+        if ($activeDeal) {
+            return response()->json([
+                'meta' => [
+                    'success' => false,
+                    'message' => 'A deal is already applied. Coupons cannot be applied with deals.',
+                ],
+            ], 400);
         }
 
         // Check if coupon was used and hasn't been linked to an order (i.e., payment not done)
