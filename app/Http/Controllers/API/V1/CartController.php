@@ -495,8 +495,6 @@ class CartController extends Controller
         $subtotalAfterBonus = $cartTotal - $appliedBonusDeduction;
         $formattedSubtotalAfterBonus = number_format($subtotalAfterBonus, 2, '.', '');
 
-        // Add this code after applying the bonus deduction and before applying the Discount deal
-
         // Apply Flat deal discounts
         $flatDeals = DealsRedeems::with([
             'deal' => function ($query) {
@@ -508,7 +506,7 @@ class CartController extends Controller
             ->get();
 
         $flatDiscount = 0;
-        $deals_details = [];
+        $flatDealDetails = [];
 
         foreach ($flatDeals as $redeem) {
             $deal = $redeem->deal;
@@ -534,7 +532,7 @@ class CartController extends Controller
                     }
                     $flatDiscount += $discount;
 
-                    $deals_details[] = [
+                    $flatDealDetails[] = [
                         'deal_id' => $deal->id,
                         'deal_type' => $deal->type,
                         'title' => $deal->title,
@@ -570,44 +568,108 @@ class CartController extends Controller
             ->first();
 
         $discountValue = 0;
-        $dealDetails = null;
+        $dealDetails = [];
 
         if ($redeemedDeal) {
             $deal = Deal::find($redeemedDeal->deal_id);
 
-            if ($deal && $deal->type === 'Discount') {
-                // Check if original cart total meets the deal's minimum requirement
-                if ($cartTotal < $deal->min_cart_amount) {
-                    // Delete the redeemed deal as conditions are no longer met
-                    $redeemedDeal->delete();
-                    $redeemedDeal = null;
-                    $deal = null;
-                } else {
-                    // Calculate discount based on the original cart total
-                    if ($deal->discount_type === 'percentage') {
-                        $discountValue = ($cartTotal * $deal->discount_amount) / 100;
+            if ($deal) {
+                if ($deal->type === 'Discount') {
+                    // Check if original cart total meets the deal's minimum requirement
+                    if ($cartTotal < $deal->min_cart_amount) {
+                        // Delete the redeemed deal as conditions are no longer met
+                        $redeemedDeal->delete();
+                        $redeemedDeal = null;
+                        $deal = null;
                     } else {
-                        $discountValue = $deal->discount_amount;
+                        // Calculate discount based on the original cart total
+                        if ($deal->discount_type === 'percentage') {
+                            $discountValue = ($cartTotal * $deal->discount_amount) / 100;
+                        } else {
+                            $discountValue = $deal->discount_amount;
+                        }
+                        $discountValue = round($discountValue, 2);
+                        $dealDetails[] = [
+                            'deal_id' => $deal->id,
+                            'type' => $deal->type,
+                            'title' => $deal->title,
+                            'description' => $deal->description,
+                            'image' => $deal->image,
+                            'start_date' => $deal->start_date,
+                            'end_date' => $deal->end_date,
+                            'renewal_time' => $deal->renewal_time,
+                            'is_active' => $deal->is_active,
+                            'min_cart_amount' => $deal->min_cart_amount,
+                            'discount_type' => $deal->discount_type,
+                            'discount_amount' => $deal->discount_amount,
+                            'saved_amount' => number_format($discountValue, 2, '.', ''),
+                        ];
                     }
-                    $discountValue = round($discountValue, 2);
-                    $dealDetails = [
-                        'deal_id' => $deal->id,
-                        'type' => $deal->type,
-                        'title' => $deal->title,
-                        'description' => $deal->description,
-                        'image' => $deal->image,
-                        'start_date' => $deal->start_date,
-                        'end_date' => $deal->end_date,
-                        'renewal_time' => $deal->renewal_time,
-                        'is_active' => $deal->is_active,
-                        'min_cart_amount' => $deal->min_cart_amount,
-                        'discount_type' => $deal->discount_type,
-                        'discount_amount' => $deal->discount_amount,
-                        'saved_amount' => number_format($discountValue, 2, '.', ''),
-                    ];
+                } else {
+                    // Handle other deal types (BOGO and Combo)
+                    if ($deal->type === 'BOGO') {
+                        $variant = ProductVarient::where('id', $deal->get_variant_id)
+                            ->where('product_id', $deal->get_product_id)
+                            ->first();
+                        if ($variant) {
+                            $savedAmount = $variant->price * $deal->get_quantity;
+                        } else {
+                            $savedAmount = 0;
+                        }
+                        $dealDetails[] = [
+                            'deal_id' => $deal->id,
+                            'type' => $deal->type,
+                            'title' => $deal->title,
+                            'description' => $deal->description,
+                            'image' => $deal->image,
+                            'start_date' => $deal->start_date,
+                            'end_date' => $deal->end_date,
+                            'renewal_time' => $deal->renewal_time,
+                            'is_active' => $deal->is_active,
+                            'buy_product_id' => $deal->buy_product_id,
+                            'buy_variant_id' => $deal->buy_variant_id,
+                            'buy_quantity' => $deal->buy_quantity,
+                            'get_product_id' => $deal->get_product_id,
+                            'get_variant_id' => $deal->get_variant_id,
+                            'get_quantity' => $deal->get_quantity,
+                            'saved_amount' => number_format($savedAmount, 2, '.', ''),
+                        ];
+                    } elseif ($deal->type === 'Combo') {
+                        $originalTotal = 0;
+                        foreach ($deal->dealComboProducts as $combo) {
+                            $variant = ProductVarient::find($combo->variant_id);
+                            if ($variant) {
+                                $originalTotal += $variant->price * $combo->quantity;
+                            }
+                        }
+                        $savedAmount = number_format($originalTotal - $deal->combo_discounted_amount, 2, '.', '');
+                        $dealDetails[] = [
+                            'deal_id' => $deal->id,
+                            'type' => $deal->type,
+                            'title' => $deal->title,
+                            'description' => $deal->description,
+                            'image' => $deal->image,
+                            'start_date' => $deal->start_date,
+                            'end_date' => $deal->end_date,
+                            'renewal_time' => $deal->renewal_time,
+                            'is_active' => $deal->is_active,
+                            'combo_products' => $deal->dealComboProducts->map(function ($combo) {
+                                return [
+                                    'product_id' => $combo->product_id,
+                                    'variant_id' => $combo->variant_id,
+                                    'quantity' => $combo->quantity,
+                                ];
+                            }),
+                            'combo_discounted_amount' => $deal->combo_discounted_amount,
+                            'saved_amount' => $savedAmount,
+                        ];
+                    }
                 }
             }
         }
+
+        // Merge flat deal details into the main deal details array
+        $dealDetails = array_merge($dealDetails, $flatDealDetails);
 
         // Apply discount (if any) on top of the bonus-adjusted subtotal.
         $finalCartTotal = $subtotalAfterBonus;
@@ -710,7 +772,7 @@ class CartController extends Controller
                 'original_cart_total' => $formattedCartTotal,
                 'bonus_deduction_applied' => number_format($appliedBonusDeduction, 2, '.', ''),
                 'bonus_details' => $bonusDeductionsDetails,
-                'deals_details' => !empty($deals_details) ? $deals_details : null,
+                'deals_details' => $dealDetails,
                 'coupon_details' => $couponDetails,
                 'new_cart_total' => $formattedFinalCartTotal,
                 'additional_charges' => $additionalCharges,
