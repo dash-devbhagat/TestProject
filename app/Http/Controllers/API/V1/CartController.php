@@ -609,11 +609,6 @@ class CartController extends Controller
             }
         }
 
-        // Add Discount deal details to the $deals_details array
-        if ($dealDetails) {
-            $deals_details[] = $dealDetails;
-        }
-
         // Apply discount (if any) on top of the bonus-adjusted subtotal.
         $finalCartTotal = $subtotalAfterBonus;
         if ($discountValue > 0) {

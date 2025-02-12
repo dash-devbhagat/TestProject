@@ -129,6 +129,21 @@ class DealsAPIController extends Controller
             ], 400);
         }
 
+        // Check if the user has any existing unredeemed deal (regardless of deal_id)
+        $existingRedeem = DealsRedeems::where('user_id', $user->id)
+            ->where('is_redeemed', 0)
+            ->whereNull('order_id')
+            ->exists();
+
+        if ($existingRedeem) {
+            return response()->json([
+                'meta' => [
+                    'success' => false,
+                    'message' => 'You can redeem only one deal at a time.',
+                ],
+            ], 400);
+        }
+
         // Check if the user has already redeemed this deal
         $redeemRecord = DealsRedeems::where('deal_id', $deal->id)
             ->where('user_id', $user->id)
