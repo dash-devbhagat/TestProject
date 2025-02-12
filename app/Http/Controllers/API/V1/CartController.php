@@ -543,7 +543,9 @@ class CartController extends Controller
                         'discount' => number_format($discount, 2, '.', ''),
                         'discount_type' => $deal->discount_type,
                         'product_id' => $deal->buy_product_id,
+                        'product_name' => optional($deal->buyProduct)->name, // Fetch product name
                         'variant_id' => $deal->buy_variant_id,
+                        'variant_name' => optional($deal->buyVariant)->unit, // Fetch variant name
                         'quantity_applied' => $quantity,
                     ];
                 }
@@ -627,10 +629,14 @@ class CartController extends Controller
                             'renewal_time' => $deal->renewal_time,
                             'is_active' => $deal->is_active,
                             'buy_product_id' => $deal->buy_product_id,
+                            'buy_product_name' => optional($deal->buyProduct)->name, // Fetch buy product name
                             'buy_variant_id' => $deal->buy_variant_id,
+                            'buy_variant_name' => optional($deal->buyVariant)->unit, // Fetch buy variant name
                             'buy_quantity' => $deal->buy_quantity,
                             'get_product_id' => $deal->get_product_id,
+                            'get_product_name' => optional($deal->getProduct)->name, // Fetch get product name
                             'get_variant_id' => $deal->get_variant_id,
+                            'get_variant_name' => optional($deal->getVariant)->unit, // Fetch get variant name
                             'get_quantity' => $deal->get_quantity,
                             'saved_amount' => number_format($savedAmount, 2, '.', ''),
                         ];
@@ -654,9 +660,13 @@ class CartController extends Controller
                             'renewal_time' => $deal->renewal_time,
                             'is_active' => $deal->is_active,
                             'combo_products' => $deal->dealComboProducts->map(function ($combo) {
+                                $product = Product::find($combo->product_id);
+                                $variant = ProductVarient::find($combo->variant_id);
                                 return [
                                     'product_id' => $combo->product_id,
+                                    'product_name' => $product ? $product->name : null, // Fetch product name
                                     'variant_id' => $combo->variant_id,
+                                    'variant_name' => $variant ? $variant->unit : null, // Fetch variant name
                                     'quantity' => $combo->quantity,
                                 ];
                             }),

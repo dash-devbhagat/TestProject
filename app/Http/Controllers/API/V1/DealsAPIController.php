@@ -38,7 +38,14 @@ class DealsAPIController extends Controller
         $deals = Deal::where('is_active', 1)
             ->where('start_date', '<=', $currentDate)
             ->where('end_date', '>=', $currentDate)
-            ->with(['dealComboProducts'])
+            ->with([
+                'buyProduct', // Load buy product
+                'buyVariant', // Load buy variant
+                'getProduct', // Load get product
+                'getVariant', // Load get variant
+                'dealComboProducts.product', // Load combo products and their related product
+                'dealComboProducts.variant', // Load combo products and their related variant
+            ])
             ->get();
 
         // Format response based on deal type
@@ -59,10 +66,14 @@ class DealsAPIController extends Controller
                 case 'BOGO':
                     return array_merge($baseData, [
                         'buy_product_id' => $deal->buy_product_id,
+                        'buy_product_name' => $deal->buyProduct->name ?? null, // Use buyProduct relationship
                         'buy_variant_id' => $deal->buy_variant_id,
+                        'buy_variant_name' => $deal->buyVariant->unit ?? null, // Use buyVariant relationship
                         'buy_quantity' => $deal->buy_quantity,
                         'get_product_id' => $deal->get_product_id,
+                        'get_product_name' => $deal->getProduct->name ?? null, // Use getProduct relationship
                         'get_variant_id' => $deal->get_variant_id,
+                        'get_variant_name' => $deal->getVariant->unit ?? null, // Use getVariant relationship
                         'get_quantity' => $deal->get_quantity,
                     ]);
 
@@ -71,7 +82,9 @@ class DealsAPIController extends Controller
                         'combo_products' => $deal->dealComboProducts->map(function ($combo) {
                             return [
                                 'product_id' => $combo->product_id,
+                                'product_name' => $combo->product->name ?? null, // Use product relationship
                                 'variant_id' => $combo->variant_id,
+                                'variant_name' => $combo->variant->unit ?? null, // Use variant relationship
                                 'quantity' => $combo->quantity,
                             ];
                         }),
@@ -88,7 +101,9 @@ class DealsAPIController extends Controller
                 case 'Flat':
                     return array_merge($baseData, [
                         'product_id' => $deal->buy_product_id,
+                        'product_name' => $deal->buyProduct->name ?? null, // Use buyProduct relationship
                         'variant_id' => $deal->buy_variant_id,
+                        'variant_name' => $deal->buyVariant->unit ?? null, // Use buyVariant relationship
                         'quantity' => $deal->buy_quantity,
                         'discount_type' => $deal->discount_type,
                         'discount_amount' => $deal->discount_amount,
@@ -318,7 +333,9 @@ class DealsAPIController extends Controller
                 'renewal_time' => $deal->renewal_time,
                 'is_active' => $deal->is_active,
                 'product_id' => $deal->buy_product_id,
+                'product_name' => $product->name, // Fetch product name
                 'variant_id' => $deal->buy_variant_id,
+                'variant_name' => $variant->unit, // Fetch variant name
                 'quantity' => $deal->buy_quantity,
                 'discount_type' => $deal->discount_type,
                 'discount_amount' => $deal->discount_amount,
@@ -403,9 +420,13 @@ class DealsAPIController extends Controller
                 'renewal_time' => $deal->renewal_time,
                 'is_active' => $deal->is_active,
                 'combo_products' => $deal->dealComboProducts->map(function ($combo) {
+                    $product = Product::find($combo->product_id);
+                    $variant = ProductVarient::find($combo->variant_id);
                     return [
                         'product_id' => $combo->product_id,
+                        'product_name' => $product ? $product->name : null, // Fetch product name
                         'variant_id' => $combo->variant_id,
+                        'variant_name' => $variant ? $variant->unit : null, // Fetch variant name
                         'quantity' => $combo->quantity,
                     ];
                 }),
@@ -421,6 +442,11 @@ class DealsAPIController extends Controller
             }
             $savedAmount = number_format($originalTotal - $deal->combo_discounted_amount, 2, '.', '');
         } else {
+            $buyProduct = Product::find($deal->buy_product_id);
+            $buyVariant = ProductVarient::find($deal->buy_variant_id);
+            $getProduct = Product::find($deal->get_product_id);
+            $getVariant = ProductVarient::find($deal->get_variant_id);
+
             $dealDetails = [
                 'deal_id' => $deal->id,
                 'type' => $deal->type,
@@ -432,10 +458,14 @@ class DealsAPIController extends Controller
                 'renewal_time' => $deal->renewal_time,
                 'is_active' => $deal->is_active,
                 'buy_product_id' => $deal->buy_product_id,
+                'buy_product_name' => $buyProduct ? $buyProduct->name : null, // Fetch buy product name
                 'buy_variant_id' => $deal->buy_variant_id,
+                'buy_variant_name' => $buyVariant ? $buyVariant->unit : null, // Fetch buy variant name
                 'buy_quantity' => $deal->buy_quantity,
                 'get_product_id' => $deal->get_product_id,
+                'get_product_name' => $getProduct ? $getProduct->name : null, // Fetch get product name
                 'get_variant_id' => $deal->get_variant_id,
+                'get_variant_name' => $getVariant ? $getVariant->unit : null, // Fetch get variant name
                 'get_quantity' => $deal->get_quantity,
             ];
             $freeVariant = ProductVarient::find($deal->get_variant_id);
