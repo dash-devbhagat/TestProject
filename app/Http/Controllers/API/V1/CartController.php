@@ -203,8 +203,10 @@ class CartController extends Controller
 
 
     // Update Cart Item
+// Update Cart Item
     public function updateCartItem(Request $request)
     {
+        // Validate the request
         $validator = Validator::make($request->all(), [
             'cart_item_id' => 'required|exists:cart_items,id',
             'quantity' => 'required|integer|min:1',
@@ -221,6 +223,7 @@ class CartController extends Controller
             ], 200);
         }
 
+        // Find the cart item
         $cartItem = CartItem::find($request->cart_item_id);
         if (!$cartItem) {
             return response()->json([
@@ -243,6 +246,7 @@ class CartController extends Controller
             ], 200);
         }
 
+        // Validate the product variant
         $productVariant = ProductVarient::find($request->product_variant_id);
         if (!$productVariant || $productVariant->product_id != $cartItem->product_id) {
             return response()->json([
@@ -254,24 +258,28 @@ class CartController extends Controller
             ], 200);
         }
 
+        // Update the cart item
         $cartItem->product_variant_id = $request->product_variant_id;
         $cartItem->quantity = $request->quantity;
         $cartItem->save();
 
+        // Fetch product and variant details
         $product = $cartItem->product;
         $variant = $cartItem->productVariant;
 
+        // Calculate the total price for the updated item
         $totalPrice = number_format($variant->price * $cartItem->quantity, 2, '.', '');
 
+        // Find the cart and recalculate the total
         $cart = Cart::find($cartItem->cart_id);
-        $cartTotal = $cart->items->sum(function ($item) {
-            $variant = $item->productVariant;
-            return $variant->price * $item->quantity;  // Fetch the price dynamically from product_varients
-        });
-        $cartTotal = number_format($cartTotal, 2, '.', '');
-        $cart->cart_total = $cartTotal; // Store the cart total in the database
-        $cart->save();
 
+        // Recalculate the cart total to apply any deals/discounts
+        $cart->recalculateTotal();
+
+        // Fetch the updated cart total
+        $cartTotal = $cart->cart_total;
+
+        // Return the response
         return response()->json([
             'data' => [
                 'cart_id' => $cart->id,
@@ -282,7 +290,7 @@ class CartController extends Controller
                     'product_variant_id' => $variant->id,
                     'product_variant' => $variant->unit,
                     'quantity' => $cartItem->quantity,
-                    'price' => number_format($variant->price, 2, '.', ''),  // Fetch the price dynamically from product_varients
+                    'price' => number_format($variant->price, 2, '.', ''),
                     'total_price' => $totalPrice,
                 ],
             ],
@@ -601,6 +609,11 @@ class CartController extends Controller
             }
         }
 
+        // Add Discount deal details to the $deals_details array
+        if ($dealDetails) {
+            $deals_details[] = $dealDetails;
+        }
+
         // Apply discount (if any) on top of the bonus-adjusted subtotal.
         $finalCartTotal = $subtotalAfterBonus;
         if ($discountValue > 0) {
@@ -722,7 +735,4 @@ class CartController extends Controller
             ],
         ], 200);
     }
-
-
-
 }
