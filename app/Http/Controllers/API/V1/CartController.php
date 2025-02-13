@@ -91,7 +91,7 @@ class CartController extends Controller
                     'is_free' => $cartItem->is_free,
                 ],
                 'total_price' => number_format($variant->price * $cartItem->quantity, 2, '.', ''),
-                'cart_total' => $cart->cart_total,
+                'cart_total' => number_format($cart->cart_total, 2, '.', ''),
             ],
             'meta' => [
                 'success' => true,
@@ -277,7 +277,9 @@ class CartController extends Controller
         $cart->recalculateTotal();
 
         // Fetch the updated cart total
-        $cartTotal = $cart->cart_total;
+        // $cartTotal = $cart->cart_total;
+        $cartTotal = number_format($cart->cart_total, 2, '.', '');
+
 
         // Return the response
         return response()->json([
@@ -782,8 +784,9 @@ class CartController extends Controller
                 'original_cart_total' => $formattedCartTotal,
                 'bonus_deduction_applied' => number_format($appliedBonusDeduction, 2, '.', ''),
                 'bonus_details' => $bonusDeductionsDetails,
-                'deals_details' => $dealDetails,
-                'coupon_details' => $couponDetails,
+                // 'deals_details' => $dealDetails,
+                'deals_details' => empty($dealDetails) ? null : $dealDetails,
+                'coupon_details' => empty($couponDetails) ? null : $couponDetails,
                 'new_cart_total' => $formattedFinalCartTotal,
                 'additional_charges' => $additionalCharges,
                 'total_charges' => number_format($totalAdditionalCharges, 2, '.', ''),
