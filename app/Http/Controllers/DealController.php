@@ -115,12 +115,6 @@ class DealController extends Controller
             'min_cart_amount' => $request->type == 'Discount' ? $request->min_cart_amount : null,
             'discount_type' => $request->type == 'Discount' ? $request->discount_type : $request->flat_discount_type,
             'discount_amount' => $request->type == 'Discount' ? $request->discount_amount : $request->flat_discount_amount,
-            // Flat
-            // 'buy_product_id' => $request->type == 'Flat' ? $request->flat_product_id : null,
-            // 'buy_variant_id' => $request->type == 'Flat' ? $request->flat_variant_id : null,
-            // 'buy_quantity' => $request->type == 'Flat' ? $request->flat_quantity : null,
-            // 'discount_type' => $request->type == 'Flat' ? $request->flat_discount_type : null,
-            // 'discount_amount' => $request->type == 'Flat' ? $request->flat_discount_amount : null,
         ]);
 
         // If it's a combo deal, store related products in deal_combo_products table
@@ -150,18 +144,132 @@ class DealController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Request $request, $id)
     {
-        //
+        $type = $request->query('type', '');
+        // dd($type);
+        $deal = Deal::findOrFail($id);
+        $products = Product::with('productVarients')->get();
+        $comboProducts = DealComboProduct::where('deal_id', $id)->get();
+
+        return view('admin.deal.edit_deal', compact('deal', 'products', 'comboProducts', 'type'));
     }
+
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+        // dd($request->all());
+        $type = $request->input('type', $request->type);
+        // dd($type);
+        $deal = Deal::findOrFail($id);
+
+        // Validate common fields
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'type' => 'required|in:BOGO,Combo,Discount,Flat',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'renewal_time' => 'nullable|integer|min:1',
+        ]);
+
+        // Additional validation based on deal type
+        if ($type == 'BOGO') {
+            $request->validate([
+                'buy_product_id' => 'nullable|exists:products,id',
+                'buy_variant_id' => 'nullable|exists:product_varients,id',
+                'buy_quantity' => 'nullable|integer|min:1',
+                'get_product_id' => 'nullable|exists:products,id',
+                'get_variant_id' => 'nullable|exists:product_varients,id',
+                'get_quantity' => 'nullable|integer|min:1',
+            ]);
+        } elseif ($type == 'Combo') {
+            $request->validate([
+                'product_id' => 'nullable|array|min:1',
+                'product_id.*' => 'exists:products,id',
+                'product_variant_id' => 'nullable|array|min:1',
+                'product_variant_id.*' => 'exists:product_varients,id',
+                'quantity' => 'nullable|array|min:1',
+                'quantity.*' => 'integer|min:1',
+                'combo_discounted_amount' => 'nullable|numeric|min:0',
+            ]);
+        } elseif ($type == 'Discount') {
+            $request->validate([
+                'min_cart_amount' => 'nullable|numeric|min:0',
+                'discount_type' => 'nullable|in:fixed,percentage',
+                'discount_amount' => 'nullable|numeric|min:0',
+            ]);
+        } elseif ($type == 'Flat') {
+            $request->validate([
+                'flat_product_id' => 'nullable|exists:products,id',
+                'flat_variant_id' => 'nullable|exists:product_varients,id',
+                'flat_quantity' => 'nullable|integer|min:1',
+                'flat_discount_type' => 'nullable|in:fixed,percentage',
+                'flat_discount_amount' => 'nullable|numeric|min:0',
+            ]);
+        }
+
+        // Handle Image Upload
+        if ($request->hasFile('image')) {
+            // Delete old image if it exists
+            if ($deal->image && Storage::exists($deal->image)) {
+                Storage::delete($deal->image);
+            }
+            // Store new image and update deal's image path
+            $path = $request->file('image')->store('images/deals', 'public');
+            $deal->image = $path;  // Update deal's image path
+        } else {
+            $path = $deal->image; // Keep the old image if not replaced
+        }
+
+
+        // Update deal
+        $deal->update([
+            'title' => $request->title,
+            'description' => $request->description,
+            'type' => $request->type,
+            'image' => $path,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'renewal_time' => $request->renewal_time,
+            // BOGO & Flat
+            'buy_product_id' => $request->type == 'BOGO' ? $request->buy_product_id : $request->flat_product_id,
+            'buy_variant_id' => $request->type == 'BOGO' ? $request->buy_variant_id : $request->flat_variant_id,
+            'buy_quantity' => $request->type == 'BOGO' ? $request->buy_quantity : $request->flat_quantity,
+            'get_product_id' => $request->type == 'BOGO' ? $request->get_product_id : null,
+            'get_variant_id' => $request->type == 'BOGO' ? $request->get_variant_id : null,
+            'get_quantity' => $request->type == 'BOGO' ? $request->get_quantity : null,
+            // Combo
+            'combo_discounted_amount' => $request->type == 'Combo' ? $request->combo_discounted_amount : null,
+            // Discount & Flat
+            'min_cart_amount' => $request->type == 'Discount' ? $request->min_cart_amount : null,
+            'discount_type' => $request->type == 'Discount' ? $request->discount_type : $request->flat_discount_type,
+            'discount_amount' => $request->type == 'Discount' ? $request->discount_amount : $request->flat_discount_amount,
+        ]);
+
+        // If it's a combo deal, update related products in deal_combo_products table
+        if ($request->type == 'Combo') {
+            // Delete old combo products
+            DealComboProduct::where('deal_id', $deal->id)->delete();
+
+            // Insert new combo products
+            foreach ($request->product_id as $index => $productId) {
+                DealComboProduct::create([
+                    'deal_id' => $deal->id,
+                    'product_id' => $productId,
+                    'variant_id' => $request->product_variant_id[$index],
+                    'quantity' => $request->quantity[$index],
+                ]);
+            }
+        }
+
+        return redirect()->route('deal.index')->with('success', 'Deal Updated Successfully!');
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -169,6 +277,8 @@ class DealController extends Controller
     public function destroy(string $id)
     {
         $deal = Deal::findOrFail($id);
+
+        $deal_combo = DealComboProduct::where('deal_id',$deal->id)->delete();
 
         if ($deal->image) {
             Storage::disk('public')->delete($deal->image);
