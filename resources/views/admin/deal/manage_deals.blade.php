@@ -85,8 +85,8 @@
                             <td>{{ \Carbon\Carbon::parse($deal->start_date)->format('d-m-Y') }}</td>
                             <td>{{ \Carbon\Carbon::parse($deal->end_date)->format('d-m-Y') }}</td>
                             <td>{{ $deal->renewal_time }}</td>
+                            <!-- Active/Inactive Toggle Icon -->
                             <td class="text-center">
-                                <!-- Active/Inactive Toggle Icon -->
                                 <a href="javascript:void(0);" id="toggleStatusBtn{{ $deal->id }}"
                                     data-id="{{ $deal->id }}" class="text-center" data-toggle="tooltip"
                                     title="{{ $deal->is_active ? 'Deactivate' : 'Activate' }}">
