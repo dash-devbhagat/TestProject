@@ -27,6 +27,7 @@ return new class extends Migration {
             $table->integer('get_quantity')->nullable(); // Get product quantity
 
             // Combo deal fields
+            $table->decimal('actual_amount', 10, 2)->nullable(); // Actual Combo amount
             $table->decimal('combo_discounted_amount', 10, 2)->nullable(); // Combo discounted amount
 
             // Discount deal fields
