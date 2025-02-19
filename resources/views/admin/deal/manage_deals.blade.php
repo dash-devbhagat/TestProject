@@ -101,9 +101,9 @@
                                     <i class="fa fa-eye"></i>
                                 </a>
                                 <!-- Edit Icon -->
-                                <a href="#javascript" class="text-primary" data-toggle="modal"
-                                    data-target="#exampleModal" data-bs-toggle="tooltip" title="Edit">
-                                    <i class="fa fa-edit editCouponBtn" data-id="{{ $deal->id }}"></i>
+                                <a href="{{ route('deal.edit', $deal->id) }}?type={{ $deal->type }}" class="text-primary"
+                                    data-bs-toggle="tooltip" title="Edit">
+                                    <i class="fa fa-edit"></i>
                                 </a>
                                 <!-- Delete Icon -->
                                 <form action="{{ route('deal.destroy', $deal->id) }}" method="POST"

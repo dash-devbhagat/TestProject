@@ -112,6 +112,7 @@
                                         </a>
                                     </td>
                                     <td class="text-center">
+                                        <!-- Edit Icon -->
                                         <a href="javascript:void(0);" class="text-primary editTimingBtn" data-id="{{ $timing->id }}" data-day="{{ $timing->day }}" data-opening="{{ $timing->opening_time }}" data-closing="{{ $timing->closing_time }}" data-bs-toggle="modal" data-bs-target="#editTimingModal">
                                             <i class="fa fa-edit"></i>
                                         </a>

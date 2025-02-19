@@ -13,8 +13,8 @@ return new class extends Migration {
             $table->string('title'); // Deal title
             $table->text('description'); // Deal description
             $table->string('image')->nullable(); // Deal image
-            $table->dateTime('start_date'); // Start date of the deal
-            $table->dateTime('end_date'); // End date of the deal
+            $table->date('start_date'); // Start date of the deal
+            $table->date('end_date'); // End date of the deal
             $table->string('renewal_time'); // Renewal time (e.g., 1 hour, 1 week)
             $table->boolean('is_active')->default(true); // Deal status
 

@@ -114,8 +114,6 @@ Route::middleware(['auth', 'check.active'])->group(function () {
     Route::get('/get-product-variants/{product_id}', [DealController::class, 'getProductVariants'])->name('get.product.variants');
     Route::get('/get-product-price/{variantId}', [DealController::class, 'getProductPrice']);
 
-
-
     Route::get('/bonus-payment-history', [BonusPaymentHistoryController::class, 'index'])->name('ph.index');
 
     Route::get('/order-payment-history', [OrderPaymentHistoryController::class, 'index'])->name('oh.index');
