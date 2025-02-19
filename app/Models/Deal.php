@@ -11,24 +11,24 @@ class Deal extends Model
 
     protected $guarded = [];
 
-    public function product()
+    public function buyProduct()
     {
-        return $this->belongsTo(Product::class, 'product_id');
+        return $this->belongsTo(Product::class, 'buy_product_id');
     }
 
-    public function freeProduct()
+    public function getProduct()
     {
-        return $this->belongsTo(Product::class, 'free_product_id');
+        return $this->belongsTo(Product::class, 'get_product_id');
     }
 
-    public function productVarient()
+    public function buyProductVariant()
     {
-        return $this->belongsTo(ProductVarient::class, 'product_variant_id');
+        return $this->belongsTo(ProductVarient::class, 'buy_variant_id', 'id');
     }
 
-    public function freeProductVarient()
+    public function getProductVariant()
     {
-        return $this->belongsTo(Product::class, 'free_product_variant_id');
+        return $this->belongsTo(ProductVarient::class, 'get_variant_id', 'id');
     }
 
     public function dealComboProducts()
@@ -36,3 +36,4 @@ class Deal extends Model
         return $this->hasMany(DealComboProduct::class, 'deal_id', 'id');
     }
 }
+

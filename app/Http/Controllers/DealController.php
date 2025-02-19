@@ -110,6 +110,7 @@ class DealController extends Controller
             'get_variant_id' => $request->type == 'BOGO' ? $request->get_variant_id : null,
             'get_quantity' => $request->type == 'BOGO' ? $request->get_quantity : null,
             // Combo
+            'actual_amount' => $request->actual_combo_amount ? $request->actual_combo_amount : null,
             'combo_discounted_amount' => $request->type == 'Combo' ? $request->combo_discounted_amount : null,
             // Discount & Flat
             'min_cart_amount' => $request->type == 'Discount' ? $request->min_cart_amount : null,
@@ -138,8 +139,18 @@ class DealController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $deal = Deal::with([
+            'buyProduct',
+            'buyProductVariant',
+            'getProduct',
+            'getProductVariant',
+            'dealComboProducts.product'
+        ])->findOrFail($id);
+
+        // dd($deal);
+        return view('admin.deal.view_deal', compact('deal'));
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -244,6 +255,7 @@ class DealController extends Controller
             'get_variant_id' => $request->type == 'BOGO' ? $request->get_variant_id : null,
             'get_quantity' => $request->type == 'BOGO' ? $request->get_quantity : null,
             // Combo
+            'actual_amount' => $request->actual_combo_amount ? $request->actual_combo_amount : null,
             'combo_discounted_amount' => $request->type == 'Combo' ? $request->combo_discounted_amount : null,
             // Discount & Flat
             'min_cart_amount' => $request->type == 'Discount' ? $request->min_cart_amount : null,
@@ -278,7 +290,7 @@ class DealController extends Controller
     {
         $deal = Deal::findOrFail($id);
 
-        $deal_combo = DealComboProduct::where('deal_id',$deal->id)->delete();
+        $deal_combo = DealComboProduct::where('deal_id', $deal->id)->delete();
 
         if ($deal->image) {
             Storage::disk('public')->delete($deal->image);
