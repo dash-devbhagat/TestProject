@@ -86,6 +86,7 @@ Route::prefix('v1')->group(function () {
             // Branches
             Route::get('branches/nearby', [BranchAPIController::class, 'nearbyBranches']);
 
+            //Deals
             Route::post('deals/redeem', [DealsAPIController::class, 'redeemDeal']);
             Route::post('deals/remove', [DealsAPIController::class, 'removeDeal']);
         });
