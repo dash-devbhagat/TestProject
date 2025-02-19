@@ -183,5 +183,67 @@ class CouponAPIController extends Controller
         ], 200);
     }
 
+    public function removeCoupon(Request $request)
+    {
+        $user = Auth::user();
+        $cart = Cart::where('user_id', $user->id)->first();
 
+        if (!$cart) {
+            return response()->json([
+                'meta' => [
+                    'success' => false,
+                    'message' => 'Cart not found.',
+                ],
+            ], 200);
+        }
+
+        // Find the user's active coupon usage (not linked to an order)
+        $userCouponUsage = UserCouponUsage::where('user_id', $user->id)
+            ->whereNull('order_id')
+            ->first();
+
+        if (!$userCouponUsage) {
+            return response()->json([
+                'meta' => [
+                    'success' => false,
+                    'message' => 'No coupon applied to remove.',
+                ],
+            ], 200);
+        }
+
+        // Retrieve the coupon details
+        $coupon = Coupon::find($userCouponUsage->coupon_id);
+        if (!$coupon) {
+            $userCouponUsage->delete();
+            return response()->json([
+                'meta' => [
+                    'success' => false,
+                    'message' => 'Coupon not found, removed applied coupon.',
+                ],
+            ], 200);
+        }
+
+        // Restore the coupon amount to the cart total
+        $cart->cart_total += $coupon->amount;
+        $cart->save();
+
+        // Delete the coupon usage record
+        $userCouponUsage->delete();
+
+        return response()->json([
+            'data' => [
+                'cart_id' => $cart->id,
+                'new_cart_total' => number_format($cart->cart_total, 2, '.', ''),
+                'removed_coupon' => [
+                    'coupon_code' => $coupon->coupon_code,
+                    'coupon_name' => $coupon->name,
+                    'amount' => number_format($coupon->amount, 2, '.', ''),
+                ],
+            ],
+            'meta' => [
+                'success' => true,
+                'message' => 'Coupon removed successfully.',
+            ],
+        ], 200);
+    }
 }

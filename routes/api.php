@@ -74,6 +74,7 @@ Route::prefix('v1')->group(function () {
                 Route::post('clear', [CartController::class, 'clearCart']);
                 Route::post('checkout', [CartController::class, 'checkout']);
                 Route::post('apply-coupon', [CouponAPIController::class, 'applyCoupon']);
+                Route::post('remove-coupon', [CouponAPIController::class, 'removeCoupon']);
             });
 
             // Orders & Payments
@@ -86,6 +87,7 @@ Route::prefix('v1')->group(function () {
             Route::get('branches/nearby', [BranchAPIController::class, 'nearbyBranches']);
 
             Route::post('deals/redeem', [DealsAPIController::class, 'redeemDeal']);
+            Route::post('deals/remove', [DealsAPIController::class, 'removeDeal']);
         });
     });
 });

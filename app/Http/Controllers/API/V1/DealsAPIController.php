@@ -519,6 +519,54 @@ class DealsAPIController extends Controller
         }
     }
 
+    public function removeDeal(Request $request)
+    {
+        $user = Auth::user();
+
+        // Find the active unredeemed deal for the user
+        $redeem = DealsRedeems::where('user_id', $user->id)
+            ->where('is_redeemed', 0)
+            ->whereNull('order_id')
+            ->first();
+
+        if (!$redeem) {
+            return response()->json([
+                'meta' => [
+                    'success' => false,
+                    'message' => 'No active deal to remove.',
+                ],
+            ], 400);
+        }
+
+        $deal = Deal::find($redeem->deal_id);
+        $cart = Cart::where('user_id', $user->id)->first();
+
+        if ($cart) {
+            // Remove cart items associated with this deal
+            CartItem::where('cart_id', $cart->id)
+                ->where('dealid', $deal->id)
+                ->delete();
+
+            // Reset combo discount if the deal was a Combo
+            if ($deal->type === 'Combo') {
+                $cart->combo_discount = 0;
+                $cart->save();
+            }
+
+            // Recalculate the cart total
+            $cart->recalculateTotal();
+        }
+
+        // Delete the redeem record
+        $redeem->delete();
+
+        return response()->json([
+            'meta' => [
+                'success' => true,
+                'message' => 'Deal removed successfully.',
+            ],
+        ], 200);
+    }
 
 
 
