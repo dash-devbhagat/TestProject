@@ -781,7 +781,7 @@ class CartController extends Controller
         return response()->json([
             'data' => [
                 'cart_id' => $cart->id,
-                'original_cart_total' => $formattedCartTotal,
+                'cart_total' => $formattedCartTotal,
                 'bonus_deduction_applied' => number_format($appliedBonusDeduction, 2, '.', ''),
                 'bonus_details' => $bonusDeductionsDetails,
                 // 'deals_details' => $dealDetails,
