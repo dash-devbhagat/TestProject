@@ -499,10 +499,19 @@
         });
 
         // Remove combo product row
+        // $(document).on('click', '.remove-product-btn', function() {
+        //     $(this).closest('.combo-product').remove();
+        //     updateTotalAmount();
+        // });
         $(document).on('click', '.remove-product-btn', function() {
-            $(this).closest('.combo-product').remove();
-            updateTotalAmount();
+            if ($('#combo-products-container .combo-product').length > 1) {
+                $(this).closest('.combo-product').remove();
+                updateTotalAmount();
+            } else {
+                alert('At least one product is required in the combo.');
+            }
         });
+
 
 
 
