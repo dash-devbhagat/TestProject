@@ -200,12 +200,12 @@ class DealController extends Controller
             ]);
         } elseif ($type == 'Combo') {
             $request->validate([
-                'product_id' => 'nullable|array|min:1',
-                'product_id.*' => 'exists:products,id',
-                'product_variant_id' => 'nullable|array|min:1',
-                'product_variant_id.*' => 'exists:product_varients,id',
-                'quantity' => 'nullable|array|min:1',
-                'quantity.*' => 'integer|min:1',
+                'product_id' => 'required|array|min:1',
+                'product_id.*' => 'required|exists:products,id',
+                'product_variant_id' => 'required|array|min:1',
+                'product_variant_id.*' => 'required|exists:product_varients,id',
+                'quantity' => 'required|array|min:1',
+                'quantity.*' => 'required|integer|min:1',
                 'combo_discounted_amount' => 'nullable|numeric|min:0',
             ]);
         } elseif ($type == 'Discount') {
