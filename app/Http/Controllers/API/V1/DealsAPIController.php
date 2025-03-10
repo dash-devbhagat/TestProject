@@ -78,18 +78,20 @@ class DealsAPIController extends Controller
                     ]);
 
                 case 'Combo':
-                    return array_merge($baseData, [
-                        'combo_products' => $deal->dealComboProducts->map(function ($combo) {
-                            return [
-                                'product_id' => $combo->product_id,
-                                'product_name' => $combo->product->name ?? null, // Use product relationship
-                                'variant_id' => $combo->variant_id,
-                                'variant_name' => $combo->variant->unit ?? null, // Use variant relationship
-                                'quantity' => $combo->quantity,
-                            ];
-                        }),
-                        'combo_discounted_amount' => $deal->combo_discounted_amount,
-                    ]);
+                return array_merge($baseData, [
+                    'actualamount' => $deal->actual_amount,
+                    'combo_products' => $deal->dealComboProducts->map(function ($combo) {
+                        return [
+                            'product_id' => $combo->product_id,
+                            'product_name' => $combo->product->name ?? null, // Use product relationship
+                            'variant_id' => $combo->variant_id,
+                            'variant_name' => $combo->variant->unit ?? null, // Use variant relationship
+                            'quantity' => $combo->quantity,
+                        ];
+                    }),
+                    'combo_discounted_amount' => $deal->combo_discounted_amount,
+                ]);
+
 
                 case 'Discount':
                     return array_merge($baseData, [
@@ -156,7 +158,7 @@ class DealsAPIController extends Controller
                     'success' => false,
                     'message' => 'You can redeem only one deal at a time.',
                 ],
-            ], 400);
+            ], 200);
         }
 
         // Check if the user has already redeemed this deal
@@ -175,7 +177,7 @@ class DealsAPIController extends Controller
                         'success' => false,
                         'message' => 'You can only redeem this deal once.',
                     ],
-                ], 400);
+                ], 200);
             }
 
             $lastUsedAt = $redeemRecord->used_at;
@@ -188,7 +190,7 @@ class DealsAPIController extends Controller
                         'success' => false,
                         'message' => "You can redeem this deal again after $renewalTime days.",
                     ],
-                ], 400);
+                ], 200);
             }
         }
 
@@ -203,7 +205,7 @@ class DealsAPIController extends Controller
                     'success' => false,
                     'message' => 'A coupon is already applied. Deals cannot be applied with coupons.',
                 ],
-            ], 400);
+            ], 200);
         }
 
         // Check for an unredeemed record (e.g., pending payment) and remove it if present
@@ -419,6 +421,7 @@ class DealsAPIController extends Controller
                 'end_date' => $deal->end_date,
                 'renewal_time' => $deal->renewal_time,
                 'is_active' => $deal->is_active,
+                'actualamount' => $deal->actual_amount,
                 'combo_products' => $deal->dealComboProducts->map(function ($combo) {
                     $product = Product::find($combo->product_id);
                     $variant = ProductVarient::find($combo->variant_id);

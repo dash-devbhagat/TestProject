@@ -661,6 +661,7 @@ class CartController extends Controller
                             'end_date' => $deal->end_date,
                             'renewal_time' => $deal->renewal_time,
                             'is_active' => $deal->is_active,
+                            'actualamount' => $deal->actual_amount,
                             'combo_products' => $deal->dealComboProducts->map(function ($combo) {
                                 $product = Product::find($combo->product_id);
                                 $variant = ProductVarient::find($combo->variant_id);
