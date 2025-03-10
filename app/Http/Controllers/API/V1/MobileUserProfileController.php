@@ -36,28 +36,28 @@ class MobileUserProfileController extends Controller
             'phone' => $user->phone,
             'gender' => $user->gender,
             'birthdate' => $user->birthdate,
-            'is_profile_complete' => $user->is_profile_complete,
-            'profilePicture' => $user->profilepic,
+            'profilecomplete' => $user->is_profile_complete,
+            'profilePicture' => $user->profilepic ? asset('storage/' . $user->profilepic) : null,
             'referral_code' => $user->referral_code,
-'address' => $user->address ? [
-    'addressLine' => $user->address->address_line ?? 'null',
-    'city' => $user->address->city ? $user->address->city->name : 'null',
-    'city_id' => $user->address->city ? $user->address->city->id : 'null',
-    'state' => $user->address->state ? $user->address->state->name : 'null',
-    'state_id' => $user->address->state ? $user->address->state->id : 'null',
-    'zipCode' => $user->address->zip_code ?? 'null',
-    'latitude' => $user->address->latitude ?? 'null',
-    'longitude' => $user->address->longitude ?? 'null',
-] : [
-    'addressLine' => 'null',
-    'city' => 'null',
-    'city_id' => 'null',
-    'state' => 'null',
-    'state_id' => 'null',
-    'zipCode' => 'null',
-    'latitude' => 'null',
-    'longitude' => 'null',
-],
+        'address' => $user->address ? [
+            'addressLine' => $user->address->address_line ?? 'null',
+            'city' => $user->address->city ? $user->address->city->name : 'null',
+            'city_id' => $user->address->city ? $user->address->city->id : 'null',
+            'state' => $user->address->state ? $user->address->state->name : 'null',
+            'state_id' => $user->address->state ? $user->address->state->id : 'null',
+            'zipCode' => $user->address->zip_code ?? 'null',
+            'latitude' => $user->address->latitude ?? 'null',
+            'longitude' => $user->address->longitude ?? 'null',
+        ] : [
+            'addressLine' => 'null',
+            'city' => 'null',
+            'city_id' => 'null',
+            'state' => 'null',
+            'state_id' => 'null',
+            'zipCode' => 'null',
+            'latitude' => 'null',
+            'longitude' => 'null',
+        ],
         ];
 
 
@@ -152,9 +152,9 @@ class MobileUserProfileController extends Controller
             'email' => $user->email,
             'phone' => $user->phone,
             'gender' => $user->gender,
-            'profilePicture' => $user->profilepic,
+            'profilePicture' => $user->profilepic ? asset('storage/' . $user->profilepic) : null,
             'birthDate' => $user->birthdate,
-            'is_profile_complete' => $user->is_profile_complete,
+            'profilecomplete' => $user->is_profile_complete,
             'referralCode' => $user->referral_code,
 'address' => $user->address ? [
     'addressLine' => $user->address->address_line ?? 'null',
@@ -275,9 +275,9 @@ class MobileUserProfileController extends Controller
             'email' => $user->email,
             'phone' => $user->phone,
             'gender' => $user->gender,
-            'profilePicture' => $user->profilepic,
+            'profilePicture' => $user->profilepic ? asset('storage/' . $user->profilepic) : null,
             'birthDate' => $user->birthdate,
-            'is_profile_complete' => $user->is_profile_complete,
+            'profilecomplete' => $user->is_profile_complete,
             'referralCode' => $user->referral_code,
 'address' => $user->address ? [
     'addressLine' => $user->address->address_line ?? 'null',
@@ -359,7 +359,7 @@ class MobileUserProfileController extends Controller
         return response()->json([
 
             'data' => [
-                'profilepic' => $user->profilepic,
+                'profilepic' => asset('storage/' . $user->profilepic),
             ],
             'meta' => [
                 'success' => true,

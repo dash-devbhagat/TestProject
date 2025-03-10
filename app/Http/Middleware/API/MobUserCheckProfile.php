@@ -44,9 +44,9 @@ class MobUserCheckProfile
             'email' => $user->email,
             'phone' => $user->phone,
             'gender' => $user->gender,
-            'profilePicture' => $user->profilepic,
+            'profilePicture' => $user->profilepic ? asset('storage/' . $user->profilepic) : null,
             'birthDate' => $user->birthdate,
-            'is_profile_complete' => $user->is_profile_complete,
+            'profilecomplete' => $user->is_profile_complete,
             'referralCode' => $user->referral_code,
 'address' => $user->address ? [
     'addressLine' => $user->address->address_line ?? 'null',
