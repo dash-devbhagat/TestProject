@@ -168,7 +168,7 @@ class UserController extends Controller
         $user->save();
 
         // Redirect to the dashboard
-        return redirect()->route('dashboard');
+        return redirect()->route('dashboard')->with('success', 'Profile Completed Successfully!');
     }
 
 
@@ -243,7 +243,7 @@ class UserController extends Controller
         $user->save();
 
         // Redirect to the dashboard
-        return redirect()->route('dashboard');
+        return redirect()->route('dashboard')->with('success', 'Profile Updated Successfully!');
     }
 
 }
