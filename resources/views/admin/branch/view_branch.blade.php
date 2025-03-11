@@ -42,7 +42,7 @@
                         <h3 class="text-primary">Branch Details @if (Auth::user()->branch_id)
                             <!-- Edit Icon -->
                             <a href="#javascript" class="text-primary" data-toggle="modal"
-                                data-target="#editBranchModal" data-bs-toggle="tooltip" title="Edit">
+                                data-target="#exampleModal" data-bs-toggle="tooltip" title="Edit">
                                 <i class="fa fa-edit editBranchBtn" data-id="{{ $branch->id }}"></i>
                             </a>
                             @endif
@@ -303,6 +303,11 @@
 <script>
     $(document).ready(function() {
 
+        $('#addTimingModal form').on('submit', function(e) {
+            console.log(new FormData(this));
+        });
+
+
         // Open the Edit Modal and Populate Data
         $('.editBranchBtn').on('click', function() {
             const branchId = $(this).data('id');
@@ -373,42 +378,59 @@
 
 
         // Add more timing fields
-        let timingIndex = 1;
+        let timingIndex = $('.timing-entry').length;
+
         $('#addMoreTimings').on('click', function() {
             $('#timingFields').append(`
-                <div class="timing-entry mt-3">
-                    <label>Day</label>
-                    <select name="timings[${timingIndex}][day]" class="form-control day-select">
-                        <option value="">Select Day</option>
-                        <option value="Monday">Monday</option>
-                        <option value="Tuesday">Tuesday</option>
-                        <option value="Wednesday">Wednesday</option>
-                        <option value="Thursday">Thursday</option>
-                        <option value="Friday">Friday</option>
-                        <option value="Saturday">Saturday</option>
-                        <option value="Sunday">Sunday</option>
-                    </select>
-                    <label>Opening Time</label>
-                    <input type="time" class="form-control" name="timings[${timingIndex}][opening_time]" required>
-                    <label>Closing Time</label>
-                    <input type="time" class="form-control" name="timings[${timingIndex}][closing_time]" required>
-                </div>
-            `);
+        <div class="timing-entry mt-3 position-relative">
+       <button type="button" class="btn-close position-absolute top-0 end-0 remove-entry" 
+        aria-label="Close">
+</button>
+            <label>Day</label>
+            <select name="timings[${timingIndex}][day]" class="form-control day-select" required>
+                <option value="">Select Day</option>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+                <option value="Sunday">Sunday</option>
+            </select>
+            <label>Opening Time</label>
+            <input type="time" class="form-control" name="timings[${timingIndex}][opening_time]" required>
+            <label>Closing Time</label>
+            <input type="time" class="form-control" name="timings[${timingIndex}][closing_time]" required>
+        </div>
+    `);
             timingIndex++;
+        });
+
+        // Remove timing entry when clicking the cancel icon
+        $(document).on('click', '.remove-entry', function() {
+            $(this).closest('.timing-entry').remove();
         });
 
         // Prevent duplicate days selection
         $(document).on('change', '.day-select', function() {
             let selectedDays = [];
+
             $('.day-select').each(function() {
-                selectedDays.push($(this).val());
+                const selectedValue = $(this).val().trim(); // Ignore empty values
+                if (selectedValue) {
+                    selectedDays.push(selectedValue);
+                }
             });
+
             let uniqueDays = [...new Set(selectedDays)];
+
             if (uniqueDays.length !== selectedDays.length) {
                 alert('This day is already selected. Please choose a different day.');
-                $(this).val('');
+                $(this).val(''); // Reset the duplicate selection
+                return;
             }
         });
+
 
         // Populate the Edit Modal with data
         $('.editTimingBtn').on('click', function() {

@@ -37,6 +37,7 @@ class TimingController extends Controller
         ], [
             'timings.*.day.required' => 'Day selection is required.',
             'timings.*.day.unique' => 'A timing entry for this day already exists.',
+            'timings.*.closing_time.after' => 'Closing time must be after the opening time.'
         ]);
 
         $existingDays = Timing::where('branch_id', $request->branch_id)

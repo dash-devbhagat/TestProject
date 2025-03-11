@@ -121,14 +121,14 @@
 </div>
 
 
-<!-- {{-- Add User modal --}} -->
+<!-- Add User modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="addUserModalLabel">Add New Staff Member</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -153,7 +153,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="button" id="saveUserBtn" class="btn btn-primary">Save</button>
             </div>
         </div>
@@ -232,12 +232,9 @@
                     // Handle validation errors
                     let errors = xhr.responseJSON.errors;
                     if (errors) {
-                        // if (errors.name) alert("Error: " + errors.name);
-                        // if (errors.email) alert("Error: " + errors.email);
-                        // if (errors.password) alert("Error: " + errors.password);
-                        console.log(
-                            "error occured in name or email or password. remove above comment and know what is wrong."
-                        );
+                        if (errors.name) alert("Error: " + errors.name);
+                        if (errors.email) alert("Error: " + errors.email);
+                        if (errors.password) alert("Error: " + errors.password);
                     } else {
                         alert("An error occurred. Please try again.");
                     }

@@ -149,19 +149,14 @@ class BranchController extends Controller
             'longitude' => 'required|numeric',
             'latitude' => 'required|numeric',
             'manager_id' => [
-                'nullable',
+                'required',
                 'exists:users,id',
                 Rule::unique('branches', 'manager_id')->ignore($id)
             ],
         ]);
+        
 
         $branch = Branch::findOrFail($id);
-
-        $branch->name = $request->name;
-        $branch->address = $request->address;
-        $branch->description = $request->description;
-        $branch->latitude = $request->latitude;
-        $branch->longitude = $request->longitude;
 
         // Handle Image Upload
         if ($request->hasFile('logo')) {
@@ -173,19 +168,28 @@ class BranchController extends Controller
             $branch->logo = $path;
         }
 
-        // Assign manager to the branch
+
+        $branch->name = $request->name;
+        $branch->address = $request->address;
+        $branch->description = $request->description;
+        $branch->latitude = $request->latitude;
+        $branch->longitude = $request->longitude;
+
+        $branch->save();
+
         if ($request->manager_id) {
+            $branch->manager_id = $request->manager_id;
+            $branch->save();
 
             // Clear previous manager's branch assignment
             User::where('branch_id', $branch->id)->update(['branch_id' => null]);
 
-            $branch->manager_id = $request->manager_id;
-
             // Assign branch to the user
-            User::where('id', $request->manager_id)->update(['branch_id' => $branch->id]);
+            $user = User::where('id', $request->manager_id)->first();
+            $user->branch_id = $branch->id;
+            $user->save();
+            // User::where('id', $request->manager_id)->update(['branch_id' => $branch->id]);
         }
-
-        $branch->save();
 
         session()->flash('success', 'Branch Updated Successfully.');
 
