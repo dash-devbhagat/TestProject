@@ -31,6 +31,7 @@ class CouponAPIController extends Controller
 
         if ($coupons->isEmpty()) {
             return response()->json([
+                'data' => json_decode('{}'),
                 'meta' => [
                     'success' => false,
                     'message' => 'No active coupons available.',
@@ -68,6 +69,7 @@ class CouponAPIController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
+                'data' => json_decode('{}'),
                 'meta' => [
                     'success' => false,
                     'message' => $validator->errors()->first(),
@@ -80,6 +82,7 @@ class CouponAPIController extends Controller
 
         if (!$cart || $cart->items->isEmpty()) {
             return response()->json([
+                'data' => json_decode('{}'),
                 'meta' => [
                     'success' => false,
                     'message' => 'Your cart is empty.',
@@ -91,6 +94,7 @@ class CouponAPIController extends Controller
 
         if (!$coupon) {
             return response()->json([
+                'data' => json_decode('{}'),
                 'meta' => [
                     'success' => false,
                     'message' => 'Invalid or inactive coupon.',
@@ -106,6 +110,7 @@ class CouponAPIController extends Controller
 
         if ($userCouponUsage) {
             return response()->json([
+                'data' => json_decode('{}'),
                 'meta' => [
                     'success' => false,
                     'message' => 'Coupon has already been used.',
@@ -121,6 +126,7 @@ class CouponAPIController extends Controller
 
         if ($activeDeal) {
             return response()->json([
+                'data' => json_decode('{}'),
                 'meta' => [
                     'success' => false,
                     'message' => 'A deal is already applied. Coupons cannot be applied with deals.',
@@ -145,6 +151,7 @@ class CouponAPIController extends Controller
 
         if ($discountAmount > $cartTotal) {
             return response()->json([
+                'data' => json_decode('{}'),
                 'meta' => [
                     'success' => false,
                     'message' => 'Discount cannot exceed cart total.',
@@ -190,6 +197,7 @@ class CouponAPIController extends Controller
 
         if (!$cart) {
             return response()->json([
+                'data' => json_decode('{}'),
                 'meta' => [
                     'success' => false,
                     'message' => 'Cart not found.',
@@ -204,6 +212,7 @@ class CouponAPIController extends Controller
 
         if (!$userCouponUsage) {
             return response()->json([
+                'data' => json_decode('{}'),
                 'meta' => [
                     'success' => false,
                     'message' => 'No coupon applied to remove.',
@@ -216,6 +225,7 @@ class CouponAPIController extends Controller
         if (!$coupon) {
             $userCouponUsage->delete();
             return response()->json([
+                'data' => json_decode('{}'),
                 'meta' => [
                     'success' => false,
                     'message' => 'Coupon not found, removed applied coupon.',

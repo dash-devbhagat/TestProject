@@ -139,6 +139,7 @@ class DealsAPIController extends Controller
 
         if (!$deal || !$deal->is_active) {
             return response()->json([
+                'data' => json_decode('{}'),
                 'meta' => [
                     'success' => false,
                     'message' => 'Invalid or inactive deal.',
@@ -154,6 +155,7 @@ class DealsAPIController extends Controller
 
         if ($existingRedeem) {
             return response()->json([
+                'data' => json_decode('{}'),
                 'meta' => [
                     'success' => false,
                     'message' => 'You can redeem only one deal at a time.',
@@ -173,6 +175,7 @@ class DealsAPIController extends Controller
 
             if ($renewalTime === 0) {
                 return response()->json([
+                    'data' => json_decode('{}'),
                     'meta' => [
                         'success' => false,
                         'message' => 'You can only redeem this deal once.',
@@ -186,6 +189,7 @@ class DealsAPIController extends Controller
 
             if ($daysSinceLastUse < $renewalTime) {
                 return response()->json([
+                    'data' => json_decode('{}'),
                     'meta' => [
                         'success' => false,
                         'message' => "You can redeem this deal again after $renewalTime days.",
@@ -201,6 +205,7 @@ class DealsAPIController extends Controller
 
         if ($activeCoupon) {
             return response()->json([
+                'data' => json_decode('{}'),
                 'meta' => [
                     'success' => false,
                     'message' => 'A coupon is already applied. Deals cannot be applied with coupons.',
@@ -240,6 +245,7 @@ class DealsAPIController extends Controller
         } elseif ($deal->type === 'Discount') {
             if ($cart->cart_total < $deal->min_cart_amount) {
                 return response()->json([
+                    'data' => json_decode('{}'),
                     'meta' => [
                         'success' => false,
                         'message' => 'Cart total must be at least ' . $deal->min_cart_amount . ' to redeem this deal.',
@@ -300,6 +306,7 @@ class DealsAPIController extends Controller
             $variant = ProductVarient::find($deal->buy_variant_id);
             if (!$product || !$variant) {
                 return response()->json([
+                    'data' => json_decode('{}'),
                     'meta' => [
                         'success' => false,
                         'message' => 'Product or variant not found.',
@@ -534,6 +541,7 @@ class DealsAPIController extends Controller
 
         if (!$redeem) {
             return response()->json([
+                'data' => json_decode('{}'),
                 'meta' => [
                     'success' => false,
                     'message' => 'No active deal to remove.',
@@ -564,6 +572,7 @@ class DealsAPIController extends Controller
         $redeem->delete();
 
         return response()->json([
+            'data' => json_decode('{}'),
             'meta' => [
                 'success' => true,
                 'message' => 'Deal removed successfully.',
