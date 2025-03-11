@@ -70,15 +70,6 @@ class BranchController extends Controller
         // Manually store the data without one single variable
         $branch = new Branch();
 
-        // Assign manager to the branch
-        if ($request->manager_id) {
-            $branch->manager_id = $request->manager_id;
-
-            // Assign branch to the user
-            User::where('id', $request->manager_id)->update(['branch_id' => $branch->id]);
-        }
-
-
         $branch->name = $request->name;
         $branch->address = $request->address;
         $branch->longitude = $request->longitude;
@@ -87,6 +78,18 @@ class BranchController extends Controller
         $branch->logo = $path;
 
         $branch->save();
+
+        // Assign manager to the branch
+        if ($request->manager_id) {
+            $branch->manager_id = $request->manager_id;
+            $branch->save();
+
+            // Assign branch to the user
+            $user = User::where('id', $request->manager_id)->first();
+            $user->branch_id = $branch->id;
+            $user->save();
+            // User::where('id', $request->manager_id)->update(['branch_id' => $branch->id]);
+        }
 
         return redirect()->route('branch.index')->with('success', 'Branch Created Successfully!');
     }
