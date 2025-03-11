@@ -263,7 +263,7 @@
                 success: function(response) {
                     const branch = response.branch;
                     const users = response.users;
-                    
+
                     $('#editBranchId').val(branch.id);
                     $('#editBranchName').val(branch.name);
                     $('#editBranchAddress').val(branch.address);
@@ -304,8 +304,20 @@
                     $('#editBranchModal').modal('hide');
                     location.reload(); // Reload the page or update dynamically
                 },
-                error: function() {
-                    alert('Error updating branch data. Please try again.');
+                error: function(xhr) {
+                    if (xhr.status === 422) {
+                        // Laravel validation errors (422 Unprocessable Entity)
+                        let errors = xhr.responseJSON.errors;
+                        let errorMessage = '';
+
+                        $.each(errors, function(key, value) {
+                            errorMessage += `${value[0]}\n`; // Display all error messages
+                        });
+
+                        alert(errorMessage); // Show in alert
+                    } else {
+                        alert('An unexpected error occurred. Please try again.');
+                    }
                 }
             });
         });

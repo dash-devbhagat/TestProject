@@ -130,7 +130,7 @@ Route::middleware(['auth', 'check.active'])->group(function () {
         return view('user.complete-profile');
     })->name('complete-profile');
 
-    Route::post('/update-profile', [UserController::class, 'completeprofile'])->name('profile.update');
+    Route::post('/complete-profile', [UserController::class, 'completeprofile'])->name('profile.update');
 
     Route::get('/edit-profile', [UserController::class, 'editProfile'])->name('user.edit-profile');
     Route::post('/update-profile', [UserController::class, 'updateProfile'])->name('user.update-profile');

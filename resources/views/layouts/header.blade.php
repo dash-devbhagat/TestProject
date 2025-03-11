@@ -37,8 +37,7 @@
           {{-- start profile page --}}
           <li class="nav-item dropdown user-menu">
               <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
-                  {{-- <img src="adminlte/dist/img/{{ Auth::user()->logo }}" class="user-image img-circle elevation-2"
-                  alt="User Image" onerror="this.onerror=null; this.src='adminlte/dist/img/user.png';"> --}}
+
                   @if (Auth::user()->logo && file_exists(public_path('storage/' . Auth::user()->logo)))
                   <img src="{{ asset('storage/' . Auth::user()->logo) }}" class="user-image img-circle elevation-2"
                       alt="User Image">
@@ -52,7 +51,6 @@
               <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                   <!-- User image -->
                   <li class="user-header bg-primary">
-                      {{-- <img src="adminlte/dist/img/{{ Auth::user()->logo }}" class="img-circle elevation-2" alt="User Image" onerror="this.onerror=null; this.src='adminlte/dist/img/user.png';"> --}}
                       @if (Auth::user()->logo && file_exists(public_path('storage/' . Auth::user()->logo)))
                       <img src="{{ asset('storage/' . Auth::user()->logo) }}"
                           class="user-image img-circle elevation-2 mt-3" alt="User Image">
