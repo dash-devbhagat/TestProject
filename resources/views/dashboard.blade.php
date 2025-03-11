@@ -152,7 +152,8 @@
                         </div>
                     </div>
                 </div>
-            @else
+                @endif
+                @if (Auth::user()->role === 'user')
                 <!-- Staff Profile Card -->
                 <div class="container-fluid">
                     <div class="card">

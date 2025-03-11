@@ -52,6 +52,12 @@
                                         <td><strong>Phone:</strong></td>
                                         <td>{{ $user->phone ?? 'Not Available' }}</td>
                                     </tr>
+                                    @if($user->branch_id)
+                                    <tr>
+                                        <td><strong>Branch:</strong></td>
+                                        <td><b>{{ $user->branch->name ?? 'Not Available' }}</b></td>
+                                    </tr>
+                                    @endif
                                     <tr>
                                         <td><strong>Location:</strong></td>
                                         <td>{{ $user->location ?? 'Not Available' }}</td>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\Timing;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -14,8 +15,10 @@ class BranchController extends Controller
      */
     public function index()
     {
-        $branches = Branch::all();
-        return view('admin.branch.manage_branches', compact('branches'));
+        $branches = Branch::with('manager')->get();
+        $users = User::whereNull('branch_id')->where('id', '!=', 1)->get();
+        // dd($users);
+        return view('admin.branch.manage_branches', compact('branches', 'users'));
     }
 
     /**
@@ -40,6 +43,7 @@ class BranchController extends Controller
             'description' => 'nullable|string',
             'longitude' => 'required|numeric',
             'latitude' => 'required|numeric',
+            'manager_id' => 'required|exists:users,id',
         ]);
 
         // Check if an image was uploaded
@@ -51,8 +55,20 @@ class BranchController extends Controller
             $path = null;
         }
 
+
+
         // Manually store the data without one single variable
         $branch = new Branch();
+
+        // Assign manager to the branch
+        if ($request->manager_id) {
+            $branch->manager_id = $request->manager_id;
+
+            // Assign branch to the user
+            User::where('id', $request->manager_id)->update(['branch_id' => $branch->id]);
+        }
+
+
         $branch->name = $request->name;
         $branch->address = $request->address;
         $branch->longitude = $request->longitude;
@@ -70,7 +86,7 @@ class BranchController extends Controller
      */
     public function show(string $id)
     {
-        $branch = Branch::with('timings')->findOrFail($id);
+        $branch = Branch::with(['timings', 'manager'])->findOrFail($id);
 
         // Get existing timings from the database for the branch
         $existingTimings = $branch->timings->pluck('day')->toArray();
@@ -86,8 +102,17 @@ class BranchController extends Controller
     public function edit(string $id)
     {
         $branch = Branch::findOrFail($id);
+        $users = User::where(function ($query) use ($branch) {
+            $query->whereNull('branch_id')
+                ->orWhere('id', $branch->manager_id);
+        })
+            ->where('id', '!=', 1)
+            ->get();
+
+        // dd($branch);
         return response()->json([
-            'branch' => $branch
+            'branch' => $branch,
+            'users' => $users
         ]);
     }
 
@@ -105,6 +130,7 @@ class BranchController extends Controller
             'description' => 'nullable|string',
             'longitude' => 'required|numeric',
             'latitude' => 'required|numeric',
+            'manager_id' => 'required|exists:users,id',
         ]);
 
         $branch = Branch::findOrFail($id);
@@ -123,6 +149,18 @@ class BranchController extends Controller
 
             $path = $request->file('logo')->store('images/branches', 'public');
             $branch->logo = $path;
+        }
+
+        // Assign manager to the branch
+        if ($request->manager_id) {
+
+            // Clear previous manager's branch assignment
+            User::where('branch_id', $branch->id)->update(['branch_id' => null]);
+
+            $branch->manager_id = $request->manager_id;
+
+            // Assign branch to the user
+            User::where('id', $request->manager_id)->update(['branch_id' => $branch->id]);
         }
 
         $branch->save();
@@ -161,6 +199,22 @@ class BranchController extends Controller
             'success' => true,
             'status' => $branch->is_active ? 'activated' : 'deactivated',
             'message' => $branch->is_active ? 'Branch activated successfully.' : 'Branch deactivated successfully.'
+        ]);
+    }
+
+    public function toggle24x7($id)
+    {
+        $branch = Branch::findOrFail($id);
+
+        $branch->isOpen24x7 = !$branch->isOpen24x7;
+        $branch->save();
+
+        return response()->json([
+            'success' => true,
+            'status' => $branch->isOpen24x7 ? 'enabled' : 'disabled',
+            'message' => $branch->isOpen24x7
+                ? 'Branch is now open 24x7.'
+                : 'Branch is no longer open 24x7.'
         ]);
     }
 }

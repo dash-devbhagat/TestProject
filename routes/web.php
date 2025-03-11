@@ -102,6 +102,7 @@ Route::middleware(['auth', 'check.active'])->group(function () {
 
     Route::resource('branch', BranchController::class);
     Route::post('/branch/{id}/toggle-status', [BranchController::class, 'toggleStatus']);
+    Route::post('/branch/toggle-24x7/{id}', [BranchController::class, 'toggle24x7']);
 
     Route::resource('timing', TimingController::class);
     Route::post('/timing/{id}/toggle-status', [TimingController::class, 'toggleStatus']);

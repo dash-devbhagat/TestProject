@@ -60,12 +60,12 @@
                 </a>
             </li>
 
-            <li class="nav-item"> 
-    <a href="{{ route('deal.index') }}" class="nav-link {{ request()->routeIs('deal.index') ? 'active' : '' }}">
-        <i class="nav-icon fas fa-percent"></i>
-        <p>Deal Management</p>
-    </a>
-</li>
+            <li class="nav-item">
+                <a href="{{ route('deal.index') }}" class="nav-link {{ request()->routeIs('deal.index') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-percent"></i>
+                    <p>Deal Management</p>
+                </a>
+            </li>
 
 
 

@@ -13,6 +13,11 @@ class Branch extends Model
 
     public function timings()
     {
-        return $this->hasMany(Timing::class); 
+        return $this->hasMany(Timing::class);
+    }
+
+    public function manager()
+    {
+        return $this->belongsTo(User::class, 'manager_id');
     }
 }

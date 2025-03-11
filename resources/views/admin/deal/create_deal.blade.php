@@ -487,6 +487,7 @@
         $(document).on('click', '.remove-product-btn', function() {
             $(this).closest('.combo-product').remove();
             updateButtonVisibility();
+            updateTotalAmount();
         });
 
         // Ensure delete button is not on the first row

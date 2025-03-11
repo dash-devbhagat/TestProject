@@ -41,32 +41,40 @@
                     <div class="col-md-12">
                         <h3 class="text-primary">Branch Details</h3>
                         <div class="table-responsive">
-                            <table class="table" style="table-layout: fixed; width: 100%;"> 
+                            <table class="table" style="table-layout: fixed; width: 100%;">
                                 <tbody>
                                     <tr>
-                                        <th style="width: 20%;">Branch Name</th> 
+                                        <th style="width: 20%;">Branch Name</th>
                                         <td>{{ $branch->name }}</td>
                                     </tr>
                                     <tr>
-                                        <th style="width: 20%;">Branch Address</th> 
+                                        <th style="width: 20%;">Branch Manager Name</th>
+                                        <td>{{ $branch->manager->name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width: 20%;">Branch Address</th>
                                         <td>{{ $branch->address }}</td>
                                     </tr>
                                     <tr>
-                                        <th style="width: 20%;">Description</th> 
+                                        <th style="width: 20%;">Description</th>
                                         <td style="word-wrap: break-word; max-width: 500px;">
                                             {{ $branch->description ?? 'No Description Available' }}
                                         </td>
                                     </tr>
                                     <tr>
-                                        <th style="width: 20%;">Latitude</th> 
+                                        <th style="width: 20%;">Open 24x7</th>
+                                        <td>{{ $branch->isOpen24x7 ? 'Yes' : 'No' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width: 20%;">Latitude</th>
                                         <td>{{ $branch->latitude }}</td>
                                     </tr>
                                     <tr>
-                                        <th style="width: 20%;">Longitude</th> 
+                                        <th style="width: 20%;">Longitude</th>
                                         <td>{{ $branch->longitude }}</td>
                                     </tr>
                                     <tr>
-                                        <th style="width: 20%;">Branch Logo</th> 
+                                        <th style="width: 20%;">Branch Logo</th>
                                         <td>
                                             @if ($branch->logo)
                                             <img src="{{ asset('storage/' . $branch->logo) }}" width="200" height="200">
@@ -81,7 +89,7 @@
                     </div>
                 </div>
 
-
+                @if (!$branch->isOpen24x7)
                 <div class="row mt-4">
                     <div class="col-md-12">
                         <div class="d-flex justify-content-between align-items-center">
@@ -134,6 +142,9 @@
                         </table>
                     </div>
                 </div>
+                @endif
+
+
             </div>
         </div>
     </section>
@@ -150,10 +161,10 @@
             <form action="{{ route('timing.store') }}" method="POST">
                 @csrf
                 <input type="hidden" name="branch_id" value="{{ $branch->id }}">
-                <div id="timingFields" class="px-4 py-3"> 
+                <div id="timingFields" class="px-4 py-3">
                     <div class="timing-entry row mb-4">
                         <div class="col-12 mb-3">
-                            <label for="day" class="form-label">Day</label> 
+                            <label for="day" class="form-label">Day</label>
                             <select name="timings[0][day]" class="form-control day-select" id="day" required>
                                 <option value="">Select Day</option>
                                 @foreach(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as $day)
@@ -162,7 +173,7 @@
                             </select>
                         </div>
                         <div class="col-12 mb-3">
-                            <label for="opening_time" class="form-label">Opening Time</label> 
+                            <label for="opening_time" class="form-label">Opening Time</label>
                             <input type="time" class="form-control" name="timings[0][opening_time]" id="opening_time" required>
                         </div>
                         <div class="col-12 mb-2">
