@@ -16,6 +16,7 @@ public function nearbyBranches(Request $request)
         'latitude' => 'required|numeric',
         'longitude' => 'required|numeric',
         'radius' => 'nullable|numeric|min:1', // Radius in kilometers, default 2
+        'timezone' => 'nullable|string', // Allow client to send timezone
     ]);
 
     if ($validator->fails()) {
@@ -31,7 +32,16 @@ public function nearbyBranches(Request $request)
     $latitude = $request->latitude;
     $longitude = $request->longitude;
     $radius = $request->radius ?? 2; // Default radius 2 km
-
+    
+    // Set timezone to user's timezone if provided, or use a fixed timezone
+    $timezone = $request->timezone ?? 'Asia/Kolkata'; // Default to Indian timezone
+    date_default_timezone_set($timezone);
+    
+    // Get current time in the specified timezone
+    $now = \Carbon\Carbon::now($timezone);
+    $currentTime = $now->format('H:i:s');
+    $currentDay = $now->format('l'); // e.g., "Tuesday"
+    
     // Calculate distance using Haversine formula
     $branches = Branch::selectRaw('branches.*, 
         (6371 * ACOS(
@@ -47,20 +57,32 @@ public function nearbyBranches(Request $request)
         }])
         ->get();
 
-    $currentTime = now()->format('H:i:s'); // Current time in HH:MM:SS format
-    $currentDay = now()->format('l'); // Get current day (Monday, Tuesday, etc.)
-
     // Format the response
-    $formattedBranches = $branches->map(function ($branch) use ($currentTime, $currentDay) {
+    $formattedBranches = $branches->map(function ($branch) use ($currentTime, $currentDay, $now) {
         $isOpen = false;
 
-        // Get active timings and check if the branch is currently open
-        $timingsData = $branch->timings->map(function ($timing) use ($currentTime, $currentDay, &$isOpen) {
-            if ($timing->day == $currentDay) {
-                if ($currentTime >= $timing->opening_time && $currentTime <= $timing->closing_time) {
-                    $isOpen = true;
+        // Check if the branch is open 24x7
+        if ($branch->isOpen24x7) {
+            $isOpen = true;
+        } else {
+            // If not 24x7, check the current day's timings
+            foreach ($branch->timings as $timing) {
+                if ($timing->day == $currentDay) {
+                    // Parse times for proper comparison
+                    $openingCarbon = \Carbon\Carbon::createFromFormat('H:i:s', $timing->opening_time)->setTimezone($now->timezone);
+                    $closingCarbon = \Carbon\Carbon::createFromFormat('H:i:s', $timing->closing_time)->setTimezone($now->timezone);
+                    $currentCarbon = \Carbon\Carbon::createFromFormat('H:i:s', $currentTime)->setTimezone($now->timezone);
+                    
+                    if ($currentCarbon->gte($openingCarbon) && $currentCarbon->lte($closingCarbon)) {
+                        $isOpen = true;
+                        break;
+                    }
                 }
             }
+        }
+
+        // Get timings data for all days
+        $timingsData = $branch->timings->map(function ($timing) {
             return [
                 'day' => $timing->day,
                 'opening_time' => $timing->opening_time,
@@ -75,8 +97,9 @@ public function nearbyBranches(Request $request)
             'description' => $branch->description,
             'logo' => $branch->logo ? url(Storage::url($branch->logo)) : null,
             'distance' => round($branch->distance, 2) . ' km',
-            'status' => $isOpen ? 'open' : 'closed', // Branch status based on current time
-            'timings' => $timingsData->isEmpty() ? null : $timingsData, // Set timings to null if empty
+            'status' => $isOpen ? 'open' : 'closed', // Branch status based on current time or 24x7 flag
+            'is_24x7' => (bool)$branch->isOpen24x7, // Add 24x7 flag to response
+            'timings' => $branch->isOpen24x7 ? null : ($timingsData->isEmpty() ? null : $timingsData), // Set timings to null if empty
         ];
     });
 
@@ -88,6 +111,7 @@ public function nearbyBranches(Request $request)
         ],
     ], 200);
 }
+
 }
     // public function nearbyBranches(Request $request)
     // {

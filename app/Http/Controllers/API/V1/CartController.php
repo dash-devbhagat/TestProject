@@ -413,46 +413,87 @@ class CartController extends Controller
 
 
 
-    public function checkout(Request $request)
-    {
-        $user = Auth::user();
-        $cart = Cart::where('user_id', $user->id)->first();
+public function checkout(Request $request)
+{
+    $user = Auth::user();
+    $cart = Cart::where('user_id', $user->id)->first();
 
-        if (!$cart || $cart->items->isEmpty()) {
-            return response()->json([
-                'data' => json_decode('{}'),
-                'meta' => [
-                    'success' => false,
-                    'message' => 'Your cart is empty.',
-                ],
-            ], 200);
+    if (!$cart || $cart->items->isEmpty()) {
+        return response()->json([
+            'data' => json_decode('{}'),
+            'meta' => [
+                'success' => false,
+                'message' => 'Your cart is empty.',
+            ],
+        ], 200);
+    }
+
+    // Validate the branch ID and timezone
+    $validator = Validator::make($request->all(), [
+        'branch_id' => 'required|exists:branches,id',
+        'timezone' => 'nullable|string',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'data' => json_decode('{}'),
+            'meta' => [
+                'success' => false,
+                'message' => $validator->errors()->first(),
+            ],
+        ], 200);
+    }
+
+    // Retrieve branch with active timings
+    $branch = Branch::with(['timings' => function ($query) {
+        $query->where('is_active', 1);
+    }])->find($request->branch_id);
+
+    if (!$branch->is_active) {
+        return response()->json([
+            'data' => json_decode('{}'),
+            'meta' => [
+                'success' => false,
+                'message' => 'Selected branch is not available.',
+            ],
+        ], 200);
+    }
+
+    // Check if branch is currently open
+     $timezone = $request->timezone ?? 'Asia/Kolkata'; // Default to Indian timezone
+    date_default_timezone_set($timezone);
+    
+    // Get current time in the specified timezone
+    $now = \Carbon\Carbon::now($timezone);
+    $currentTime = $now->format('H:i:s');
+    $currentDay = $now->format('l'); // e.g., "Tuesday"
+
+    $isOpen = $branch->isOpen24x7;
+
+    if (!$isOpen) {
+        foreach ($branch->timings as $timing) {
+            if ($timing->day === $currentDay) {
+                $openingCarbon = \Carbon\Carbon::createFromFormat('H:i:s', $timing->opening_time)->setTimezone($now->timezone);
+                    $closingCarbon = \Carbon\Carbon::createFromFormat('H:i:s', $timing->closing_time)->setTimezone($now->timezone);
+                    $currentCarbon = \Carbon\Carbon::createFromFormat('H:i:s', $currentTime)->setTimezone($now->timezone);
+
+                if ($currentCarbon->gte($openingCarbon) && $currentCarbon->lte($closingCarbon)) {
+                        $isOpen = true;
+                        break;
+                    }
+            }
         }
+    }
 
-        // Validate the branch ID
-        $validator = Validator::make($request->all(), [
-            'branch_id' => 'required|exists:branches,id',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'data' => json_decode('{}'),
-                'meta' => [
-                    'success' => false,
-                    'message' => $validator->errors()->first(),
-                ],
-            ], 200);
-        }
-
-        $branch = Branch::find($request->branch_id);
-        if (!$branch->is_active) {
-            return response()->json([
-                'data' => json_decode('{}'),
-                'meta' => [
-                    'success' => false,
-                    'message' => 'Selected branch is not available.',
-                ],
-            ], 200);
-        }
+    if (!$isOpen) {
+        return response()->json([
+            'data' => json_decode('{}'),
+            'meta' => [
+                'success' => false,
+                'message' => 'Selected branch is currently closed.',
+            ],
+        ], 200);
+    }
 
         // Save selected branch to cart
         $cart->branch_id = $branch->id;

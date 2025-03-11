@@ -30,8 +30,8 @@ class DatabaseSeeder extends Seeder
             CitySeeder::class,
             BonusesSeeder::class,
             ChargesSeeder::class,
-            BranchesTableSeeder::class,
-            TimingsTableSeeder::class,
+            // BranchesTableSeeder::class,
+            // TimingsTableSeeder::class,
             DealSeeder::class,
             DealComboProductSeeder::class,
         ]);
