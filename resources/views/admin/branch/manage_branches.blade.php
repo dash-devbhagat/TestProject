@@ -54,7 +54,21 @@
                         @enderror
                     </div>
 
-                    <div class="col-sm-6 mt-2">
+                    <div class="col-sm-4 mt-2">
+                        <label for="manager_id">Branch Manager</label>
+                        <select class="form-control @error('manager_id') is-invalid @enderror" name="manager_id" id="manager_id">
+                            <option value="">Select Manager</option>
+                            @foreach($users as $user)
+                            <option value="{{ $user->id }}">{{ $user->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('manager_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+
+                    <div class="col-sm-4 mt-2">
                         <label for="latitude">Latitude</label>
                         <input type="text" class="form-control @error('latitude') is-invalid @enderror" name="latitude" id="latitude" placeholder="Enter Latitude" value="{{ old('latitude') }}">
                         @error('latitude')
@@ -62,7 +76,7 @@
                         @enderror
                     </div>
 
-                    <div class="col-sm-6 mt-2">
+                    <div class="col-sm-4 mt-2">
                         <label for="longitude">Longitude</label>
                         <input type="text" class="form-control @error('longitude') is-invalid @enderror" name="longitude" id="longitude" placeholder="Enter Longitude" value="{{ old('longitude') }}">
                         @error('longitude')
@@ -97,7 +111,9 @@
                         <tr>
                             <th>Sr</th>
                             <th>Branch Name</th>
+                            <th>Branch Manager</th>
                             <th>Branch Logo</th>
+                            <th>Branch Open 24*7</th>
                             <th>Active Status</th>
                             <th>Actions</th>
                         </tr>
@@ -108,14 +124,25 @@
                         <tr>
                             <td>{{ $i }}</td>
                             <td>{{ $branch->name }}</td>
+                            <td>{{ $branch->manager->name }}</td>
                             <td class="text-center">
-                                        @if ($branch->logo)
-                                            <img src="{{ asset('storage/' . $branch->logo) }}" alt="Branch Image"
-                                                width="80" height="50" onerror="this.onerror=null; this.src='{{ asset('adminlte/dist/img/inf.png') }}';">
-                                        @else
-                                            N/A
-                                        @endif
-                                    </td>
+                                @if ($branch->logo)
+                                <img src="{{ asset('storage/' . $branch->logo) }}" alt="Branch Image"
+                                    width="80" height="50" onerror="this.onerror=null; this.src='{{ asset('adminlte/dist/img/inf.png') }}';">
+                                @else
+                                N/A
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <!-- Branch Open24*7 Toggle Icon -->
+                                <a href="javascript:void(0);" id="toggle24x7Btn{{ $branch->id }}"
+                                    data-id="{{ $branch->id }}" class="text-center"
+                                    data-toggle="tooltip"
+                                    title="{{ $branch->isOpen24x7 ? '24x7 Enabled' : 'Not 24x7' }}">
+                                    <i class="fas {{ $branch->isOpen24x7 ? 'fa-toggle-on text-danger' : 'fa-toggle-off text-muted' }} fa-2x"></i>
+                                </a>
+                            </td>
+
                             <td class="text-center">
                                 <!-- Active/Inactive Toggle Icon -->
                                 <a href="javascript:void(0);" id="toggleStatusBtn{{ $branch->id }}"
@@ -133,7 +160,7 @@
                                 </a>
                                 <!-- Edit Icon -->
                                 <a href="#javascript" class="text-primary" data-toggle="modal"
-                                    data-target="#exampleModal" data-bs-toggle="tooltip" title="Edit">
+                                    data-target="#editBranchModal" data-bs-toggle="tooltip" title="Edit">
                                     <i class="fa fa-edit editBranchBtn" data-id="{{ $branch->id }}"></i>
                                 </a>
                                 <!-- Delete Icon -->
@@ -181,13 +208,20 @@
                             required>
                     </div>
                     <div class="form-group">
-                        <label for="editBranchAddress">Branch Address</label>
-                        <input type="text" class="form-control" id="editBranchAddress" name="address"
-                            required>
+                        <label for="editBranchManager">Branch Manager</label>
+                        <select class="form-control" id="editBranchManager" name="manager_id" required>
+                            <option value="">Select Manager</option>
+                            <!-- Users will be populated dynamically -->
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="editBranchDescription">Branch Description</label>
                         <input type="text" class="form-control" id="editBranchDescription" name="description"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBranchAddress">Branch Address</label>
+                        <input type="text" class="form-control" id="editBranchAddress" name="address"
                             required>
                     </div>
                     <div class="form-group">
@@ -219,8 +253,8 @@
 @section('scripts')
 <script>
     $(document).ready(function() {
-         // Open the Edit Modal and Populate Data
-         $('.editBranchBtn').on('click', function() {
+        // Open the Edit Modal and Populate Data
+        $('.editBranchBtn').on('click', function() {
             const branchId = $(this).data('id');
 
             $.ajax({
@@ -228,22 +262,34 @@
                 type: "GET",
                 success: function(response) {
                     const branch = response.branch;
+                    const users = response.users;
+                    
                     $('#editBranchId').val(branch.id);
                     $('#editBranchName').val(branch.name);
                     $('#editBranchAddress').val(branch.address);
                     $('#editBranchDescription').val(branch.description);
                     $('#editBranchLatitude').val(branch.latitude);
                     $('#editBranchLongitude').val(branch.longitude);
+
+                    // Populate Manager Dropdown
+                    const managerDropdown = $('#editBranchManager');
+                    managerDropdown.empty().append('<option value="">Select Manager</option>');
+
+                    users.forEach(user => {
+                        const selected = branch.manager_id === user.id ? 'selected' : '';
+                        managerDropdown.append(`<option value="${user.id}" ${selected}>${user.name}</option>`);
+                    });
+
                     $('#editBranchModal').modal('show');
                 },
                 error: function() {
-                    alert('Error fetching category data.');
+                    alert('Error fetching branch data.');
                 }
             });
         });
 
-         // Update the Branch
-         $('#updateBranchBtn').on('click', function() {
+        // Update the Branch
+        $('#updateBranchBtn').on('click', function() {
             const formData = new FormData($('#editBranchForm')[0]);
             formData.append('_method', 'PUT'); // Add method override for PUT
 
@@ -267,23 +313,44 @@
 
         // Toggle Status
         $(document).on('click', '[id^="toggleStatusBtn"]', function() {
-                var branchId = $(this).data('id');
+            var branchId = $(this).data('id');
 
-                $.ajax({
-                    url: '/branch/' + branchId +
-                        '/toggle-status', // Use the route for toggling status
-                    method: 'POST',
-                    data: {
-                        _token: $('input[name="_token"]').val(), // CSRF token
-                    },
-                    success: function(response) {
-                        location.reload();
-                    },
-                    error: function() {
-                        alert('An error occurred while toggling branch status.');
-                    }
-                });
+            $.ajax({
+                url: '/branch/' + branchId +
+                    '/toggle-status', // Use the route for toggling status
+                method: 'POST',
+                data: {
+                    _token: $('input[name="_token"]').val(), // CSRF token
+                },
+                success: function(response) {
+                    location.reload();
+                },
+                error: function() {
+                    alert('An error occurred while toggling branch status.');
+                }
             });
+        });
+
+        // Toggle Open24*7
+        $(document).on('click', '[id^="toggle24x7Btn"]', function() {
+            var branchId = $(this).data('id');
+
+            $.ajax({
+                url: `/branch/toggle-24x7/${branchId}`,
+                method: 'POST',
+                data: {
+                    _token: $('input[name="_token"]').val(), // CSRF token
+                },
+                success: function(response) {
+                    location.reload();
+                },
+                error: function() {
+                    alert('Error toggling 24x7 status. Please try again.');
+                }
+            });
+        });
+
+
     });
 </script>
 @endsection
