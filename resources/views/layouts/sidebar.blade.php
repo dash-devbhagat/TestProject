@@ -10,6 +10,17 @@
                 </a>
             </li>
 
+            @if (Auth::user()->branch_id)
+            <!-- Show Manage Branch Menu for Branch Managers Only -->
+            <li class="nav-item">
+                <a href="{{ route('branch.show', Auth::user()->branch_id) }}"
+                    class="nav-link {{ request()->routeIs('branch.show') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-building"></i>
+                    <p>Manage Branch</p>
+                </a>
+            </li>
+            @endif
+
             @if (Auth::user()->role === 'admin')
             <li class="nav-item">
                 <a href="{{ route('bonus.index') }}" class="nav-link {{ request()->routeIs('bonus.index') ? 'active' : '' }}">

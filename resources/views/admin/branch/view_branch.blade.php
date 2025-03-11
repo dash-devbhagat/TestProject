@@ -39,7 +39,14 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-12">
-                        <h3 class="text-primary">Branch Details</h3>
+                        <h3 class="text-primary">Branch Details @if (Auth::user()->branch_id)
+                            <!-- Edit Icon -->
+                            <a href="#javascript" class="text-primary" data-toggle="modal"
+                                data-target="#editBranchModal" data-bs-toggle="tooltip" title="Edit">
+                                <i class="fa fa-edit editBranchBtn" data-id="{{ $branch->id }}"></i>
+                            </a>
+                            @endif
+                        </h3>
                         <div class="table-responsive">
                             <table class="table" style="table-layout: fixed; width: 100%;">
                                 <tbody>
@@ -63,7 +70,19 @@
                                     </tr>
                                     <tr>
                                         <th style="width: 20%;">Open 24x7</th>
+                                        @if (Auth::user()->branch_id)
+                                        <td class="center">
+                                            <!-- Branch Open24*7 Toggle Icon -->
+                                            <a href="javascript:void(0);" id="toggle24x7Btn{{ $branch->id }}"
+                                                data-id="{{ $branch->id }}" class="text-center"
+                                                data-toggle="tooltip"
+                                                title="{{ $branch->isOpen24x7 ? '24x7 Enabled' : 'Not 24x7' }}">
+                                                <i class="fas {{ $branch->isOpen24x7 ? 'fa-toggle-on text-danger' : 'fa-toggle-off text-muted' }} fa-2x"></i>
+                                            </a>
+                                        </td>
+                                        @else
                                         <td>{{ $branch->isOpen24x7 ? 'Yes' : 'No' }}</td>
+                                        @endif
                                     </tr>
                                     <tr>
                                         <th style="width: 20%;">Latitude</th>
@@ -191,6 +210,62 @@
     </div>
 </div>
 
+<!-- Edit Branch Modal -->
+<div class="modal fade" id="editBranchModal" tabindex="-1" role="dialog" aria-labelledby="editBranchModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editBranchModalLabel">Edit Branch</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editBranchForm" method="POST" action="" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="editBranchId" name="id">
+                    <div class="form-group">
+                        <label for="editBranchName">Branch Name</label>
+                        <input type="text" class="form-control" id="editBranchName" name="name"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBranchDescription">Branch Description</label>
+                        <input type="text" class="form-control" id="editBranchDescription" name="description"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBranchAddress">Branch Address</label>
+                        <input type="text" class="form-control" id="editBranchAddress" name="address"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBranchLatitude">Latitude</label>
+                        <input type="text" class="form-control" id="editBranchLatitude" name="latitude"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBranchLongitude">Longitude</label>
+                        <input type="text" class="form-control" id="editBranchLongitude" name="longitude"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBranchImage">Branch Logo</label>
+                        <input type="file" class="form-control" id="editBranchImage" name="logo"
+                            accept="image/*">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" id="updateBranchBtn" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <!-- Edit Timing Modal -->
 <div class="modal fade" id="editTimingModal" tabindex="-1" aria-labelledby="editTimingModalLabel" aria-hidden="true">
@@ -227,6 +302,76 @@
 @section('scripts')
 <script>
     $(document).ready(function() {
+
+        // Open the Edit Modal and Populate Data
+        $('.editBranchBtn').on('click', function() {
+            const branchId = $(this).data('id');
+
+            $.ajax({
+                url: '/branch/' + branchId + '/edit', // Fetch category data
+                type: "GET",
+                success: function(response) {
+                    const branch = response.branch;
+                    const users = response.users;
+
+                    $('#editBranchId').val(branch.id);
+                    $('#editBranchName').val(branch.name);
+                    $('#editBranchAddress').val(branch.address);
+                    $('#editBranchDescription').val(branch.description);
+                    $('#editBranchLatitude').val(branch.latitude);
+                    $('#editBranchLongitude').val(branch.longitude);
+
+                    $('#editBranchModal').modal('show');
+                },
+                error: function() {
+                    alert('Error fetching branch data.');
+                }
+            });
+        });
+
+        // Update the Branch
+        $('#updateBranchBtn').on('click', function() {
+            const formData = new FormData($('#editBranchForm')[0]);
+            formData.append('_method', 'PUT'); // Add method override for PUT
+
+            $.ajax({
+                url: '/branch/' + $('#editBranchId')
+                    .val(),
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    $('#editBranchModal').modal('hide');
+                    location.reload();
+                },
+                error: function() {
+                    alert('Error updating branch data. Please try again.');
+                }
+            });
+        });
+
+        // Toggle Open24*7
+        $(document).on('click', '[id^="toggle24x7Btn"]', function() {
+            var branchId = $(this).data('id');
+
+            $.ajax({
+                url: `/branch/toggle-24x7/${branchId}`,
+                method: 'POST',
+                data: {
+                    _token: $('input[name="_token"]').val(), // CSRF token
+                },
+                success: function(response) {
+                    location.reload();
+                },
+                error: function() {
+                    alert('Error toggling 24x7 status. Please try again.');
+                }
+            });
+        });
+
+
+
         // Add more timing fields
         let timingIndex = 1;
         $('#addMoreTimings').on('click', function() {

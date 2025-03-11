@@ -7,6 +7,7 @@ use App\Models\Timing;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class BranchController extends Controller
 {
@@ -37,13 +38,22 @@ class BranchController extends Controller
         // dd($request->all());
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('branches', 'name')
+            ],
             'address' => 'required|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'description' => 'nullable|string',
             'longitude' => 'required|numeric',
             'latitude' => 'required|numeric',
-            'manager_id' => 'required|exists:users,id',
+            'manager_id' => [
+                'required',
+                'exists:users,id',
+                Rule::unique('branches', 'manager_id')
+            ],
         ]);
 
         // Check if an image was uploaded
@@ -124,13 +134,22 @@ class BranchController extends Controller
         // dd($request->all());
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('branches', 'name')->ignore($id)
+            ],
             'address' => 'required|string',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'description' => 'nullable|string',
             'longitude' => 'required|numeric',
             'latitude' => 'required|numeric',
-            'manager_id' => 'required|exists:users,id',
+            'manager_id' => [
+                'nullable',
+                'exists:users,id',
+                Rule::unique('branches', 'manager_id')->ignore($id)
+            ],
         ]);
 
         $branch = Branch::findOrFail($id);

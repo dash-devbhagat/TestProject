@@ -14,6 +14,9 @@
                                 Admin Dashboard
                             @else
                                 Staff Dashboard
+                                @if (Auth::user()->branch_id) 
+                                 - Branch Manager ({{ Auth::user()->branch->name }})
+                                @endif
                             @endif
                         </h1>
                         @if (session('success'))
