@@ -160,7 +160,7 @@
                                 </a>
                                 <!-- Edit Icon -->
                                 <a href="#javascript" class="text-primary" data-toggle="modal"
-                                    data-target="#editBranchModal" data-bs-toggle="tooltip" title="Edit">
+                                    data-target="#exampleModal" data-bs-toggle="tooltip" title="Edit">
                                     <i class="fa fa-edit editBranchBtn" data-id="{{ $branch->id }}"></i>
                                 </a>
                                 <!-- Delete Icon -->
@@ -185,6 +185,7 @@
 
     </section>
 </div>
+
 
 <!-- Edit Branch Modal -->
 <div class="modal fade" id="editBranchModal" tabindex="-1" role="dialog" aria-labelledby="editBranchModalLabel"
