@@ -492,6 +492,22 @@
                 }
             });
         });
+
+        $(document).on('change', 'input[name^="timings"][name$="[opening_time]"]', function() {
+        let openingTime = $(this).val();
+        let closingTimeInput = $(this).closest('.timing-entry').find('input[name^="timings"][name$="[closing_time]"]');
+    
+        // Set the minimum time for closing time
+        // closingTimeInput.attr('min', openingTime);
+
+        if (openingTime) {
+        // Set the minimum closing time based on opening time
+        closingTimeInput.attr('min', openingTime);
+        // Set the maximum closing time to 23:59
+        closingTimeInput.attr('max', '23:59');
+        }
+        });
+
     });
 </script>
 @endsection
