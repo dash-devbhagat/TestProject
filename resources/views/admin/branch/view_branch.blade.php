@@ -493,20 +493,70 @@
             });
         });
 
+        // For Add Timing
         $(document).on('change', 'input[name^="timings"][name$="[opening_time]"]', function() {
+    let openingTime = $(this).val();
+    let closingTimeInput = $(this).closest('.timing-entry').find('input[name^="timings"][name$="[closing_time]"]');
+
+    if (openingTime) {
+        let [hours, minutes] = openingTime.split(':').map(Number);
+
+        // Increment time by 1 minute to ensure closing time is strictly greater
+        minutes += 1;
+        if (minutes === 60) {
+            minutes = 0;
+            hours += 1;
+        }
+
+        let minClosingTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+
+        // Set the minimum closing time
+        closingTimeInput.attr('min', minClosingTime);
+        closingTimeInput.attr('max', '23:59');
+
+        // Reset the closing time if it's invalid
+        if (closingTimeInput.val() <= openingTime) {
+            closingTimeInput.val('');
+        }
+    }
+});
+
+// Apply validation when opening time changes in Edit Timing Modal
+    $(document).on('change', '#editOpeningTime', function () {
+        // console.log('Opening time changed in Edit Modal'); 
+
         let openingTime = $(this).val();
-        let closingTimeInput = $(this).closest('.timing-entry').find('input[name^="timings"][name$="[closing_time]"]');
-    
-        // Set the minimum time for closing time
-        // closingTimeInput.attr('min', openingTime);
+        let closingTimeInput = $('#editClosingTime');
 
         if (openingTime) {
-        // Set the minimum closing time based on opening time
-        closingTimeInput.attr('min', openingTime);
-        // Set the maximum closing time to 23:59
-        closingTimeInput.attr('max', '23:59');
+            let [hours, minutes] = openingTime.split(':').map(Number);
+
+            // Ensure closing time is at least 1 minute later
+            minutes += 1;
+            if (minutes === 60) {
+                minutes = 0;
+                hours += 1;
+            }
+
+            let minClosingTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+
+            // console.log('Min closing time set to:', minClosingTime); 
+
+            // Apply min/max attributes
+            closingTimeInput.attr('min', minClosingTime);
+            closingTimeInput.attr('max', '23:59');
+
+            // Reset invalid closing time
+            if (closingTimeInput.val() && closingTimeInput.val() < minClosingTime) {
+                closingTimeInput.val('');
+            }
         }
-        });
+    });
+
+
+
+
+
 
     });
 </script>
