@@ -99,7 +99,7 @@ class TransactionAPIController extends Controller
 
         // New grand total calculation:
         $grandTotalWithoutBonus = $cartTotal + $totalAdditionalCharges;
-        $grandTotal = $grandTotalWithoutBonus - $appliedBonusDeduction;
+        $grandTotal = $grandTotalWithoutBonus;
         $grandTotal = number_format($grandTotal, 2, '.', '');
 
         // Create Order using the adjusted totals
@@ -204,6 +204,8 @@ class TransactionAPIController extends Controller
                 'payment_status' => $request->payment_status,
             ],
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => $message,
             ],

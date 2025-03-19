@@ -65,6 +65,8 @@ class MobileUserProfileController extends Controller
         return response()->json([
             'data' => ['user' => $profileData],
             'meta' => [
+                'accessToken' => $user->auth_token,
+                'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'User profile retrieved successfully.',
             ],
@@ -156,28 +158,30 @@ class MobileUserProfileController extends Controller
             'birthDate' => $user->birthdate,
             'profilecomplete' => $user->is_profile_complete,
             'referralCode' => $user->referral_code,
-'address' => $user->address ? [
-    'addressLine' => $user->address->address_line ?? 'null',
-    'city' => $user->address->city ? $user->address->city->name : 'null',
-    'city_id' => $user->address->city ? $user->address->city->id : 'null',
-    'state' => $user->address->state ? $user->address->state->name : 'null',
-    'state_id' => $user->address->state ? $user->address->state->id : 'null',
-    'zipCode' => $user->address->zip_code ?? 'null',
-    'latitude' => $user->address->latitude ?? 'null',
-    'longitude' => $user->address->longitude ?? 'null',
-] : [
-    'addressLine' => 'null',
-    'city' => 'null',
-    'city_id' => 'null',
-    'state' => 'null',
-    'state_id' => 'null',
-    'zipCode' => 'null',
-    'latitude' => 'null',
-    'longitude' => 'null',
-],
+        'address' => $user->address ? [
+            'addressLine' => $user->address->address_line ?? 'null',
+            'city' => $user->address->city ? $user->address->city->name : 'null',
+            'city_id' => $user->address->city ? $user->address->city->id : 'null',
+            'state' => $user->address->state ? $user->address->state->name : 'null',
+            'state_id' => $user->address->state ? $user->address->state->id : 'null',
+            'zipCode' => $user->address->zip_code ?? 'null',
+            'latitude' => $user->address->latitude ?? 'null',
+            'longitude' => $user->address->longitude ?? 'null',
+        ] : [
+            'addressLine' => 'null',
+            'city' => 'null',
+            'city_id' => 'null',
+            'state' => 'null',
+            'state_id' => 'null',
+            'zipCode' => 'null',
+            'latitude' => 'null',
+            'longitude' => 'null',
+        ],
         ],
             ],
             'meta' => [
+                'accessToken' => $user->auth_token,
+                'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'Profile Complete successfully.',
             ],
@@ -301,6 +305,8 @@ class MobileUserProfileController extends Controller
         ],
             ],
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'Profile updated successfully.',
             ]
@@ -362,6 +368,8 @@ class MobileUserProfileController extends Controller
                 'profilepic' => asset('storage/' . $user->profilepic),
             ],
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'Profile picture updated successfully.',
             ]
@@ -429,6 +437,8 @@ public function showBonusDetails(Request $request)
                 'bonus_details' => $bonusDetails,
             ],
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'Bonus details retrieved successfully.',
             ],

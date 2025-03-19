@@ -464,6 +464,8 @@ class MobileUserController extends Controller
             [
                 'data' => json_decode('{}'),
                 'meta' => [
+                    'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                     'success' => true,
                     'message' => 'Password changed successfully.',
                 ],
@@ -576,6 +578,8 @@ class MobileUserController extends Controller
         return response()->json([
             'data' => json_decode('{}'),
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'Password reset successfully.',
             ],

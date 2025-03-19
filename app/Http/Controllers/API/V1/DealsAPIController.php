@@ -495,6 +495,8 @@ class DealsAPIController extends Controller
                 'deals_details' => $dealDetails,
             ],
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'Deal redeemed and added to cart successfully.',
             ],
@@ -574,6 +576,8 @@ class DealsAPIController extends Controller
         return response()->json([
             'data' => json_decode('{}'),
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'Deal removed successfully.',
             ],

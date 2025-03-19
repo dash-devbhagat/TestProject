@@ -112,6 +112,8 @@ public function getAllOrders(Request $request)
             'orders_details' => $ordersData,
         ],
         'meta' => [
+            'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
             'success' => true,
             'message' => 'Orders retrieved successfully.',
         ],
@@ -245,6 +247,8 @@ public function getOrderDetails(Request $request)
             'order_details' => $orderData, // Wrap ordersData inside 'orderdata'
         ],
         'meta' => [
+            'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
             'success' => true,
             'message' => 'Order details retrieved successfully.',
         ],
@@ -312,6 +316,8 @@ public function getOrderDetails(Request $request)
                 'order_status' => $order->status,
             ],
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'Order successfully canceled.' . ($refundMessage ? ' ' . $refundMessage : ''),
             ],

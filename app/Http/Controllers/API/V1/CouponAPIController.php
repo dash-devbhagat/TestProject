@@ -184,6 +184,8 @@ class CouponAPIController extends Controller
                 'coupon_image' => $coupon->image, // Coupon image (if any)
             ],
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'Coupon applied successfully.',
             ],
@@ -251,6 +253,8 @@ class CouponAPIController extends Controller
                 ],
             ],
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'Coupon removed successfully.',
             ],

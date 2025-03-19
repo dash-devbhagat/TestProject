@@ -94,6 +94,8 @@ class CartController extends Controller
                 'cart_total' => number_format($cart->cart_total, 2, '.', ''),
             ],
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'Product added to cart successfully.',
             ],
@@ -191,6 +193,8 @@ class CartController extends Controller
         return response()->json([
             'data' => $responseData,
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'Cart items fetched successfully.',
             ],
@@ -202,10 +206,11 @@ class CartController extends Controller
 
 
 
-    // Update Cart Item
 // Update Cart Item
     public function updateCartItem(Request $request)
     {
+        $user = Auth::user();
+
         // Validate the request
         $validator = Validator::make($request->all(), [
             'cart_item_id' => 'required|exists:cart_items,id',
@@ -298,6 +303,8 @@ class CartController extends Controller
             ],
             'cart_total' => $cartTotal,
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'Cart item updated successfully.',
             ],
@@ -308,6 +315,8 @@ class CartController extends Controller
     // Remove Item from Cart
     public function removeFromCart(Request $request)
     {
+        $user = Auth::user();
+
         $validator = Validator::make($request->all(), [
             'cart_item_id' => 'required|exists:cart_items,id',
         ]);
@@ -354,11 +363,15 @@ class CartController extends Controller
         $cart->save();
 
         return response()->json([
-            'data' => json_decode('{}'),
+            'data' => [
+                'cart_total' => $cart->cart_total, // Include the updated cart total
+            ],
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'Cart item(s) removed successfully.',
-                'cart_total' => $cart->cart_total, // Include the updated cart total
+                
             ],
         ], 200);
     }
@@ -396,6 +409,8 @@ class CartController extends Controller
             return response()->json([
                 'data' => [],
                 'meta' => [
+                    'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                     'success' => true,
                     'message' => 'Cart cleared successfully.',
                 ],
@@ -405,6 +420,8 @@ class CartController extends Controller
         return response()->json([
             'data' => json_decode('{}'),
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => false,
                 'message' => 'Cart is empty.',
             ],
@@ -763,7 +780,6 @@ public function checkout(Request $request)
 
         $grandTotal = $finalCartTotal + $totalAdditionalCharges;
         $formattedGrandTotal = number_format($grandTotal, 2, '.', '');
-
         // Save total_charges and grand_total to the cart table
         $cart->total_charges = $totalAdditionalCharges;
         $cart->grand_total = $formattedGrandTotal;
@@ -842,6 +858,8 @@ public function checkout(Request $request)
             ],
             'items' => $items,
             'meta' => [
+                'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
                 'success' => true,
                 'message' => 'Checkout successful',
             ],
