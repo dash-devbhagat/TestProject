@@ -35,6 +35,8 @@ class TransactionAPIController extends Controller
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
+                                        'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                     'success' => false,
                     'message' => 'Your cart is empty.',
                 ],
@@ -53,6 +55,8 @@ class TransactionAPIController extends Controller
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
+                                        'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                     'success' => false,
                     'message' => $validator->errors()->first(),
                 ],

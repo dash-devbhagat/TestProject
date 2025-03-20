@@ -46,4 +46,9 @@ class Order extends Model
 {
     return $this->belongsTo(Branch::class);
 }
+
+public function dealsRedeems()
+{
+    return $this->hasMany(DealsRedeems::class, 'order_id');
+}
 }

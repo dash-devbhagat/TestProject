@@ -141,6 +141,8 @@ class DealsAPIController extends Controller
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
+                                        'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                     'success' => false,
                     'message' => 'Invalid or inactive deal.',
                 ],
@@ -157,6 +159,8 @@ class DealsAPIController extends Controller
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
+                                        'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                     'success' => false,
                     'message' => 'You can redeem only one deal at a time.',
                 ],
@@ -177,6 +181,8 @@ class DealsAPIController extends Controller
                 return response()->json([
                     'data' => json_decode('{}'),
                     'meta' => [
+                                            'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                         'success' => false,
                         'message' => 'You can only redeem this deal once.',
                     ],
@@ -191,6 +197,8 @@ class DealsAPIController extends Controller
                 return response()->json([
                     'data' => json_decode('{}'),
                     'meta' => [
+                                            'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                         'success' => false,
                         'message' => "You can redeem this deal again after $renewalTime days.",
                     ],
@@ -207,6 +215,8 @@ class DealsAPIController extends Controller
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
+                                        'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                     'success' => false,
                     'message' => 'A coupon is already applied. Deals cannot be applied with coupons.',
                 ],
@@ -247,6 +257,8 @@ class DealsAPIController extends Controller
                 return response()->json([
                     'data' => json_decode('{}'),
                     'meta' => [
+                                            'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                         'success' => false,
                         'message' => 'Cart total must be at least ' . $deal->min_cart_amount . ' to redeem this deal.',
                     ],
@@ -297,6 +309,8 @@ class DealsAPIController extends Controller
                     ],
                 ],
                 'meta' => [
+                                        'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                     'success' => true,
                     'message' => 'Discount deal applied successfully.',
                 ],
@@ -308,6 +322,8 @@ class DealsAPIController extends Controller
                 return response()->json([
                     'data' => json_decode('{}'),
                     'meta' => [
+                                            'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                         'success' => false,
                         'message' => 'Product or variant not found.',
                     ],
@@ -372,6 +388,8 @@ class DealsAPIController extends Controller
                     'deals_details' => $dealDetails,
                 ],
                 'meta' => [
+                                        'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                     'success' => true,
                     'message' => 'Flat deal redeemed and added to cart successfully.',
                 ],
@@ -545,6 +563,8 @@ class DealsAPIController extends Controller
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
+                                        'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                     'success' => false,
                     'message' => 'No active deal to remove.',
                 ],

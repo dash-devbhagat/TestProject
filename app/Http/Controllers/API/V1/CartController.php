@@ -40,6 +40,8 @@ class CartController extends Controller
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
+                    'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                     'success' => false,
                     'message' => $validator->errors()->first(),
                 ],
@@ -58,6 +60,8 @@ class CartController extends Controller
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
+                    'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                     'success' => false,
                     'message' => 'The selected product variant does not belong to the specified product.',
                 ],
@@ -115,6 +119,8 @@ class CartController extends Controller
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
+                    'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                     'success' => false,
                     'message' => 'Cart is empty.',
                 ],
@@ -127,6 +133,8 @@ class CartController extends Controller
             return response()->json([
                 'data' => null,
                 'meta' => [
+                    'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                     'success' => false,
                     'message' => 'Cart is empty.',
                 ],
@@ -222,6 +230,8 @@ class CartController extends Controller
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
+                                        'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                     'success' => false,
                     'message' => $validator->errors()->first(),
                 ],
@@ -234,6 +244,8 @@ class CartController extends Controller
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
+                    'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                     'success' => false,
                     'message' => 'Cart item not found.',
                 ],
@@ -245,6 +257,8 @@ class CartController extends Controller
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
+                    'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',                    
                     'success' => false,
                     'message' => 'Deal items cannot be updated.',
                 ],
@@ -257,6 +271,8 @@ class CartController extends Controller
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
+                    'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',                    
                     'success' => false,
                     'message' => 'Invalid product variant.',
                 ],
@@ -325,6 +341,8 @@ class CartController extends Controller
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
+                    'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',                    
                     'success' => false,
                     'message' => $validator->errors()->first(),
                 ],
@@ -439,6 +457,8 @@ public function checkout(Request $request)
         return response()->json([
             'data' => json_decode('{}'),
             'meta' => [
+                    'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',                
                 'success' => false,
                 'message' => 'Your cart is empty.',
             ],
@@ -455,6 +475,8 @@ public function checkout(Request $request)
         return response()->json([
             'data' => json_decode('{}'),
             'meta' => [
+                                    'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                 'success' => false,
                 'message' => $validator->errors()->first(),
             ],
@@ -470,6 +492,8 @@ public function checkout(Request $request)
         return response()->json([
             'data' => json_decode('{}'),
             'meta' => [
+                                    'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                 'success' => false,
                 'message' => 'Selected branch is not available.',
             ],
@@ -506,6 +530,8 @@ public function checkout(Request $request)
         return response()->json([
             'data' => json_decode('{}'),
             'meta' => [
+                'accessToken' => $user->auth_token,
+                'tokenType' => 'Bearer',
                 'success' => false,
                 'message' => 'Selected branch is currently closed.',
             ],
