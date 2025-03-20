@@ -7,11 +7,13 @@ use Illuminate\Http\Request;
 use App\Models\Branch;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class BranchAPIController extends Controller
 {
 public function nearbyBranches(Request $request)
 {
+    $user = Auth::user();
     $validator = Validator::make($request->all(), [
         'latitude' => 'required|numeric',
         'longitude' => 'required|numeric',
@@ -106,6 +108,8 @@ public function nearbyBranches(Request $request)
     return response()->json([
         'data' => ['branches_details' => $formattedBranches],
         'meta' => [
+            'accessToken' => $user->auth_token,
+            'tokenType' => 'Bearer',
             'success' => true,
             'message' => 'Nearby branches retrieved successfully.',
         ],

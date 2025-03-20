@@ -63,6 +63,7 @@ class CouponAPIController extends Controller
 
     public function applyCoupon(Request $request)
     {
+        $user = Auth::user();
         $validator = Validator::make($request->all(), [
             'coupon_code' => 'required|exists:coupons,coupon_code',
         ]);

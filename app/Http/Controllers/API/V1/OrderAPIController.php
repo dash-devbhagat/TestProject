@@ -704,6 +704,7 @@ public function getOrderDetails(Request $request)
 
     public function cancelOrder(Request $request)
     {
+        $user = Auth::user();
         // Validation to ensure order_id is provided
         $validator = Validator::make($request->all(), [
             'order_id' => 'required|exists:orders,id',
@@ -744,6 +745,8 @@ public function getOrderDetails(Request $request)
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
+                    'accessToken' => $user->auth_token,
+                    'tokenType' => 'Bearer',
                     'success' => false,
                     'message' => 'Only pending orders can be canceled.',
                 ],

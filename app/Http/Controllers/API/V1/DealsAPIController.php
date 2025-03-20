@@ -130,18 +130,18 @@ class DealsAPIController extends Controller
 
     public function redeemDeal(Request $request)
     {
-        $request->validate([
+        $user = Auth::user();
+        $validator = Validator::make($request->all(), [
             'deal_id' => 'required|exists:deals,id',
         ]);
 
-        $user = Auth::user();
         $deal = Deal::with('dealComboProducts')->find($request->deal_id);
 
         if (!$deal || !$deal->is_active) {
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
-                                        'accessToken' => $user->auth_token,
+                    'accessToken' => $user->auth_token,
                     'tokenType' => 'Bearer',
                     'success' => false,
                     'message' => 'Invalid or inactive deal.',
@@ -159,7 +159,7 @@ class DealsAPIController extends Controller
             return response()->json([
                 'data' => json_decode('{}'),
                 'meta' => [
-                                        'accessToken' => $user->auth_token,
+                    'accessToken' => $user->auth_token,
                     'tokenType' => 'Bearer',
                     'success' => false,
                     'message' => 'You can redeem only one deal at a time.',
